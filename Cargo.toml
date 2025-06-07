@@ -1,8 +1,11 @@
 [package]
 name = "tree-sitter-nextflow"
-description = "A parser for Nextflow from scratch"
+description = "Nextflow grammar for tree-sitter"
 version = "0.1.0"
-authors = ["Edmund Miller <edmund@nf-co.re>"]
+authors = [
+  "Edmund Miller <edmund@nf-co.re>",
+  "Ben Sherman <bentshermann@gmail.com",
+]
 license = "MIT"
 readme = "README.md"
 keywords = ["incremental", "parsing", "tree-sitter", "nextflow"]

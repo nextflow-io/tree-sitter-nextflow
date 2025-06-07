@@ -1,5 +1,5 @@
 /**
- * @file A parser for Nextflow from scratch
+ * @file Nextflow grammar for tree-sitter
  * @author Edmund Miller <edmund@nf-co.re>
  * @license MIT
  */
