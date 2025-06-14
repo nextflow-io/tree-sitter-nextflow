@@ -13,7 +13,16 @@ module.exports = grammar({
   // Telling Tree-sitter that command_expression and _expression can conflict
   // helps the parser disambiguate cases like "foo = bar baz"
   conflicts: $ => [
-    [ $._expression, $.command_expression ]
+    [ $._expression, $.function_call ],
+    [ $.function_call, $.process_invocation ],
+    [ $._expression, $.process_output ],
+    [ $.source_file, $._expression ]
+  ],
+
+  externals: $ => [
+    $.string_content,
+    $.interpolation_start,
+    $.interpolation_end,
   ],
 
   extras: $ => [
@@ -34,7 +43,8 @@ module.exports = grammar({
       $.workflow_definition,
       $.variable_declaration,
       $.assignment,
-      $.if_statement
+      $.if_statement,
+      $.expression_statement
     )),
 
     // Comments
@@ -89,6 +99,7 @@ module.exports = grammar({
     _expression: $ => choice(
       $.identifier,
       $.number,
+      $.interpolated_string,
       $.string,
       $.boolean,
       $.channel_expression,
@@ -96,6 +107,10 @@ module.exports = grammar({
       $.map,
       $.list,
       $.binary_expression,
+      $.property_access,
+      $.function_call,
+      $.constructor_call,
+      $.closure,
       seq('(', $._expression, ')')
     ),
 
@@ -109,8 +124,94 @@ module.exports = grammar({
     string: $ => choice(
       seq('"', /[^"]*/, '"'),
       seq("'", /[^']*/, "'"),
-      seq('"""', /[^"]*/, '"""'),
-      seq("'''", /[^']*/, "'''")
+      seq('"""', /([^"]|"[^"]|""[^"])*/, '"""'),
+      seq("'''", /([^']|'[^']|''[^'])*/, "'''")
+    ),
+
+    // Interpolated strings - strings that contain $ interpolation
+    interpolated_string: $ => choice(
+      // Double-quoted interpolated strings
+      seq(
+        '"',
+        repeat(choice(
+          $.string_content,
+          $.interpolation,
+          $.simple_interpolation
+        )),
+        '"'
+      ),
+      // Triple double-quoted interpolated strings
+      seq(
+        '"""',
+        repeat(choice(
+          $.string_content,
+          $.interpolation,
+          $.simple_interpolation
+        )),
+        '"""'
+      ),
+      // Single-quoted interpolated strings
+      seq(
+        "'",
+        repeat(choice(
+          $.string_content,
+          $.interpolation,
+          $.simple_interpolation
+        )),
+        "'"
+      ),
+      // Triple single-quoted interpolated strings
+      seq(
+        "'''",
+        repeat(choice(
+          $.string_content,
+          $.interpolation,
+          $.simple_interpolation
+        )),
+        "'''"
+      )
+    ),
+
+    // Simple interpolation: $variable or $variable.property
+    simple_interpolation: $ => seq(
+      '$',
+      choice(
+        $.identifier,
+        $.property_access
+      )
+    ),
+
+    // Complex interpolation: ${expression} using external scanner
+    interpolation: $ => seq(
+      $.interpolation_start,
+      $._expression,
+      $.interpolation_end
+    ),
+
+
+
+    property_access: $ => prec.left(seq(
+      $._expression,
+      '.',
+      $.identifier
+    )),
+
+    function_call: $ => seq(
+      choice(
+        $.identifier,
+        $.property_access
+      ),
+      '(',
+      optional(commaSep1($._expression)),
+      ')'
+    ),
+
+    constructor_call: $ => seq(
+      'new',
+      $.identifier,
+      '(',
+      optional(commaSep1($._expression)),
+      ')'
     ),
 
     boolean: $ => choice('true', 'false'),
@@ -278,13 +379,32 @@ module.exports = grammar({
       $.closure
     ),
 
-    closure: $ => seq(
-      '{',
-      $.identifier,
-      '*',
-      $._expression,
-      '}'
-    ),
+    closure: $ => prec(1, choice(
+      // Single expression closure: { x -> x * 2 }
+      seq(
+        '{',
+        optional($.parameters),
+        '->',
+        $._expression,
+        '}'
+      ),
+      // Block closure: { x -> statements... }
+      seq(
+        '{',
+        optional($.parameters),
+        '->',
+        $.closure_body,
+        '}'
+      )
+    )),
+
+    closure_body: $ => repeat1(choice(
+      $.variable_declaration,
+      $.command_expression,
+      $._expression
+    )),
+
+    parameters: $ => commaSep1($.identifier),
 
     // Workflow definition
     workflow_definition: $ => seq(
@@ -410,10 +530,10 @@ module.exports = grammar({
 
     // A simple command-like expression to handle Groovy-style println statements
     // e.g. println "hello"
-    command_expression: $ => seq(
+    command_expression: $ => prec(2, seq(
       $.identifier,
-      $.string
-    )
+      choice($.string, $.interpolated_string)
+    ))
   }
 });
 

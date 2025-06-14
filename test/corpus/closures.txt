@@ -1,6 +1,5 @@
 ==================
 Single parameter closure
-:skip
 ==================
 
 def square = { x -> x * x }
@@ -18,7 +17,6 @@ def square = { x -> x * x }
 
 ==================
 Multiple parameter closure
-:skip
 ==================
 
 def add = { a, b -> a + b }
@@ -37,7 +35,6 @@ def add = { a, b -> a + b }
 
 ==================
 Multi-line closure with statements
-:skip
 ==================
 
 def process = { v ->
@@ -53,11 +50,11 @@ def process = { v ->
     (closure
       (parameters
         (identifier))
-      (block
-        (function_call
+      (closure_body
+        (command_expression
           (identifier)
           (string))
-        (function_call
+        (command_expression
           (identifier)
           (string))
         (binary_expression
@@ -66,7 +63,6 @@ def process = { v ->
 
 ==================
 Closure with variable declarations
-:skip
 ==================
 
 def compute = { x, y ->
@@ -82,7 +78,7 @@ def compute = { x, y ->
       (parameters
         (identifier)
         (identifier))
-      (block
+      (closure_body
         (variable_declaration
           (identifier)
           (binary_expression
