@@ -1,0 +1,69 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Grammar Development Guide
+
+## Grammar Structure in [grammar.js](mdc:grammar.js)
+
+The Nextflow grammar is organized hierarchically with these main sections:
+
+### Core Grammar Configuration
+- **name**: "nextflow" - defines the parser name
+- **conflicts**: Handles ambiguities between `_expression` and `command_expression`
+- **extras**: Defines whitespace and comments as skippable tokens
+
+### Top-Level Rules
+The `source_file` rule accepts these top-level constructs:
+- `comment` - Single-line (//) and multi-line (/* */) comments
+- `shebang` - Script execution directive (#!)
+- `feature_flag` - Nextflow configuration flags (nextflow.enable.dsl = 2)
+- `include` - Module imports ({process1, process2} from './module.nf')
+- `parameter` - Parameter definitions (params.input = "data.txt")
+- `process_definition` - Process blocks
+- `channel_expression` - Channel operations
+- `pipe_expression` - Pipeline expressions
+- `workflow_definition` - Main workflow blocks
+- `variable_declaration` - Variable declarations
+- `assignment` - Assignment statements
+- `if_statement` - Conditional statements
+
+### Expression Hierarchy
+The `_expression` rule defines:
+- Basic types: `identifier`, `number`, `string`, `boolean`
+- Complex types: `channel_expression`, `pipe_expression`, `map`, `list`
+- Operations: `binary_expression`
+- Grouping: parenthesized expressions
+
+### Process Definition Structure
+Process definitions include:
+- `input_block` - Input declarations (val, path, tuple, env, stdin)
+- `output_block` - Output declarations (path, tuple, env, stdout) 
+- `script_block` - Script content (script:, shell:, exec:)
+- `directive_block` - Process directives
+
+### String Support
+Multiple string types supported:
+- Double quotes: "string"
+- Single quotes: 'string'
+- Triple double quotes: """multiline"""
+- Triple single quotes: '''multiline'''
+
+## Development Best Practices
+
+### Making Grammar Changes
+1. Edit [grammar.js](mdc:grammar.js) to modify parsing rules
+2. Run `tree-sitter generate` to regenerate [src/parser.c](mdc:src/parser.c)
+3. Test changes with `tree-sitter test`
+4. Use test files in [test/corpus/](mdc:test/corpus/) for validation
+
+### Handling Conflicts
+- Current conflicts are defined between `_expression` and `command_expression`
+- Add new conflicts to the `conflicts` array if grammar becomes ambiguous
+- Use precedence and associativity for binary operators
+
+### Testing Grammar Rules
+- Each rule should have corresponding tests in [test/corpus/](mdc:test/corpus/)
+- Test files use tree-sitter's testing format with expected parse trees
+- Cover both positive cases (valid syntax) and edge cases

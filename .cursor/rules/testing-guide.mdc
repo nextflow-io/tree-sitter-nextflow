@@ -1,0 +1,102 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Testing Guide
+
+## Test Infrastructure Overview
+
+The project uses tree-sitter's built-in testing framework with test cases in the [test/corpus/](mdc:test/corpus/) directory.
+
+## Test Corpus Structure
+
+### Core Language Features
+- **[test/corpus/comments.txt](mdc:test/corpus/comments.txt)** - Comment syntax testing
+- **[test/corpus/basic_declarations.txt](mdc:test/corpus/basic_declarations.txt)** - Basic declarations and top-level constructs
+- **[test/corpus/variable_declarations.txt](mdc:test/corpus/variable_declarations.txt)** - Variable declaration patterns
+
+### String and Expression Testing
+- **[test/corpus/string_interpolation.txt](mdc:test/corpus/string_interpolation.txt)** - String interpolation features
+- **[test/corpus/advanced_strings.txt](mdc:test/corpus/advanced_strings.txt)** - Complex string constructs
+- **[test/corpus/binary_expressions.txt](mdc:test/corpus/binary_expressions.txt)** - Binary operators and expressions
+
+### Nextflow-Specific Features
+- **[test/corpus/process_definition.txt](mdc:test/corpus/process_definition.txt)** - Process block syntax
+- **[test/corpus/advanced_process.txt](mdc:test/corpus/advanced_process.txt)** - Complex process features
+- **[test/corpus/workflow_definition.txt](mdc:test/corpus/workflow_definition.txt)** - Workflow block syntax
+- **[test/corpus/channel_operations.txt](mdc:test/corpus/channel_operations.txt)** - Channel operations
+- **[test/corpus/advanced_channels.txt](mdc:test/corpus/advanced_channels.txt)** - Complex channel patterns
+
+### Advanced Language Features
+- **[test/corpus/control_structures.txt](mdc:test/corpus/control_structures.txt)** - Control flow (if/else, loops)
+- **[test/corpus/functions_and_methods.txt](mdc:test/corpus/functions_and_methods.txt)** - Function definitions and calls
+- **[test/corpus/closures.txt](mdc:test/corpus/closures.txt)** - Closure syntax and usage
+- **[test/corpus/data_structures.txt](mdc:test/corpus/data_structures.txt)** - Maps, lists, and complex data structures
+
+### Configuration and DSL Features
+- **[test/corpus/configuration.txt](mdc:test/corpus/configuration.txt)** - Configuration file syntax
+- **[test/corpus/dsl2_features.txt](mdc:test/corpus/dsl2_features.txt)** - DSL2-specific features
+- **[test/corpus/operators_and_functions.txt](mdc:test/corpus/operators_and_functions.txt)** - Operators and built-in functions
+
+### Error Handling
+- **[test/corpus/error_handling.txt](mdc:test/corpus/error_handling.txt)** - Error handling patterns
+
+## Running Tests
+
+### Using tree-sitter CLI
+```bash
+# Run all tests
+tree-sitter test
+
+# Run specific test file
+tree-sitter test --filter "test_name"
+
+# Update test results (use with caution)
+tree-sitter test --update
+```
+
+### Using npm scripts
+```bash
+# Run Node.js binding tests
+npm test
+```
+
+### Using Makefile
+```bash
+# Run tests via Makefile
+make test
+```
+
+## Test File Format
+
+Tree-sitter test files follow this format:
+```
+================
+Test Name
+================
+
+nextflow_source_code
+
+---
+
+(expected_parse_tree)
+```
+
+## Writing New Tests
+
+1. Add test cases to appropriate files in [test/corpus/](mdc:test/corpus/)
+2. Follow the established naming convention
+3. Include both positive and negative test cases
+4. Run `tree-sitter test` to validate
+5. Use `tree-sitter test --update` to generate expected parse trees for new tests (review carefully)
+
+## Test Coverage Areas
+
+Ensure tests cover:
+- Basic syntax elements
+- Nextflow-specific DSL features
+- Error conditions and edge cases
+- String interpolation and escaping
+- Complex nested structures
+- All supported file types (.nf, .nf.test, nextflow.config)

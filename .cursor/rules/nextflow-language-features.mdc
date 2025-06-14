@@ -1,0 +1,243 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Nextflow Language Features
+
+This parser supports comprehensive Nextflow DSL syntax. Understanding these features helps when extending the grammar or writing tests.
+
+## Top-Level Constructs
+
+### Shebang and Feature Flags
+```nextflow
+#!/usr/bin/env nextflow
+nextflow.enable.dsl = 2
+```
+
+### Includes and Modules
+```nextflow
+include { processA; processB as process2 } from './modules/tools.nf'
+include { workflowX } from './workflows/main.nf'
+```
+
+### Parameters
+```nextflow
+params.input = "data/*.fastq"
+params.output = "results/"
+params.threads = 4
+```
+
+## Process Definitions
+
+Processes are core Nextflow constructs with multiple sections:
+
+### Input Declarations
+```nextflow
+input:
+val sample_id from samples_ch
+path reads from reads_ch  
+tuple val(meta), path(reads) from input_ch
+env THREADS from threads_ch
+stdin from stdin_ch
+```
+
+### Output Declarations  
+```nextflow
+output:
+path "*.bam" into bam_ch
+tuple val(sample_id), path("*.vcf") into vcf_ch
+env RESULT into result_ch
+stdout into stdout_ch
+```
+
+### Script Blocks
+```nextflow
+script:
+"""
+echo "Processing ${sample_id}"
+command --input ${reads} --output output.txt
+"""
+
+shell:
+'''
+echo "Processing !{sample_id}" 
+command --input !{reads} --output output.txt
+'''
+
+exec:
+"""
+println "Executing process"
+"""
+```
+
+### Process Directives
+```nextflow
+directive:
+cpus 4
+memory '8 GB'
+container 'biocontainers/tool:1.0'
+publishDir 'results/', mode: 'copy'
+```
+
+## Workflow Definitions
+
+```nextflow
+workflow {
+    input_ch = Channel.fromPath(params.input)
+    processA(input_ch)
+    processB(processA.out)
+}
+
+workflow named_workflow {
+    take:
+    input_data
+    
+    main:
+    processA(input_data)
+    
+    emit:
+    processA.out
+}
+```
+
+## Channel Operations
+
+### Channel Creation
+```nextflow
+Channel.of(1, 2, 3, 4)
+Channel.fromPath("*.txt")  
+Channel.fromFilePairs("*_{1,2}.fastq")
+Channel.value("single_value")
+```
+
+### Channel Operators
+```nextflow
+data_ch
+    .map { it -> [it.baseName, it] }
+    .filter { it[0].contains('sample') }
+    .groupTuple()
+    .view()
+```
+
+## String Features
+
+### String Interpolation
+```nextflow
+sample_id = "sample1"
+output_file = "${sample_id}_processed.txt"
+command = "tool --input ${input} --output ${output}"
+```
+
+### Multiline Strings
+```nextflow
+script:
+"""
+This is a multiline script
+with multiple commands
+echo "Hello World"
+"""
+
+shell:
+'''
+This uses shell-style interpolation
+echo "Processing !{sample_id}"
+'''
+```
+
+## Data Structures
+
+### Maps
+```nextflow
+config = [
+    threads: 4,
+    memory: '8 GB',
+    container: 'ubuntu:20.04'
+]
+```
+
+### Lists
+```nextflow
+samples = ['sample1', 'sample2', 'sample3']
+files = file("*.txt")
+```
+
+## Control Structures
+
+### Conditional Statements
+```nextflow
+if (params.run_qc) {
+    QC_PROCESS(input_ch)
+}
+
+result = condition ? value_if_true : value_if_false
+```
+
+## Binary Expressions and Operators
+
+### Arithmetic Operators
+```nextflow
+result = a + b
+result = a - b  
+result = a * b
+result = a / b
+result = a % b
+```
+
+### Comparison Operators
+```nextflow
+equal = a == b
+not_equal = a != b
+less_than = a < b
+greater_than = a > b
+less_equal = a <= b
+greater_equal = a >= b
+```
+
+### Logical Operators
+```nextflow
+and_result = a && b
+or_result = a || b
+not_result = !condition
+```
+
+## Comments
+
+### Single-line Comments
+```nextflow
+// This is a single-line comment
+def variable = "value"  // End-of-line comment
+```
+
+### Multi-line Comments
+```nextflow
+/*
+This is a multi-line comment
+that spans multiple lines
+*/
+```
+
+## Advanced Features
+
+### Closures
+```nextflow
+def transformer = { x -> x * 2 }
+result = data.map(transformer)
+```
+
+### Function Definitions
+```nextflow
+def processData(input_file, output_dir) {
+    // Function implementation
+    return processed_data
+}
+```
+
+## File Type Support
+
+Based on [tree-sitter.json](mdc:tree-sitter.json), this parser handles:
+- **'.nf'** - Standard Nextflow workflow files
+- **'.nf.test'** - Nextflow test files  
+- **'nextflow.config'** - Nextflow configuration files
+
+All these features are covered by test cases in [test/corpus/](mdc:test/corpus/) and defined in the grammar rules in [grammar.js](mdc:grammar.js).
