@@ -20,6 +20,10 @@
           "named": true
         },
         {
+          "type": "command_expression",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
@@ -64,6 +68,10 @@
         },
         {
           "type": "channel_expression",
+          "named": true
+        },
+        {
+          "type": "command_expression",
           "named": true
         },
         {

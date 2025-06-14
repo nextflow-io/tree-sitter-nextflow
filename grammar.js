@@ -373,8 +373,8 @@ module.exports = grammar({
       $.identifier,
       '=',
       choice(
-        $._expression,
-        $.command_expression
+        prec(1, $.command_expression),
+        $._expression
       )
     ),
 
