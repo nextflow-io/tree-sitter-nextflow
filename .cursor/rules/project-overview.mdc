@@ -1,6 +1,6 @@
 ---
-description:
-globs:
+description: for general project navigation and understanding
+globs: 
 alwaysApply: false
 ---
 # Nextflow Tree-sitter Parser Project Overview
@@ -10,22 +10,22 @@ This is a comprehensive tree-sitter parser for the Nextflow language, created by
 ## Core Components
 
 ### Main Grammar Definition
-- **[grammar.js](mdc:grammar.js)** - The primary grammar definition file that defines the Nextflow language syntax rules
+- **[grammar.js](mdc:tree-sitter-nextflow/grammar.js)** - The primary grammar definition file that defines the Nextflow language syntax rules
   - Contains the main `grammar()` function with all parsing rules
   - Defines conflicts, extras, and the complete rule hierarchy
   - Supports Nextflow DSL features including processes, workflows, channels, and more
 
 ### Generated Parser Files (src/)
-- **[src/parser.c](mdc:src/parser.c)** - Auto-generated C parser (24K+ lines, don't edit manually)
-- **[src/grammar.json](mdc:src/grammar.json)** - JSON representation of the grammar
-- **[src/node-types.json](mdc:src/node-types.json)** - Node type definitions for the parser
+- **[src/parser.c](mdc:tree-sitter-nextflow/src/parser.c)** - Auto-generated C parser (24K+ lines, don't edit manually)
+- **[src/grammar.json](mdc:tree-sitter-nextflow/src/grammar.json)** - JSON representation of the grammar
+- **[src/node-types.json](mdc:tree-sitter-nextflow/src/node-types.json)** - Node type definitions for the parser
 
 ### Configuration Files
-- **[package.json](mdc:package.json)** - Node.js package configuration with scripts and dependencies
-- **[tree-sitter.json](mdc:tree-sitter.json)** - Tree-sitter specific configuration
-- **[Makefile](mdc:Makefile)** - Build system for C library compilation
-- **[Cargo.toml](mdc:Cargo.toml)** - Rust binding configuration
-- **[pyproject.toml](mdc:pyproject.toml)** - Python binding configuration
+- **[package.json](mdc:tree-sitter-nextflow/package.json)** - Node.js package configuration with scripts and dependencies
+- **[tree-sitter.json](mdc:tree-sitter-nextflow/tree-sitter.json)** - Tree-sitter specific configuration
+- **[Makefile](mdc:tree-sitter-nextflow/Makefile)** - Build system for C library compilation
+- **[Cargo.toml](mdc:tree-sitter-nextflow/Cargo.toml)** - Rust binding configuration
+- **[pyproject.toml](mdc:tree-sitter-nextflow/pyproject.toml)** - Python binding configuration
 
 ## Language Bindings
 The project supports multiple language bindings in the **bindings/** directory:
@@ -37,7 +37,7 @@ The project supports multiple language bindings in the **bindings/** directory:
 - **Swift** - Swift bindings
 
 ## Testing Infrastructure
-- **[test/corpus/](mdc:test/corpus/)** - Comprehensive test corpus with 19 test files covering:
+- **[test/corpus/](mdc:tree-sitter-nextflow/test/corpus)** - Comprehensive test corpus with 19 test files covering:
   - Basic language features (comments, declarations, variables)
   - Process and workflow definitions
   - Channel operations and advanced channels
@@ -47,7 +47,7 @@ The project supports multiple language bindings in the **bindings/** directory:
   - DSL2 features and configuration
 
 ## Supported File Types
-Based on [tree-sitter.json](mdc:tree-sitter.json), the parser handles:
+Based on [tree-sitter.json](mdc:tree-sitter-nextflow/tree-sitter.json), the parser handles:
 - `.nf` - Standard Nextflow workflow files
 - `.nf.test` - Nextflow test files
 - `nextflow.config` - Nextflow configuration files

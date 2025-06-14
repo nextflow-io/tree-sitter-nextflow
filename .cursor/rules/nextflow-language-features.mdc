@@ -1,5 +1,5 @@
 ---
-description:
+description: when working with Nextflow syntax or extending language support
 globs:
 alwaysApply: false
 ---

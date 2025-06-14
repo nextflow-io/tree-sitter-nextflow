@@ -1,5 +1,5 @@
 ---
-description:
+description: when running tests or writing test cases
 globs:
 alwaysApply: false
 ---

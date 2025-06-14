@@ -1,6 +1,6 @@
 ---
-description:
-globs:
+description: when building the parser or working with language bindings
+globs: 
 alwaysApply: false
 ---
 # Build System and Language Bindings
@@ -12,19 +12,19 @@ The project supports multiple build systems for different environments and langu
 ### Primary Build Tools
 
 #### tree-sitter CLI
-- **Primary tool**: `tree-sitter generate` to regenerate parser from [grammar.js](mdc:grammar.js)
+- **Primary tool**: `tree-sitter generate` to regenerate parser from [grammar.js](mdc:tree-sitter-nextflow/grammar.js)
 - **Testing**: `tree-sitter test` to run the test suite
 - **Development**: `tree-sitter playground` for interactive grammar testing
 
 #### Makefile
-The [Makefile](mdc:Makefile) provides C library compilation:
+The [Makefile](mdc:tree-sitter-nextflow/Makefile) provides C library compilation:
 - `make all` - Build static library (.a) and shared library (.so/.dylib) 
 - `make install` - Install system-wide in PREFIX (default: /usr/local)
 - `make test` - Run tree-sitter tests
 - `make clean` - Clean build artifacts
 
 #### npm Scripts  
-From [package.json](mdc:package.json):
+From [package.json](mdc:tree-sitter-nextflow/package.json):
 - `npm run prestart` - Build WASM version (`tree-sitter build --wasm`)
 - `npm start` - Launch playground (`tree-sitter playground`)
 - `npm test` - Run Node.js binding tests
@@ -33,7 +33,7 @@ From [package.json](mdc:package.json):
 ## Language Bindings
 
 ### Supported Languages
-Based on [tree-sitter.json](mdc:tree-sitter.json), the project supports bindings for:
+Based on [tree-sitter.json](mdc:tree-sitter-nextflow/tree-sitter.json), the project supports bindings for:
 
 #### C Bindings (`bindings/c/`)
 - Core implementation
@@ -41,40 +41,40 @@ Based on [tree-sitter.json](mdc:tree-sitter.json), the project supports bindings
 - System-wide installation via Makefile
 
 #### Rust Bindings (`bindings/rust/`)
-- Configuration in [Cargo.toml](mdc:Cargo.toml)
+- Configuration in [Cargo.toml](mdc:tree-sitter-nextflow/Cargo.toml)
 - Rust crate with tree-sitter integration
 
 #### Python Bindings (`bindings/python/`)
-- Configuration in [pyproject.toml](mdc:pyproject.toml) and [setup.py](mdc:setup.py)
+- Configuration in [pyproject.toml](mdc:tree-sitter-nextflow/pyproject.toml) and [setup.py](mdc:tree-sitter-nextflow/setup.py)
 - pip-installable package
 
 #### Node.js Bindings (`bindings/node/`)
-- Configuration in [package.json](mdc:package.json) and [binding.gyp](mdc:binding.gyp)
+- Configuration in [package.json](mdc:tree-sitter-nextflow/package.json) and [binding.gyp](mdc:tree-sitter-nextflow/binding.gyp)
 - Native addon using node-addon-api
 - Prebuild support with prebuildify
 
 #### Go Bindings (`bindings/go/`)
-- Go module configuration in [go.mod](mdc:go.mod)
+- Go module configuration in [go.mod](mdc:tree-sitter-nextflow/go.mod)
 
 #### Swift Bindings (`bindings/swift/`)
-- Swift Package Manager support in [Package.swift](mdc:Package.swift)
+- Swift Package Manager support in [Package.swift](mdc:tree-sitter-nextflow/Package.swift)
 
 ### Cross-Platform Build Support
-- **CMake**: [CMakeLists.txt](mdc:CMakeLists.txt) for cross-platform C builds
+- **CMake**: [CMakeLists.txt](mdc:tree-sitter-nextflow/CMakeLists.txt) for cross-platform C builds
 - **Platform detection**: Makefile handles macOS (.dylib) vs Linux (.so) differences
 - **Windows exclusion**: Makefile explicitly excludes Windows builds
 
 ## Generated Files (Don't Edit)
 
 The following files are auto-generated and should not be manually edited:
-- **[src/parser.c](mdc:src/parser.c)** - Generated C parser (24K+ lines)
-- **[src/grammar.json](mdc:src/grammar.json)** - JSON representation of grammar
-- **[src/node-types.json](mdc:src/node-types.json)** - Node type definitions
+- **[src/parser.c](mdc:tree-sitter-nextflow/src/parser.c)** - Generated C parser (24K+ lines)
+- **[src/grammar.json](mdc:tree-sitter-nextflow/src/grammar.json)** - JSON representation of grammar
+- **[src/node-types.json](mdc:tree-sitter-nextflow/src/node-types.json)** - Node type definitions
 
 ## Development Workflow
 
 ### Making Grammar Changes
-1. Edit [grammar.js](mdc:grammar.js)
+1. Edit [grammar.js](mdc:tree-sitter-nextflow/grammar.js)
 2. Run `tree-sitter generate` to update generated files
 3. Test with `tree-sitter test`
 4. Build bindings as needed for your target language
