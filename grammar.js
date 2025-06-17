@@ -1,6 +1,7 @@
 /**
  * @file Nextflow grammar for tree-sitter
  * @author Edmund Miller <edmund@nf-co.re>
+ * @author Ben Sherman <bentshermann@gmail.com>
  * @license MIT
  */
 
@@ -10,413 +11,415 @@
 module.exports = grammar({
   name: "nextflow",
 
-  // Telling Tree-sitter that command_expression and _expression can conflict
-  // helps the parser disambiguate cases like "foo = bar baz"
-  conflicts: $ => [
-    [ $._expression, $.command_expression ]
+  extras: $ => [
+    $.line_comment,
+    $.block_comment,
+    /\s/
   ],
 
-  extras: $ => [
-    /\s/,
-    $.comment
+  inline: $ => [
+    $._argument_list,
+    $._argument_list_element,
+    $._block,
+    $._expression_list,
+    $._named_property,
+    $._path_element,
+    $._primary,
+    $._statement_or_block
   ],
 
   rules: {
-    source_file: $ => repeat(choice(
-      $.comment,
-      $.shebang,
-      $.feature_flag,
-      $.include,
-      $.parameter,
-      $.process_definition,
-      $.channel_expression,
-      $.pipe_expression,
-      $.workflow_definition,
-      $.variable_declaration,
-      $.assignment,
-      $.if_statement
+
+    compilation_unit: $ => repeat(choice(
+      $.script_declaration,
+      $.statement
     )),
 
-    // Comments
-    comment: $ => choice(
-      seq('//', /.*/),
-      seq(
-        '/*',
-        /[^*]*\*+([^/*][^*]*\*+)*/,
-        '/'
-      )
+    // Script declarations
+
+    script_declaration: $ => choice(
+      $.feature_flag_decl,
+      $.include_decl,
+      $.param_decl,
+      // $.enum_def,
+      $.process_def,
+      $.workflow_def,
+      $.output_def,
+      $.function_def
     ),
 
-    // Top-level declarations
-    shebang: $ => seq(
-      '#!',
-      /.*/
-    ),
+    // -- feature flag declaration
 
-    feature_flag: $ => seq(
+    feature_flag_decl: $ => seq(
       'nextflow',
-      '.',
-      $.identifier,
-      '.',
-      $.identifier,
+      repeat1(seq('.', $.identifier)),
       '=',
-      choice($.number, $.string, $.boolean)
+      $.expression
     ),
 
-    include: $ => seq(
+    // -- include declaration
+
+    include_decl: $ => seq(
       'include',
       '{',
-      commaSep1($.include_item),
+      seq($.include_entry, repeat(seq(';', $.include_entry))),
       '}',
       'from',
-      $.string
+      $.string_literal
     ),
 
-    include_item: $ => seq(
+    include_entry: $ => seq(
       $.identifier,
       optional(seq('as', $.identifier))
     ),
 
-    parameter: $ => seq(
+    // -- parameter declaration
+
+    param_decl: $ => seq(
       'params',
       '.',
       $.identifier,
       '=',
-      $._expression
+      $.expression
     ),
 
-    // Basic expressions
-    _expression: $ => choice(
-      $.identifier,
-      $.number,
-      $.string,
-      $.boolean,
-      $.channel_expression,
-      $.pipe_expression,
-      $.map,
-      $.list,
-      $.binary_expression,
-      seq('(', $._expression, ')')
-    ),
+    // -- process definition
 
-    identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
-    
-    number: $ => choice(
-      /\d+/,
-      /\d+\.\d+/
-    ),
-
-    string: $ => choice(
-      seq('"', /[^"]*/, '"'),
-      seq("'", /[^']*/, "'"),
-      seq('"""', /[^"]*/, '"""'),
-      seq("'''", /[^']*/, "'''")
-    ),
-
-    boolean: $ => choice('true', 'false'),
-
-    // Helper functions
-    _statement: $ => choice(
-      $.expression_statement,
-      $.assignment_statement,
-      $.if_statement
-    ),
-
-    expression_statement: $ => seq(
-      choice(
-        $._expression,
-        $.command_expression
-      ),
-      optional(';')
-    ),
-
-    assignment_statement: $ => seq(
-      $.identifier,
-      '=',
-      choice(
-        $._expression,
-        $.command_expression
-      ),
-      ';'
-    ),
-
-    // Process definition
-    process_definition: $ => seq(
+    process_def: $ => seq(
       'process',
       $.identifier,
       '{',
       repeat(choice(
-        $.input_block,
-        $.output_block,
-        $.script_block,
-        $.directive_block
+        $.process_directives,
+        $.process_inputs,
+        $.process_outputs,
+        $.process_when,
+        $.process_script,
+        $.process_stub
       )),
       '}'
     ),
 
-    input_block: $ => seq(
+    process_directives: $ => repeat1($.statement),
+
+    process_inputs: $ => seq(
       'input:',
-      repeat($.input_declaration)
+      repeat1($.statement)
     ),
 
-    input_declaration: $ => seq(
-      choice('val', 'path', 'tuple', 'env', 'stdin'),
-      $.identifier,
-      optional(seq('from', $._expression)),
-      ';'
-    ),
-
-    output_block: $ => seq(
+    process_outputs: $ => seq(
       'output:',
-      repeat($.output_declaration)
+      repeat($.statement)
     ),
 
-    output_declaration: $ => seq(
-      choice('path', 'tuple', 'env', 'stdout'),
-      $._expression,
-      optional(seq('into', $._expression)),
-      ';'
+    process_when: $ => seq(
+      'when:',
+      $.expression
     ),
 
-    script_block: $ => seq(
+    process_script: $ => seq(
       choice('script:', 'shell:', 'exec:'),
-      $.script_content
+      $.block_statements
     ),
 
-    script_content: $ => choice(
-      seq('"""', /([^"]|"[^"]|""[^"])*/, '"""'),
-      seq("'''", /([^']|'[^']|''[^'])*/, "'''"),
-      seq('"', /[^"]*/, '"'),
-      seq("'", /[^']*/, "'")
+    // -- workflow definition
+
+    workflow_def: $ => seq(
+      'workflow',
+      '{',
+      repeat(choice(
+        $.workflow_take,
+        $.workflow_main,
+        $.workflow_emit,
+        $.workflow_publish
+      )),
+      '}'
     ),
 
-    directive_block: $ => seq(
-      'directive:',
-      repeat($.directive)
+    workflow_take: $ => seq(
+      'take:',
+      repeat1($.identifier)
     ),
 
-    directive: $ => seq(
+    workflow_main: $ => seq(
+      'main:',
+      $.block_statements
+    ),
+
+    workflow_emit: $ => seq(
+      'emit:',
+      $.block_statements
+    ),
+
+    workflow_publish: $ => seq(
+      'publish:',
+      $.block_statements
+    ),
+
+    // -- output definition
+
+    output_def: $ => seq(
+      'output',
+      '{',
+      optional($.block_statements),
+      '}'
+    ),
+
+    // -- function definition
+
+    function_def: $ => seq(
+      'def',
       $.identifier,
-      $._expression,
+      '(',
+      optional($.formal_parameter_list),
+      ')',
+      '{',
+      optional($.block_statements),
+      '}'
+    ),
+
+    // Statements
+
+    statement: $ => choice(
+      $.if_else_statement,
+      // $.try_catch_statement,
+      $.return_statement,
+      $.throw_statement,
+      $.assert_statement,
+      $.variable_declaration,
+      // $.multiple_assignment_statement,
+      $.assignment_statement,
+      $.expression_statement,
       ';'
     ),
 
-    // Channel operations
-    channel_expression: $ => seq(
-      'Channel',
-      '.',
-      choice(
-        $.channel_from,
-        $.channel_value,
-        $.channel_of,
-        $.channel_from_list
-      )
+    if_else_statement: $ => seq(
+      'if',
+      '(',
+      $.expression,
+      ')',
+      $._statement_or_block,
+      optional(seq(
+        'else',
+        $._statement_or_block
+      ))
     ),
 
-    channel_from: $ => seq(
-      'from',
-      '(',
-      commaSep1($._expression),
-      ')'
+    _statement_or_block: $ => choice(
+      $.statement,
+      $._block
     ),
 
-    channel_value: $ => seq(
-      'value',
-      '(',
-      optional($._expression),
-      ')'
+    _block: $ => seq(
+      '{',
+      optional($.block_statements),
+      '}'
     ),
 
-    channel_of: $ => seq(
-      'of',
-      '(',
-      optional(commaSep1($._expression)),
-      ')'
+    block_statements: $ => repeat1($.statement),
+
+    return_statement: $ => seq(
+      'return',
+      optional($.expression)
     ),
 
-    channel_from_list: $ => seq(
-      'fromList',
-      '(',
+    throw_statement: $ => seq(
+      'throw',
+      $.expression
+    ),
+
+    assert_statement: $ => seq(
+      'assert',
+      $.expression,
+      optional(seq(':', $.expression))
+    ),
+
+    variable_declaration: $ => seq(
+      'def',
+      optional($.type),
+      $.identifier,
+      optional(seq(
+        '=',
+        $.expression
+      ))
+    ),
+
+    assignment_statement: $ => seq(
+      $.expression,
+      '=',
+      $.expression
+    ),
+
+    expression_statement: $ => seq(
+      $.expression,
+      optional($._argument_list)
+    ),
+
+    // Expressions
+
+    expression: $ => choice(
+      $.path_expression,
+
+      seq(choice('~', '!'), $.expression),  // unary not
+      seq($.expression, '**', $.expression),  // power
+      seq(choice('+', '-'), $.expression),  // unary add
+      seq($.expression, choice('*', '/', '%'), $.expression), // mult/div/mod
+      seq($.expression, choice('+', '-'), $.expression),  // add/sub
+      seq($.expression, choice('<<', '>>>', '>>'), $.expression), // shift
+      seq($.expression, choice('..', '..<'), $.expression), // range
+
+      seq($.expression, 'as', $.type), // relational cast
+      seq($.expression, choice('instanceof', '!instanceof'), $.type), // relational type
+      seq($.expression, choice('<=', '>=', '>', '<', 'in', '!in'), $.expression), // relational
+      seq($.expression, choice('==', '!=', '<=>'), $.expression), // equality
+      seq($.expression, choice('=~', '==~'), $.expression), // regex find/match
+
+      seq($.expression, choice('&', '^', '|'), $.expression), // bitwise and/or
+      seq($.expression, choice('&&', '||'), $.expression),  // logical and/or
+
+      prec.right(seq($.expression, '?', $.expression, ':', $.expression)),  // ternary
+      prec.right(seq($.expression, '?:', $.expression)),  // elvis
+    ),
+
+    path_expression: $ => seq($._primary, repeat($._path_element)),
+
+    _primary: $ => choice(
+      $.identifier,
+      $.literal,
+      // $.gstring,
+      // seq('new', $.creator),
+      $.par_expression,
+      $.closure,
       $.list,
-      ')'
+      $.map,
     ),
 
-    list: $ => seq(
+    _path_element: $ => choice(
+      $.named_property, // property expr
+      $.closure,        // method call expr (with trailing closure)
+      $.arguments,      // method call expr
+      $.index_property  // index expression
+    ),
+
+    named_property: $ => seq(
+      choice('.', '*.', '?.'),
+      $._named_property
+    ),
+
+    _named_property: $ => choice($.identifier, $.string_literal),
+
+    index_property: $ => seq(
       '[',
-      optional(commaSep1($._expression)),
+      $._expression_list,
       ']'
     ),
 
+    // -- variable, function, type identifiers
+
+    identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
+
+    // -- primitive literals
+
+    literal: $ => choice(
+      $.integer_literal,
+      $.floating_point_literal,
+      $.string_literal,
+      $.boolean_literal,
+      'null'
+    ),
+
+    integer_literal: $ => /\d+/,
+
+    floating_point_literal: $ => /\d+\.\d+/,
+
+    string_literal: $ => choice(
+      seq("'", /[^']*/, "'"),
+      seq('"', /[^"]*/, '"'),
+      seq("'''", /[^']*/, "'''"),
+      seq('"""', /[^"]*/, '"""'),
+    ),
+
+    boolean_literal: $ => choice('true', 'false'),
+
+    // -- parenthetical expression
+
+    par_expression: $ => seq('(', $.expression, ')'),
+
+    // -- closure expression
+
+    closure: $ => seq(
+      '{',
+      optional(seq($.formal_parameter_list, '->')),
+      $.block_statements,
+      '}'
+    ),
+
+    formal_parameter_list: $ => repeatComma1($.formal_parameter),
+
+    formal_parameter: $ => seq(
+      optional($.type),
+      $.identifier,
+      optional(seq('=', $.expression))
+    ),
+
+    // -- list expression
+
+    list: $ => seq(
+      '[',
+      optional($._expression_list),
+      ']'
+    ),
+
+    _expression_list: $ => repeatComma1($.expression),
+
+    // -- map expression
+
     map: $ => seq(
       '[',
-      commaSep1($.map_entry),
+      choice(
+        repeatComma1($.map_entry),
+        ':'
+      ),
       ']'
     ),
 
     map_entry: $ => seq(
-      choice(
-        $.identifier,
-        $.string,
-        $.number
-      ),
+      $.primary,
       ':',
-      $._expression
+      $.expression
     ),
 
-    // Pipeline operations
-    pipe_expression: $ => prec.left(1, seq(
-      $._expression,
-      '|',
-      choice(
-        $.identifier,
-        $.map_operation
-      )
-    )),
-
-    map_operation: $ => seq(
-      'map',
-      $.closure
-    ),
-
-    closure: $ => seq(
-      '{',
-      $.identifier,
-      '*',
-      $._expression,
-      '}'
-    ),
-
-    // Workflow definition
-    workflow_definition: $ => seq(
-      'workflow',
-      '{',
-      optional($.workflow_body),
-      '}'
-    ),
-
-    workflow_body: $ => choice(
-      seq($.workflow_input, optional($.workflow_main), optional($.workflow_emit)),
-      seq($.workflow_main, optional($.workflow_emit)),
-      $.workflow_emit,
-      repeat1($._workflow_statement)
-    ),
-
-    workflow_input: $ => prec.right(2, seq(
-      'take:',
-      repeat1(seq(
-        $.identifier,
-        optional(';')
-      ))
-    )),
-
-    workflow_main: $ => prec.right(2, seq(
-      'main:',
-      repeat1(seq(
-        $._workflow_statement,
-        optional(';')
-      ))
-    )),
-
-    workflow_emit: $ => prec.right(2, seq(
-      'emit:',
-      repeat1(seq(
-        $.identifier,
-        '=',
-        $._workflow_statement,
-        optional(';')
-      ))
-    )),
-
-    _workflow_statement: $ => choice(
-      $._expression,
-      $.process_invocation,
-      $.process_output
-    ),
-
-    process_invocation: $ => prec(2, seq(
-      $.identifier,
+    // -- argument list
+    arguments: $ => seq(
       '(',
-      optional(commaSep1(choice($._expression, $.process_output))),
+      optional($._argument_list),
       ')'
+    ),
+
+    _argument_list: $ => repeatComma1($._argument_list_element),
+
+    _argument_list_element: $ => choice($.expression, $.named_arg),
+
+    named_arg: $ => seq($._named_property, ':', $.expression),
+
+    // Types
+
+    type: $ => /[a-zA-Z][a-zA-Z0-9]*/,
+
+    // Comments
+
+    shebang: $ => token(seq('#!', /.*/)),
+
+    line_comment: $ => token(seq('//', /.*/)),
+
+    block_comment: $ => token(seq(
+      '/*',
+      /[^*]*\*+([^/*][^*]*\*+)*/,
+      '/'
     )),
-
-    process_output: $ => seq(
-      $.identifier,
-      '.',
-      'out'
-    ),
-
-    binary_expression: $ => choice(
-      // Logical operators have lowest precedence
-      prec.left(1, seq($._expression, choice('&&', '||'), $._expression)),
-      // Comparison operators
-      prec.left(2, seq($._expression, choice('==', '!=', '<', '>', '<=', '>='), $._expression)),
-      // Addition and subtraction
-      prec.left(3, seq($._expression, choice('+', '-'), $._expression)),
-      // Multiplication, division, modulo
-      prec.left(4, seq($._expression, choice('*', '/', '%'), $._expression)),
-      // Exponentiation has right associativity
-      prec.right(5, seq($._expression, '**', $._expression)),
-      // Range operators
-      prec.left(6, seq($._expression, choice('..', '..<'), $._expression))
-    ),
-
-    // Variable declarations
-    variable_declaration: $ => seq(
-      'def',
-      $.identifier,
-      '=',
-      $._expression
-    ),
-
-    assignment: $ => seq(
-      $.identifier,
-      '=',
-      choice(
-        $._expression,
-        $.command_expression
-      )
-    ),
-
-    if_statement: $ => seq(
-      'if',
-      '(',
-      $._expression,
-      ')',
-      $.block,
-      repeat($.else_if_clause),
-      optional($.else_clause)
-    ),
-
-    else_if_clause: $ => seq(
-      'else',
-      'if',
-      '(',
-      $._expression,
-      ')',
-      $.block
-    ),
-
-    else_clause: $ => seq(
-      'else',
-      $.block
-    ),
-
-    block: $ => seq(
-      '{',
-      repeat($._statement),
-      '}'
-    ),
-
-    // A simple command-like expression to handle Groovy-style println statements
-    // e.g. println "hello"
-    command_expression: $ => seq(
-      $.identifier,
-      $.string
-    )
   }
 });
 
-function commaSep1(rule) {
-  return seq(rule, repeat(seq(',', rule)))
+function repeatComma1(rule) {
+  return seq(rule, repeat(seq(',', rule)), optional(','))
 }
