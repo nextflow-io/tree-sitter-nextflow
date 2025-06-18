@@ -123,17 +123,17 @@ switch(x) {
       (expression_statement)))) 
 
 =================
-Command conflicts
+Function call assignment
 =================
 
-foo = bar "baz"
+foo = bar("baz")
 
 ---
 
 (source_file
   (assignment
     (identifier)
-    (command_expression
+    (function_call
       (identifier)
       (string)))) 
 
