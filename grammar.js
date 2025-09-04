@@ -17,6 +17,10 @@ module.exports = grammar({
     /\s/
   ],
 
+  conflicts: $ => [
+    [$.list, $.map]
+  ],
+
   rules: {
 
     source_file: $ => repeat(choice(
@@ -27,6 +31,7 @@ module.exports = grammar({
       $.process_definition,
       $.workflow_definition,
       $.variable_declaration,
+      $.assignment,
       $.line_comment,
       $.block_comment
     )),
@@ -112,17 +117,78 @@ module.exports = grammar({
       optional(seq('=', $.simple_expression))
     ),
 
+    assignment: $ => seq(
+      $.identifier,
+      '=',
+      $.simple_expression
+    ),
+
     simple_statement: $ => choice(
       $.simple_expression,
       ';'
     ),
 
     simple_expression: $ => choice(
+      $.binary_expression,
+      $.list,
+      $.map,
+      $.channel_expression,
       $.identifier,
       $.string_literal,
       $.integer_literal,
       $.boolean_literal,
       $.dotted_identifier
+    ),
+
+    // Binary expressions with operator precedence  
+    binary_expression: $ => prec.left(1, seq(
+      field('left', choice(
+        $.identifier,
+        $.string_literal, 
+        $.integer_literal,
+        $.boolean_literal,
+        $.dotted_identifier
+      )),
+      field('operator', choice('+', '-', '*', '/', '%')),
+      field('right', choice(
+        $.identifier,
+        $.string_literal,
+        $.integer_literal, 
+        $.boolean_literal,
+        $.dotted_identifier
+      ))
+    )),
+
+    // List literals  
+    list: $ => seq(
+      '[',
+      commaSep($.simple_expression),
+      ']'
+    ),
+
+    // Map literals
+    map: $ => seq(
+      '[',
+      commaSep($.map_entry),
+      ']'
+    ),
+
+    map_entry: $ => seq(
+      choice($.identifier, $.string_literal),
+      ':',
+      $.simple_expression
+    ),
+
+    // Channel expressions
+    channel_expression: $ => $.channel_from,
+
+    channel_from: $ => seq(
+      'Channel',
+      '.',
+      'from',
+      '(',
+      commaSep($.simple_expression),
+      ')'
     ),
 
     dotted_identifier: $ => seq(
@@ -160,7 +226,11 @@ module.exports = grammar({
   }
 });
 
-// Helper function
+// Helper functions
 function commaSep1(rule) {
   return seq(rule, repeat(seq(',', rule)), optional(','));
+}
+
+function commaSep(rule) {
+  return optional(commaSep1(rule));
 }

@@ -28,7 +28,6 @@ def greeting = 'Hello'
 
 ==================
 Multiple variable declarations
-:skip
 ==================
 
 def x = 1
@@ -40,19 +39,21 @@ def z = x + y
 (source_file
   (variable_declaration
     (identifier)
-    (number))
+    (simple_expression
+      (integer_literal)))
   (variable_declaration
     (identifier)
-    (number))
+    (simple_expression
+      (integer_literal)))
   (variable_declaration
     (identifier)
-    (binary_expression
-      (identifier)
-      (identifier))))
+    (simple_expression
+      (binary_expression
+        (identifier)
+        (identifier)))))
 
 ==================
 Variable assignment
-:skip
 ==================
 
 x = 42
@@ -62,11 +63,11 @@ x = 42
 (source_file
   (assignment
     (identifier)
-    (number)))
+    (simple_expression
+      (integer_literal))))
 
 ==================
 Variable declaration with expression
-:skip
 ==================
 
 def result = Channel.from(1,2,3)
@@ -76,15 +77,18 @@ def result = Channel.from(1,2,3)
 (source_file
   (variable_declaration
     (identifier)
-    (channel_expression
-      (channel_from
-        (number)
-        (number)
-        (number)))))
+    (simple_expression
+      (channel_expression
+        (channel_from
+          (simple_expression
+            (integer_literal))
+          (simple_expression
+            (integer_literal))
+          (simple_expression
+            (integer_literal)))))))
 
 ==================
 Variable declaration with list
-:skip
 ==================
 
 def numbers = [1, 2, 3]
@@ -94,14 +98,17 @@ def numbers = [1, 2, 3]
 (source_file
   (variable_declaration
     (identifier)
-    (list
-      (number)
-      (number)
-      (number))))
+    (simple_expression
+      (list
+        (simple_expression
+          (integer_literal))
+        (simple_expression
+          (integer_literal))
+        (simple_expression
+          (integer_literal))))))
 
 ==================
 Variable declaration with map
-:skip
 ==================
 
 def config = [foo: 'bar', count: 42]
@@ -111,10 +118,13 @@ def config = [foo: 'bar', count: 42]
 (source_file
   (variable_declaration
     (identifier)
-    (map
-      (map_entry
-        (identifier)
-        (string))
-      (map_entry
-        (identifier)
-        (number))))) 
+    (simple_expression
+      (map
+        (map_entry
+          (identifier)
+          (simple_expression
+            (string_literal)))
+        (map_entry
+          (identifier)
+          (simple_expression
+            (integer_literal)))))))
