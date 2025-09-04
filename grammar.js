@@ -17,6 +17,18 @@ module.exports = grammar({
     /\s/
   ],
 
+  conflicts: $ => [
+    [$.return_statement],
+    [$.path_expression],
+    [$.expression_statement],
+    [$.expression_statement, $.expression],
+    [$.path_expression, $.formal_parameter],
+    [$.function_def, $.variable_declaration],
+    [$.return_statement, $.expression],
+    [$.throw_statement, $.expression],
+    [$.assert_statement, $.expression]
+  ],
+
   inline: $ => [
     $._argument_list,
     $._argument_list_element,
