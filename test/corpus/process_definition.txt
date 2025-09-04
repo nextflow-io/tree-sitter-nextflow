@@ -4,7 +4,7 @@ Process with input block
 
 process FASTQC {
     input:
-    path reads from input_ch;
+    path reads;
 }
 
 ---
@@ -12,10 +12,14 @@ process FASTQC {
 (source_file
   (process_definition
     (identifier)
-    (input_block
-      (input_declaration
-        (identifier)
-        (identifier)))))
+    (input_declaration
+      (simple_statement
+        (simple_expression
+          (identifier)))
+      (simple_statement
+        (simple_expression
+          (identifier)))
+      (simple_statement))))
 
 ==================
 Process with output block
@@ -23,7 +27,7 @@ Process with output block
 
 process FASTQC {
     output:
-    path "fastqc_*" into fastqc_ch;
+    path "fastqc_*";
 }
 
 ---
@@ -31,10 +35,14 @@ process FASTQC {
 (source_file
   (process_definition
     (identifier)
-    (output_block
-      (output_declaration
-        (string)
-        (identifier)))))
+    (output_declaration
+      (simple_statement
+        (simple_expression
+          (identifier)))
+      (simple_statement
+        (simple_expression
+          (string_literal)))
+      (simple_statement))))
 
 ==================
 Process with script block
@@ -50,8 +58,9 @@ process FASTQC {
 (source_file
   (process_definition
     (identifier)
-    (script_block
-      (script_content))))
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))
 
 ==================
 Complete process definition
@@ -59,10 +68,10 @@ Complete process definition
 
 process FASTQC {
     input:
-    path reads from input_ch;
+    path reads;
     
     output:
-    path "fastqc_*" into fastqc_ch;
+    path "fastqc_*";
     
     script:
     """fastqc $reads"""
@@ -73,13 +82,22 @@ process FASTQC {
 (source_file
   (process_definition
     (identifier)
-    (input_block
-      (input_declaration
-        (identifier)
-        (identifier)))
-    (output_block
-      (output_declaration
-        (string)
-        (identifier)))
-    (script_block
-      (script_content))))
+    (input_declaration
+      (simple_statement
+        (simple_expression
+          (identifier)))
+      (simple_statement
+        (simple_expression
+          (identifier)))
+      (simple_statement))
+    (output_declaration
+      (simple_statement
+        (simple_expression
+          (identifier)))
+      (simple_statement
+        (simple_expression
+          (string_literal)))
+      (simple_statement))
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))

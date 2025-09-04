@@ -7,7 +7,7 @@ Line comment
 ---
 
 (source_file
-  (comment))
+  (line_comment))
 
 ==================
 Block comment
@@ -19,4 +19,4 @@ Block comment
 ---
 
 (source_file
-  (comment))
+  (block_comment))

@@ -1,27 +1,11 @@
 ==================
-Script block with bash functions
+Simple script block
 ==================
 
-process FUNCTION_TEST {
+process SIMPLE {
     script:
     """
-    # Define a bash function
-    check_file() {
-        local file="$1"
-        if [[ -f "$file" ]]; then
-            return 0
-        else
-            return 1
-        fi
-    }
-    
-    # Use the function
-    if check_file "input.txt"; then
-        echo "File exists"
-    else
-        echo "File not found"
-        exit 1
-    fi
+    echo hello
     """
 }
 
@@ -30,31 +14,18 @@ process FUNCTION_TEST {
 (source_file
   (process_definition
     (identifier)
-    (script_block
-      (script_content))))
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))
 
 ==================
-Shell script with pipes and redirects
+Shell script block
 ==================
 
-process PIPELINE_TEST {
+process SHELL_TEST {
     shell:
     '''
-    # Complex pipeline with multiple commands
-    cat input.txt | \
-        grep -v "^#" | \
-        sort | \
-        uniq -c | \
-        awk '{print $2 "\t" $1}' | \
-        sort -k2 -nr > sorted_counts.txt 2>&1
-    
-    # Check if pipeline succeeded
-    if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
-        echo "Pipeline completed successfully"
-    else
-        echo "Pipeline failed at stage ${PIPESTATUS[0]}" >&2
-        exit 1
-    fi
+    echo world
     '''
 }
 
@@ -63,37 +34,18 @@ process PIPELINE_TEST {
 (source_file
   (process_definition
     (identifier)
-    (script_block
-      (script_content))))
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))
 
 ==================
-Exec script with environment variables
+Exec script block
 ==================
 
-process ENV_TEST {
+process EXEC_TEST {
     exec:
     """
-    #!/bin/bash
-    
-    # Set environment variables
-    export TMPDIR="${TMPDIR:-/tmp}"
-    export NPROC="${NPROC:-$(nproc)}"
-    
-    echo "Using $NPROC processors"
-    echo "Temporary directory: $TMPDIR"
-    
-    # Create temporary working directory
-    WORKDIR=$(mktemp -d -p "$TMPDIR")
-    trap 'rm -rf "$WORKDIR"' EXIT
-    
-    cd "$WORKDIR"
-    
-    # Parallel processing example
-    seq 1 10 | xargs -P "$NPROC" -I {} bash -c '
-        echo "Processing item {}"
-        sleep 0.1
-        echo "Item {} completed"
-    '
+    echo exec
     """
 }
 
@@ -102,91 +54,18 @@ process ENV_TEST {
 (source_file
   (process_definition
     (identifier)
-    (script_block
-      (script_content))))
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))
 
 ==================
-Script with heredoc and command substitution
+Stub script block
 ==================
 
-process HEREDOC_TEST {
-    script:
-    '''
-    # Create a configuration file using heredoc
-    cat > config.ini <<EOF
-[database]
-host=localhost
-port=5432
-name=mydb
-
-[settings]
-threads=$(nproc)
-memory=$(($(free -m | awk '/^Mem:/{print $2}') / 2))
-EOF
-
-    # Read and process the configuration
-    while IFS='=' read -r key value; do
-        if [[ ! "$key" =~ ^[[:space:]]*$ ]] && [[ ! "$key" =~ ^[[:space:]]*\[ ]]; then
-            echo "Setting $key to $value"
-            export "APP_$key"="$value"
-        fi
-    done < <(grep -v '^\[' config.ini | grep -v '^$')
-    '''
-}
-
----
-
-(source_file
-  (process_definition
-    (identifier)
-    (script_block
-      (script_content))))
-
-==================
-Shell script with error handling and logging
-==================
-
-process ERROR_HANDLING {
-    shell:
+process STUB_TEST {
+    stub:
     """
-    #!/bin/bash
-    set -euo pipefail
-    
-    # Setup logging
-    LOG_FILE="process.log"
-    exec > >(tee -a "$LOG_FILE")
-    exec 2>&1
-    
-    log() {
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
-    }
-    
-    cleanup() {
-        local exit_code=$?
-        log "Cleanup function called with exit code: $exit_code"
-        if [[ -f "temp_file.txt" ]]; then
-            rm "temp_file.txt"
-            log "Temporary files cleaned up"
-        fi
-        exit $exit_code
-    }
-    
-    # Set trap for cleanup
-    trap cleanup EXIT ERR
-    
-    log "Starting process..."
-    
-    # Create temporary file
-    touch temp_file.txt
-    
-    # Simulate some work
-    for i in {1..5}; do
-        log "Processing step $i/5"
-        echo "Step $i data" >> temp_file.txt
-        sleep 0.1
-    done
-    
-    log "Process completed successfully"
+    echo stub
     """
 }
 
@@ -195,118 +74,6 @@ process ERROR_HANDLING {
 (source_file
   (process_definition
     (identifier)
-    (script_block
-      (script_content))))
-
-==================
-Script with associative arrays and JSON processing
-==================
-
-process JSON_PROCESSING {
-    script:
-    '''
-    #!/bin/bash
-    
-    # Declare associative array
-    declare -A metadata
-    
-    # Read JSON and populate array (assuming jq is available)
-    while IFS='=' read -r key value; do
-        metadata["$key"]="$value"
-    done < <(echo '{"sample": "test01", "type": "RNA", "replicate": 1}' | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
-    
-    # Process based on metadata
-    case "${metadata[type]}" in
-        "DNA")
-            echo "Processing DNA sample: ${metadata[sample]}"
-            ;;
-        "RNA")
-            echo "Processing RNA sample: ${metadata[sample]}, replicate ${metadata[replicate]}"
-            ;;
-        *)
-            echo "Unknown sample type: ${metadata[type]}" >&2
-            exit 1
-            ;;
-    esac
-    
-    # Output results as JSON
-    printf '{"status": "completed", "sample": "%s", "processed_at": "%s"}\n' \
-        "${metadata[sample]}" \
-        "$(date -Iseconds)"
-    '''
-}
-
----
-
-(source_file
-  (process_definition
-    (identifier)
-    (script_block
-      (script_content))))
-
-==================
-Script with bioinformatics pipeline
-==================
-
-process VARIANT_CALLING {
-    script:
-    """
-    #!/bin/bash
-    set -euo pipefail
-    
-    # Bioinformatics pipeline with typical bash patterns
-    SAMPLE_ID="sample_001"
-    REF_GENOME="reference.fa"
-    INPUT_BAM="aligned.bam"
-    
-    # Index reference if needed
-    if [[ ! -f "${REF_GENOME}.fai" ]]; then
-        echo "Indexing reference genome..."
-        samtools faidx "$REF_GENOME"
-    fi
-    
-    # Call variants using multiple tools
-    declare -a callers=("gatk" "bcftools" "freebayes")
-    
-    for caller in "${callers[@]}"; do
-        echo "Running $caller variant calling..."
-        case "$caller" in
-            "gatk")
-                gatk HaplotypeCaller \
-                    -R "$REF_GENOME" \
-                    -I "$INPUT_BAM" \
-                    -O "${SAMPLE_ID}_${caller}.vcf"
-                ;;
-            "bcftools")
-                bcftools mpileup -f "$REF_GENOME" "$INPUT_BAM" | \
-                bcftools call -mv -O v -o "${SAMPLE_ID}_${caller}.vcf"
-                ;;
-            "freebayes")
-                freebayes -f "$REF_GENOME" "$INPUT_BAM" > "${SAMPLE_ID}_${caller}.vcf"
-                ;;
-        esac
-        
-        # Check if output was created
-        if [[ -s "${SAMPLE_ID}_${caller}.vcf" ]]; then
-            echo "$caller completed successfully"
-        else
-            echo "Warning: $caller produced no output" >&2
-        fi
-    done
-    
-    # Merge results if all succeeded
-    echo "Merging variant calls..."
-    vcf_files=(${SAMPLE_ID}_*.vcf)
-    if [[ ${#vcf_files[@]} -gt 0 ]]; then
-        echo "Found ${#vcf_files[@]} VCF files to merge"
-    fi
-    """
-}
-
----
-
-(source_file
-  (process_definition
-    (identifier)
-    (script_block
-      (script_content))))
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))

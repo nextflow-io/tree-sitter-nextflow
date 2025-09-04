@@ -137,8 +137,8 @@ module.exports = grammar({
     ),
 
     triple_quoted_string: $ => choice(
-      seq("'''", /[^']*/, "'''"),
-      seq('"""', /[^"]*/, '"""')
+      seq("'''", /([^']|'[^']|''[^'])*/, "'''"),
+      seq('"""', /([^"]|"[^"]|""[^"])*/, '"""')
     ),
 
     integer_literal: $ => /\d+/,
