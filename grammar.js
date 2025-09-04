@@ -94,8 +94,8 @@ module.exports = grammar({
         $.process_inputs,
         $.process_outputs,
         $.process_when,
-        $.process_script,
-        $.process_stub
+        $.process_script
+        // $.process_stub
       )),
       '}'
     ),
@@ -384,7 +384,7 @@ module.exports = grammar({
     ),
 
     map_entry: $ => seq(
-      $.primary,
+      $._primary,
       ':',
       $.expression
     ),
