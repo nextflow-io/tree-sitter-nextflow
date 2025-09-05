@@ -1,0 +1,283 @@
+==================
+String interpolation with escape sequences
+==================
+
+def id = 'SRA001'
+assert 'SRA001.fastq' =~ "${id}\\.f(?:ast)?q"
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (string_literal)))
+  (expression_statement
+    (simple_expression
+      (binary_expression
+        (string_literal)
+        (interpolated_string
+          (interpolation
+            (simple_expression
+              (identifier)))
+          (string_content))))))
+
+==================
+Variable declarations with type annotations
+==================
+
+def a: Integer = 1
+def str: String = 'hello'
+def meta: Map = [:]
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (type_annotation
+      (identifier))
+    (simple_expression
+      (integer_literal)))
+  (variable_declaration
+    (identifier)
+    (type_annotation
+      (identifier))
+    (simple_expression
+      (string_literal)))
+  (variable_declaration
+    (identifier)
+    (type_annotation
+      (identifier))
+    (simple_expression
+      (map))))
+
+==================
+Destructuring assignment with types
+==================
+
+def (c: Integer, d: Integer) = [3, 4]
+def (e, f) = [5, 6]
+
+---
+
+(source_file
+  (variable_declaration
+    (destructuring_pattern
+      (typed_identifier
+        (identifier)
+        (type_annotation
+          (identifier)))
+      (typed_identifier
+        (identifier)
+        (type_annotation
+          (identifier))))
+    (simple_expression
+      (list
+        (simple_expression
+          (integer_literal))
+        (simple_expression
+          (integer_literal)))))
+  (variable_declaration
+    (destructuring_pattern
+      (identifier)
+      (identifier))
+    (simple_expression
+      (list
+        (simple_expression
+          (integer_literal))
+        (simple_expression
+          (integer_literal))))))
+
+==================
+Process with quoted env variables
+==================
+
+process my_task {
+    input:
+    env 'FOO'
+    env 'BAR'
+
+    script:
+    """
+    echo ${FOO}
+    echo ${BAR}
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_declaration
+      (env_input
+        (string_literal))
+      (env_input
+        (string_literal)))
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))
+
+==================
+Each instead of for loops
+==================
+
+['read_distribution', 'inner_distance', 'tin'].each { rseqc_module ->
+    if (rseqc_modules.contains(rseqc_module)) {
+        rseqc_modules.remove(rseqc_module)
+    }
+}
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (method_call
+        (list
+          (simple_expression
+            (string_literal))
+          (simple_expression
+            (string_literal))
+          (simple_expression
+            (string_literal)))
+        (identifier)
+        (closure
+          (parameter
+            (identifier))
+          (block
+            (if_statement
+              (simple_expression
+                (function_call
+                  (identifier)
+                  (simple_expression
+                    (identifier))))
+              (block
+                (expression_statement
+                  (simple_expression
+                    (function_call
+                      (identifier)
+                      (simple_expression
+                        (identifier)))))))))))))
+
+==================
+If-else instead of switch
+==================
+
+if (aligner == 'bowtie2') {
+    println("Using bowtie2")
+} else if (aligner == 'bwamem') {
+    println("Using bwamem") 
+} else {
+    println("Unknown aligner")
+}
+
+---
+
+(source_file
+  (if_statement
+    (simple_expression
+      (binary_expression
+        (identifier)
+        (string_literal)))
+    (block
+      (expression_statement
+        (simple_expression
+          (function_call
+            (identifier)
+            (simple_expression
+              (string_literal))))))
+    (else_if_clause
+      (simple_expression
+        (binary_expression
+          (identifier)
+          (string_literal)))
+      (block
+        (expression_statement
+          (simple_expression
+            (function_call
+              (identifier)
+              (simple_expression
+                (string_literal)))))))
+    (else_clause
+      (block
+        (expression_statement
+          (simple_expression
+            (function_call
+              (identifier)
+              (simple_expression
+                (string_literal)))))))))
+
+==================
+Environment variables with env function
+==================
+
+println("PWD = ${env('PWD')}")
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (function_call
+        (identifier)
+        (simple_expression
+          (interpolated_string
+            (string_content)
+            (interpolation
+              (simple_expression
+                (function_call
+                  (identifier)
+                  (simple_expression
+                    (string_literal)))))
+            (string_content)))))))
+
+==================
+Slashy string regex without interpolation
+==================
+
+def pattern = /\w+\.\d+/
+def result = text =~ pattern
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (slashy_string)))
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (binary_expression
+        (identifier)
+        (identifier)))))
+
+==================
+Multi-line string with interpolation
+==================
+
+def cmd = """
+    blastp \\
+        -in ${input} \\
+        -out ${output} \\
+        -db blast_db
+"""
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (interpolated_triple_quoted_string
+        (string_content)
+        (interpolation
+          (simple_expression
+            (identifier)))
+        (string_content)
+        (interpolation
+          (simple_expression
+            (identifier)))
+        (string_content)))))

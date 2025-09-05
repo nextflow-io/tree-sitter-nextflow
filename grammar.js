@@ -84,7 +84,15 @@ module.exports = grammar({
       '}'
     ),
 
-    input_declaration: $ => seq('input:', repeat1($.simple_statement)),
+    input_declaration: $ => seq('input:', repeat1(choice(
+      $.simple_statement,
+      $.env_input
+    ))),
+
+    env_input: $ => seq('env', choice(
+      $.string_literal,
+      $.identifier
+    )),
     output_declaration: $ => seq('output:', repeat1($.simple_statement)),
     when_declaration: $ => seq('when:', $.simple_expression),
 
@@ -117,8 +125,27 @@ module.exports = grammar({
     // Simple statements and expressions (no conflicts)
     variable_declaration: $ => seq(
       'def',
-      $.identifier,
+      choice(
+        seq($.identifier, optional($.type_annotation)),
+        $.destructuring_pattern
+      ),
       optional(seq('=', $.simple_expression))
+    ),
+
+    type_annotation: $ => seq(':', $.identifier),
+
+    destructuring_pattern: $ => seq(
+      '(',
+      commaSep1(choice(
+        $.identifier,
+        $.typed_identifier
+      )),
+      ')'
+    ),
+
+    typed_identifier: $ => seq(
+      $.identifier,
+      $.type_annotation
     ),
 
     assignment: $ => seq(
@@ -176,10 +203,14 @@ module.exports = grammar({
       $.pipe_expression,
       $.command_expression,
       $.function_call,
+      $.method_call,
+      $.env_function,
       $.list,
       $.map,
       $.channel_expression,
       $.interpolated_string,
+      $.interpolated_triple_quoted_string,
+      $.slashy_string,
       $.identifier,
       $.string_literal,
       $.integer_literal,
@@ -202,7 +233,8 @@ module.exports = grammar({
         '+', '-', '*', '/', '%', '**',
         '==', '!=', '<', '>', '<=', '>=',
         '&&', '||',
-        '..', '..<'
+        '..', '..<',
+        '=~', '!~'
       )),
       field('right', choice(
         $.identifier,
@@ -300,11 +332,18 @@ module.exports = grammar({
 
     closure: $ => seq(
       '{',
-      $.identifier,
-      '->',
-      $.simple_expression,
+      optional(seq(
+        commaSep1($.closure_parameter),
+        '->'
+      )),
+      choice(
+        $.simple_expression,
+        $.block
+      ),
       '}'
     ),
+
+    closure_parameter: $ => $.identifier,
 
     // Command expressions for function calls (higher precedence)
     command_expression: $ => prec(3, seq(
@@ -325,10 +364,29 @@ module.exports = grammar({
       ')'
     )),
 
-    dotted_identifier: $ => seq(
+    // Method calls on objects (collection.method)
+    method_call: $ => prec(5, seq(
+      $.simple_expression,
+      '.',
+      $.identifier,
+      choice(
+        seq('(', commaSep($.simple_expression), ')'),
+        $.closure
+      )
+    )),
+
+    // Environment function (strict syntax)
+    env_function: $ => seq(
+      'env',
+      '(',
+      $.simple_expression,
+      ')'
+    ),
+
+    dotted_identifier: $ => prec(6, seq(
       $.identifier,
       repeat1(seq('.', $.identifier))
-    ),
+    )),
 
     // Literals (plain strings without interpolation)
     string_literal: $ => choice(
@@ -361,6 +419,20 @@ module.exports = grammar({
         /u[0-9a-fA-F]{4}/
       )
     ))),
+
+    // Slashy strings (regex) - no interpolation in strict syntax
+    slashy_string: $ => seq('/', /[^\/]+/, '/'),
+
+    // Interpolated triple-quoted strings
+    interpolated_triple_quoted_string: $ => seq(
+      '"""',
+      repeat(choice(
+        alias(token.immediate(prec(1, /[^$"\\]+/)), $.string_content),
+        $.escape_sequence,
+        $.interpolation
+      )),
+      '"""'
+    ),
 
     triple_quoted_string: $ => choice(
       seq("'''", /([^']|'[^']|''[^'])*/, "'''"),
