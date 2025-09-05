@@ -130,6 +130,7 @@ module.exports = grammar({
 
     simple_expression: $ => choice(
       $.binary_expression,
+      $.parenthesized_expression,
       $.list,
       $.map,
       $.channel_expression,
@@ -147,17 +148,29 @@ module.exports = grammar({
         $.string_literal, 
         $.integer_literal,
         $.boolean_literal,
-        $.dotted_identifier
+        $.dotted_identifier,
+        $.parenthesized_expression,
+        $.binary_expression
       )),
-      field('operator', choice('+', '-', '*', '/', '%')),
+      field('operator', choice(
+        '+', '-', '*', '/', '%', '**',
+        '==', '!=', '<', '>', '<=', '>=',
+        '&&', '||',
+        '..', '..<'
+      )),
       field('right', choice(
         $.identifier,
         $.string_literal,
         $.integer_literal, 
         $.boolean_literal,
-        $.dotted_identifier
+        $.dotted_identifier,
+        $.parenthesized_expression,
+        $.binary_expression
       ))
     )),
+
+    // Parenthesized expressions
+    parenthesized_expression: $ => seq('(', $.simple_expression, ')'),
 
     // List literals  
     list: $ => seq(
