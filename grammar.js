@@ -32,6 +32,7 @@ module.exports = grammar({
       $.workflow_definition,
       $.variable_declaration,
       $.assignment,
+      $.expression_statement,
       $.line_comment,
       $.block_comment
     )),
@@ -123,6 +124,8 @@ module.exports = grammar({
       $.simple_expression
     ),
 
+    expression_statement: $ => $.simple_expression,
+
     simple_statement: $ => choice(
       $.simple_expression,
       ';'
@@ -131,6 +134,7 @@ module.exports = grammar({
     simple_expression: $ => choice(
       $.binary_expression,
       $.parenthesized_expression,
+      $.pipe_expression,
       $.list,
       $.map,
       $.channel_expression,
@@ -193,7 +197,11 @@ module.exports = grammar({
     ),
 
     // Channel expressions
-    channel_expression: $ => $.channel_from,
+    channel_expression: $ => choice(
+      $.channel_from,
+      $.channel_value,
+      $.channel_of
+    ),
 
     channel_from: $ => seq(
       'Channel',
@@ -202,6 +210,58 @@ module.exports = grammar({
       '(',
       commaSep($.simple_expression),
       ')'
+    ),
+
+    channel_value: $ => seq(
+      'Channel',
+      '.',
+      'value',
+      '(',
+      $.simple_expression,
+      ')'
+    ),
+
+    channel_of: $ => seq(
+      'Channel',
+      '.',
+      'of',
+      '(',
+      commaSep($.simple_expression),
+      ')'
+    ),
+
+    // Pipe expressions for channel operations (higher precedence than binary)
+    pipe_expression: $ => prec.left(2, seq(
+      choice(
+        $.channel_expression,
+        $.parenthesized_expression,
+        $.list,
+        $.map,
+        $.identifier,
+        $.string_literal,
+        $.integer_literal,
+        $.boolean_literal,
+        $.dotted_identifier
+      ),
+      '|',
+      $.pipe_operation
+    )),
+
+    pipe_operation: $ => choice(
+      $.map_operation
+    ),
+
+    map_operation: $ => seq(
+      'map',
+      $.closure
+    ),
+
+    closure: $ => seq(
+      '{',
+      $.identifier,
+      '->',
+      $.simple_expression,
+      '}'
     ),
 
     dotted_identifier: $ => seq(
