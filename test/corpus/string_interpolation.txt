@@ -3,21 +3,26 @@ Simple string interpolation
 ==================
 
 def name = 'world'
-println "Hello ${name}!"
+println("Hello ${name}!")
 
 ---
 
 (source_file
   (variable_declaration
     (identifier)
-    (string))
-  (function_call
-    (identifier)
-    (interpolated_string
-      (string_content)
-      (interpolation
-        (identifier))
-      (string_content))))
+    (simple_expression
+      (string_literal)))
+  (expression_statement
+    (simple_expression
+      (function_call
+        (identifier)
+        (simple_expression
+          (interpolated_string
+            (string_content)
+            (interpolation
+              (simple_expression
+                (identifier)))
+            (string_content)))))))
 
 ==================
 Simple property access
@@ -25,7 +30,7 @@ Simple property access
 ==================
 
 def person = [first: 'John', last: 'Doe']
-println "Hello $person.first $person.last!"
+println("Hello ${person.first} ${person.last}!")
 
 ---
 
@@ -61,8 +66,8 @@ def input = 'sample.fa'
 def output = 'result.txt'
 def cmd = """
     blastp \\
-        -in $input \\
-        -out $output \\
+        -in ${input} \\
+        -out ${output} \\
         -db blast_db
 """
 

@@ -3,6 +3,10 @@
 
 Nextflow grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter).
 
+> **Target**: Nextflow Strict Syntax (v2 Parser) - `NXF_SYNTAX_PARSER=v2`
+> 
+> This grammar is designed to support Nextflow's [strict syntax mode](https://nextflow.io/docs/latest/strict-syntax.html), focusing on the cleaner, more consistent v2 parser syntax patterns.
+
 ## Features
 
 - **Core Nextflow Syntax**: Process definitions, workflows, variable declarations

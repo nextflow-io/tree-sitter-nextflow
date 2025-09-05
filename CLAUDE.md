@@ -13,6 +13,7 @@ This is a tree-sitter grammar for the Nextflow workflow language. Tree-sitter is
 - `npm start` - Launch tree-sitter playground for interactive testing
 - `tree-sitter test` - Run grammar tests against corpus files
 - `tree-sitter parse <file.nf>` - Parse a specific Nextflow file
+- `echo 'code' | tree-sitter parse` - Parse code directly from stdin
 - `tree-sitter generate` - Regenerate parser from grammar.js
 
 ### Building
@@ -102,7 +103,23 @@ input code here
 
 To minimize token usage and maintain tight context when working as an LLM agent:
 
-**1. Quick Status Overview**
+**1. Quick Code Testing with Pipes**
+```bash
+# Test simple expressions directly
+echo '"hello"' | tree-sitter parse
+echo 'process foo { "echo hello" }' | tree-sitter parse
+echo '$var = "test"' | tree-sitter parse
+
+# Test string interpolation patterns
+echo '"${var}"' | tree-sitter parse
+echo '"$var.field"' | tree-sitter parse
+echo '"!\$var"' | tree-sitter parse  # Testing escape sequences
+
+# Combine with grep to check for specific nodes or errors
+echo 'if (x > 1) { println "yes" }' | tree-sitter parse | grep -E "ERROR|MISSING"
+```
+
+**2. Quick Status Overview**
 ```bash
 # Get concise failing test summary (saves ~8000 tokens vs full output)
 tree-sitter test 2>/dev/null | grep -E "✗|✓|⌀|failures:" | head -20
@@ -111,7 +128,7 @@ tree-sitter test 2>/dev/null | grep -E "✗|✓|⌀|failures:" | head -20
 tree-sitter test 2>/dev/null | grep -E "✗|✓|⌀" | cut -c7-9 | sort | uniq -c
 ```
 
-**2. Test Specific Files**  
+**3. Test Specific Files**  
 ```bash
 # Test only specific corpus files (much faster iteration)
 tree-sitter test --file-name variable_declarations.txt
@@ -123,19 +140,19 @@ tree-sitter test --file-name variable_declarations.txt --update
 tree-sitter test --file-name variable_declarations.txt -u  # shorthand
 ```
 
-**3. Focus on Single Test**
+**4. Focus on Single Test**
 ```bash
 # When debugging specific failing tests, view minimal context
 tree-sitter test --file-name binary_expressions.txt | head -30
 ```
 
-**4. Parser Generation Status**
+**5. Parser Generation Status**
 ```bash
 # Check if generation succeeds without running tests
 tree-sitter generate >/dev/null 2>&1 && echo "✓ Generation OK" || echo "✗ Generation failed"
 ```
 
-**5. Test Development Workflow**
+**6. Test Development Workflow**
 1. **Enable single test**: Remove `:skip` from one test case
 2. **Target test**: `tree-sitter test --file-name <specific_file.txt>`  
 3. **Fix grammar**: Edit `grammar.js` based on error output
@@ -145,7 +162,7 @@ tree-sitter generate >/dev/null 2>&1 && echo "✓ Generation OK" || echo "✗ Ge
 
 **Important**: The `--update` flag automatically updates test expectations to match current parser output. Tests containing ERROR or MISSING nodes will not be updated and require manual grammar fixes first.
 
-**6. Progress Tracking Pattern**
+**7. Progress Tracking Pattern**
 ```bash
 # Track progression over time
 tree-sitter test 2>/dev/null | grep -c "✓.*32m" # Count passing
