@@ -179,6 +179,7 @@ module.exports = grammar({
       $.list,
       $.map,
       $.channel_expression,
+      $.interpolated_string,
       $.identifier,
       $.string_literal,
       $.integer_literal,
@@ -309,6 +310,7 @@ module.exports = grammar({
     command_expression: $ => prec(3, seq(
       $.identifier,
       choice(
+        $.interpolated_string,
         $.string_literal,
         $.identifier,
         $.integer_literal
@@ -328,11 +330,31 @@ module.exports = grammar({
       repeat1(seq('.', $.identifier))
     ),
 
-    // Literals
+    // Literals (plain strings without interpolation)
     string_literal: $ => choice(
       seq("'", /[^']*/, "'"),
-      seq('"', /[^"]*/, '"')
+      seq('"', /[^$"]*/, '"')  // No $ to avoid conflict with interpolated strings
     ),
+
+    // Interpolated strings (GString support)  
+    interpolated_string: $ => seq(
+      '"',
+      repeat(choice(
+        $.string_content,
+        $.interpolation
+      )),
+      '"'
+    ),
+
+    interpolation: $ => seq(
+      '$',
+      choice(
+        seq('{', $.simple_expression, '}'),
+        alias(token.immediate(/[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*/), $.identifier)
+      )
+    ),
+
+    string_content: $ => token.immediate(prec(1, /[^$"\\]+/)),
 
     triple_quoted_string: $ => choice(
       seq("'''", /([^']|'[^']|''[^'])*/, "'''"),

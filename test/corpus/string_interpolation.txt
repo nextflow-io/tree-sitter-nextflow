@@ -1,6 +1,5 @@
 ==================
 Simple string interpolation
-:skip
 ==================
 
 def name = 'world'
