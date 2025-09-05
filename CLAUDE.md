@@ -98,6 +98,63 @@ input code here
 (expected_ast_structure)
 ```
 
+### Efficient Testing for LLM Agents
+
+To minimize token usage and maintain tight context when working as an LLM agent:
+
+**1. Quick Status Overview**
+```bash
+# Get concise failing test summary (saves ~8000 tokens vs full output)
+tree-sitter test 2>/dev/null | grep -E "✗|✓|⌀|failures:" | head -20
+
+# Count status by type
+tree-sitter test 2>/dev/null | grep -E "✗|✓|⌀" | cut -c7-9 | sort | uniq -c
+```
+
+**2. Test Specific Files**  
+```bash
+# Test only specific corpus files (much faster iteration)
+tree-sitter test --file-name variable_declarations.txt
+tree-sitter test --file-name process_definition.txt
+tree-sitter test --file-name binary_expressions.txt
+
+# Update test expectations for specific file after grammar changes
+tree-sitter test --file-name variable_declarations.txt --update
+tree-sitter test --file-name variable_declarations.txt -u  # shorthand
+```
+
+**3. Focus on Single Test**
+```bash
+# When debugging specific failing tests, view minimal context
+tree-sitter test --file-name binary_expressions.txt | head -30
+```
+
+**4. Parser Generation Status**
+```bash
+# Check if generation succeeds without running tests
+tree-sitter generate >/dev/null 2>&1 && echo "✓ Generation OK" || echo "✗ Generation failed"
+```
+
+**5. Test Development Workflow**
+1. **Enable single test**: Remove `:skip` from one test case
+2. **Target test**: `tree-sitter test --file-name <specific_file.txt>`  
+3. **Fix grammar**: Edit `grammar.js` based on error output
+4. **Regenerate**: `tree-sitter generate`
+5. **Retest**: Repeat step 2
+6. **Update expectations**: Use `tree-sitter test --update` to automatically update expected AST structures
+
+**Important**: The `--update` flag automatically updates test expectations to match current parser output. Tests containing ERROR or MISSING nodes will not be updated and require manual grammar fixes first.
+
+**6. Progress Tracking Pattern**
+```bash
+# Track progression over time
+tree-sitter test 2>/dev/null | grep -c "✓.*32m" # Count passing
+tree-sitter test 2>/dev/null | grep -c "✗.*31m" # Count failing  
+tree-sitter test 2>/dev/null | grep -c "⌀.*33m" # Count skipped
+```
+
+**Note**: First-time compilation after `tree-sitter generate` takes longer due to automatic C compilation. Subsequent runs are much faster.
+
 ## References
 
 The grammar is based on:
