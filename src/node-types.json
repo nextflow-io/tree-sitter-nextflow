@@ -949,19 +949,42 @@
     }
   },
   {
+    "type": "workflow_body",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
+        {
+          "type": "expression_statement",
+          "named": true
+        },
+        {
+          "type": "variable_declaration",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "workflow_definition",
     "named": true,
     "fields": {},
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "identifier",
           "named": true
         },
         {
-          "type": "simple_statement",
+          "type": "workflow_body",
           "named": true
         }
       ]
@@ -1105,10 +1128,6 @@
     "named": false
   },
   {
-    "type": "emit:",
-    "named": false
-  },
-  {
     "type": "exec:",
     "named": false
   },
@@ -1140,10 +1159,6 @@
     "type": "line_comment",
     "named": true,
     "extra": true
-  },
-  {
-    "type": "main:",
-    "named": false
   },
   {
     "type": "map",
@@ -1183,10 +1198,6 @@
   },
   {
     "type": "stub:",
-    "named": false
-  },
-  {
-    "type": "take:",
     "named": false
   },
   {

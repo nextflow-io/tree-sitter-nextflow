@@ -104,13 +104,15 @@ module.exports = grammar({
       'workflow',
       optional($.identifier),
       '{',
-      repeat(choice(
-        seq('take:', repeat1($.identifier)),
-        seq('main:', '{', repeat($.simple_statement), '}'),
-        seq('emit:', '{', repeat($.simple_statement), '}')
-      )),
+      $.workflow_body,
       '}'
     ),
+
+    workflow_body: $ => repeat1(choice(
+      $.expression_statement,
+      $.assignment,
+      $.variable_declaration
+    )),
 
     // Simple statements and expressions (no conflicts)
     variable_declaration: $ => seq(

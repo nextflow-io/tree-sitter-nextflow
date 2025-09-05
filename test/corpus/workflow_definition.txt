@@ -11,7 +11,9 @@ workflow {
 (source_file
   (workflow_definition
     (workflow_body
-      (string))))
+      (expression_statement
+        (simple_expression
+          (string_literal))))))
 
 ==================
 Workflow with input
