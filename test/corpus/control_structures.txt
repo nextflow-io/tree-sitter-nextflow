@@ -14,29 +14,34 @@ if (x > 5) {
 
 (source_file
   (if_statement
-    (binary_expression
-      (identifier)
-      (number))
-    (block
-      (expression_statement
-        (command_expression
-          (identifier)
-          (string))))
-    (else_if_clause
+    (simple_expression
       (binary_expression
         (identifier)
-        (number))
-      (block
-        (expression_statement
+        (integer_literal)))
+    (block
+      (expression_statement
+        (simple_expression
           (command_expression
             (identifier)
-            (string)))))
+            (string_literal)))))
+    (else_if_clause
+      (simple_expression
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (block
+        (expression_statement
+          (simple_expression
+            (command_expression
+              (identifier)
+              (string_literal))))))
     (else_clause
       (block
         (expression_statement
-          (command_expression
-            (identifier)
-            (string)))))))
+          (simple_expression
+            (command_expression
+              (identifier)
+              (string_literal))))))))
 
 ==================
 For loops
@@ -133,9 +138,11 @@ foo = bar("baz")
 (source_file
   (assignment
     (identifier)
-    (function_call
-      (identifier)
-      (string)))) 
+    (simple_expression
+      (function_call
+        (identifier)
+        (simple_expression
+          (string_literal)))))) 
 
 =================
 Operator precedence

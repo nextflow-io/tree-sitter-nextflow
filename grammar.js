@@ -32,6 +32,7 @@ module.exports = grammar({
       $.workflow_definition,
       $.variable_declaration,
       $.assignment,
+      $.if_statement,
       $.expression_statement,
       $.line_comment,
       $.block_comment
@@ -126,6 +127,42 @@ module.exports = grammar({
 
     expression_statement: $ => $.simple_expression,
 
+    // Control structures
+    if_statement: $ => seq(
+      'if',
+      '(',
+      $.simple_expression,
+      ')',
+      $.block,
+      repeat($.else_if_clause),
+      optional($.else_clause)
+    ),
+
+    else_if_clause: $ => seq(
+      'else',
+      'if',
+      '(',
+      $.simple_expression,
+      ')',
+      $.block
+    ),
+
+    else_clause: $ => seq(
+      'else',
+      $.block
+    ),
+
+    block: $ => seq(
+      '{',
+      repeat(choice(
+        $.expression_statement,
+        $.variable_declaration,
+        $.assignment,
+        $.if_statement
+      )),
+      '}'
+    ),
+
     simple_statement: $ => choice(
       $.simple_expression,
       ';'
@@ -135,6 +172,8 @@ module.exports = grammar({
       $.binary_expression,
       $.parenthesized_expression,
       $.pipe_expression,
+      $.command_expression,
+      $.function_call,
       $.list,
       $.map,
       $.channel_expression,
@@ -263,6 +302,24 @@ module.exports = grammar({
       $.simple_expression,
       '}'
     ),
+
+    // Command expressions for function calls (higher precedence)
+    command_expression: $ => prec(3, seq(
+      $.identifier,
+      choice(
+        $.string_literal,
+        $.identifier,
+        $.integer_literal
+      )
+    )),
+
+    // Function calls with parentheses (high precedence)
+    function_call: $ => prec(4, seq(
+      $.identifier,
+      '(',
+      commaSep($.simple_expression),
+      ')'
+    )),
 
     dotted_identifier: $ => seq(
       $.identifier,
