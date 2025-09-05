@@ -394,23 +394,27 @@ module.exports = grammar({
       seq('"', /[^$"]*/, '"')  // No $ to avoid conflict with interpolated strings
     ),
 
-    // Interpolated strings (GString support) - Reference pattern
-    interpolated_string: $ => seq(
+    // Interpolated strings (GString support) - Higher precedence than string_literal
+    interpolated_string: $ => prec(10, seq(
       '"',
       repeat(choice(
-        alias(token.immediate(prec(1, /[^$"\\]+/)), $.string_content),
+        $.string_content,
         $.escape_sequence,
         $.interpolation
       )),
       '"'
+    )),
+
+    // String interpolation: both ${expression} and $variable patterns
+    interpolation: $ => seq(
+      '$',
+      choice(
+        seq('{', $.simple_expression, '}'),
+        alias(token.immediate(/[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*/), $.identifier)
+      )
     ),
 
-    // Strict syntax: only ${expression} interpolation (no bare $variable)
-    interpolation: $ => seq(
-      '${',
-      $.simple_expression,
-      '}'
-    ),
+    string_content: $ => /[^$"\\n]+/,
 
     escape_sequence: $ => token(prec(1, seq(
       '\\',
@@ -427,7 +431,7 @@ module.exports = grammar({
     interpolated_triple_quoted_string: $ => seq(
       '"""',
       repeat(choice(
-        alias(token.immediate(prec(1, /[^$"\\]+/)), $.string_content),
+        $.string_content,
         $.escape_sequence,
         $.interpolation
       )),

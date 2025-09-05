@@ -1,0 +1,179 @@
+==================
+Interpolation at string end (working case)
+==================
+
+"${name}"
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (interpolated_string
+        (interpolation
+          (simple_expression
+            (identifier)))))))
+
+==================
+Single character after interpolation - exclamation
+==================
+
+"${name}!"
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (interpolated_string
+        (interpolation
+          (simple_expression
+            (identifier)))
+        (string_content)))))
+
+==================
+Single character after interpolation - letter
+==================
+
+"${name}a"
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (interpolated_string
+        (interpolation
+          (simple_expression
+            (identifier)))
+        (string_content)))))
+
+==================
+Single character after interpolation - number
+==================
+
+"${name}1"
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (interpolated_string
+        (interpolation
+          (simple_expression
+            (identifier)))
+        (string_content)))))
+
+==================
+Multiple characters after interpolation (confirmed working)
+==================
+
+"${name} world"
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (interpolated_string
+        (interpolation
+          (simple_expression
+            (identifier)))
+        (string_content)))))
+
+==================
+Content before and after interpolation
+==================
+
+"Hello ${name}!"
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (interpolated_string
+        (string_content)
+        (interpolation
+          (simple_expression
+            (identifier)))
+        (string_content)))))
+
+==================
+Multiple interpolations in one string
+==================
+
+"Hello ${first} ${last}!"
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (interpolated_string
+        (string_content)
+        (interpolation
+          (simple_expression
+            (identifier)))
+        (string_content)
+        (interpolation
+          (simple_expression
+            (identifier)))
+        (string_content)))))
+
+==================
+Expression interpolation with method call
+==================
+
+"Count: ${items.size()}"
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (interpolated_string
+        (string_content)
+        (interpolation
+          (simple_expression
+            (method_call
+              (identifier)
+              (identifier))))
+        (string_content)))))
+
+==================
+Interpolation with binary expression
+==================
+
+"Result: ${x + y}"
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (interpolated_string
+        (string_content)
+        (interpolation
+          (simple_expression
+            (binary_expression
+              (identifier)
+              (identifier))))
+        (string_content)))))
+
+==================
+Empty string content after interpolation
+==================
+
+"${name}"
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (interpolated_string
+        (interpolation
+          (simple_expression
+            (identifier)))))))

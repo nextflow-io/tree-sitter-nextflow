@@ -643,6 +643,10 @@
       "required": true,
       "types": [
         {
+          "type": "identifier",
+          "named": true
+        },
+        {
           "type": "simple_expression",
           "named": true
         }
@@ -1246,7 +1250,7 @@
     "named": false
   },
   {
-    "type": "${",
+    "type": "$",
     "named": false
   },
   {
