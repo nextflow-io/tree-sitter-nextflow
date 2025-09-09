@@ -12,7 +12,7 @@ assert 'SRA001.fastq' =~ "${id}\\.f(?:ast)?q"
     (identifier)
     (simple_expression
       (string_literal)))
-  (expression_statement
+  (assert_statement
     (simple_expression
       (binary_expression
         (string_literal)
@@ -20,6 +20,7 @@ assert 'SRA001.fastq' =~ "${id}\\.f(?:ast)?q"
           (interpolation
             (simple_expression
               (identifier)))
+          (escape_sequence)
           (string_content))))))
 
 ==================
@@ -144,19 +145,20 @@ Each instead of for loops
             (string_literal)))
         (identifier)
         (closure
-          (parameter
-            (identifier))
-          (block
+          (closure_parameter)
+          (closure_block
             (if_statement
               (simple_expression
-                (function_call
+                (method_call
+                  (identifier)
                   (identifier)
                   (simple_expression
                     (identifier))))
               (block
                 (expression_statement
                   (simple_expression
-                    (function_call
+                    (method_call
+                      (identifier)
                       (identifier)
                       (simple_expression
                         (identifier)))))))))))))

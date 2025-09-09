@@ -104,6 +104,7 @@ module.exports = grammar({
       $.variable_declaration,
       $.assignment,
       $.if_statement,
+      $.assert_statement,
       $.expression_statement,
       $.line_comment,
       $.block_comment
@@ -354,7 +355,12 @@ module.exports = grammar({
     // Examples: process calls, println statements, channel operations
     expression_statement: $ => $.simple_expression,
 
-    // Control structures
+    // Control structures  
+    assert_statement: $ => seq(
+      'assert',
+      $.simple_expression
+    ),
+    
     if_statement: $ => seq(
       'if',
       '(',
@@ -622,7 +628,7 @@ module.exports = grammar({
     )), 'block'),
 
     // Command expressions for function calls (higher precedence)
-    command_expression: $ => prec(3, seq(
+    command_expression: $ => prec(1, seq(
       $.identifier,
       choice(
         $.interpolated_string,

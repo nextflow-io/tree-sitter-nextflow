@@ -45,6 +45,10 @@
           },
           {
             "type": "SYMBOL",
+            "name": "assert_statement"
+          },
+          {
+            "type": "SYMBOL",
             "name": "expression_statement"
           },
           {
@@ -865,6 +869,19 @@
     "expression_statement": {
       "type": "SYMBOL",
       "name": "simple_expression"
+    },
+    "assert_statement": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "assert"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "simple_expression"
+        }
+      ]
     },
     "if_statement": {
       "type": "SEQ",
@@ -1833,7 +1850,7 @@
     },
     "command_expression": {
       "type": "PREC",
-      "value": 3,
+      "value": 1,
       "content": {
         "type": "SEQ",
         "members": [
