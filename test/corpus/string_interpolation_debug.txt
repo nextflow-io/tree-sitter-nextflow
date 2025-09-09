@@ -139,8 +139,7 @@ Expression interpolation with method call
           (simple_expression
             (method_call
               (identifier)
-              (identifier))))
-        (string_content)))))
+              (identifier))))))))
 
 ==================
 Interpolation with binary expression

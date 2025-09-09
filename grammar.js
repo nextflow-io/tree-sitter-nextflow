@@ -248,15 +248,59 @@ module.exports = grammar({
     ),
 
     // Workflow body contains the main computational logic
-    // Typically includes:
-    // - Process invocations: PROCESS(input_channel)
-    // - Channel operations: input_ch.map { ... }.filter { ... }  
-    // - Variable assignments: results = PROCESS(data)
-    // - Control flow: if/else statements
+    // Supports structured workflow sections (take:/main:/emit:) and traditional statements
     workflow_body: $ => repeat1(choice(
-      $.expression_statement,  // Process calls, channel operations
+      $.workflow_input,       // take: param1 param2 (input parameters)
+      $.workflow_main,        // main: workflow_logic (main execution block)
+      $.workflow_emit,        // emit: output (output declarations) 
+      $.expression_statement, // Process calls, channel operations
       $.assignment,           // Variable assignments: x = PROCESS(y)
       $.variable_declaration  // Typed declarations: def String result = ...
+    )),
+
+    // Workflow input section: take: param1 param2 ... (space or newline separated)
+    workflow_input: $ => prec.right(seq(
+      'take:',
+      repeat1($.identifier)  // Multiple identifiers until next section
+    )),
+
+    // Workflow main section: main: statements...
+    workflow_main: $ => prec.left(seq(
+      'main:',
+      repeat1(choice(
+        $.process_invocation,   // Process calls: PROCESS(input, output)
+        $.expression_statement,
+        $.assignment,
+        $.variable_declaration
+      ))
+    )),
+
+    // Workflow emit section: emit: output_channel
+    workflow_emit: $ => prec.left(seq(
+      'emit:',
+      repeat1(choice(
+        $.assignment,        // variants = PROCESS.out
+        $.identifier         // Simple identifiers
+      ))
+    )),
+
+    // Process invocation in workflows: PROCESS(input1, input2)
+    process_invocation: $ => prec(8, seq(
+      $.identifier,        // Process name (uppercase by convention)
+      '(',
+      commaSep(choice(
+        $.identifier,      // Simple channel/variable names
+        $.process_output   // Process output references: PROCESS.out
+      )),
+      ')'
+    )),
+
+    // Process output reference: PROCESS.out, PROCESS.out.channel
+    process_output: $ => prec(8, seq(
+      $.identifier,        // Process name
+      '.',
+      'out',
+      optional(seq('.', $.identifier))  // Optional channel name
     )),
 
     // VARIABLE DECLARATIONS & ASSIGNMENTS
@@ -370,6 +414,7 @@ module.exports = grammar({
       $.interpolated_string,                  // GStrings: "Hello $name"
       $.interpolated_triple_quoted_string,    // Multi-line GStrings
       $.slashy_string,                        // Regex: /pattern/
+      $.process_output,                       // Process outputs: PROCESS.out
       $.identifier,                           // Variables: varName
       $.string_literal,                       // Plain strings: "text"
       $.integer_literal,                      // Numbers: 42
@@ -586,8 +631,11 @@ module.exports = grammar({
     )),
 
     // Method calls on objects (collection.method)
-    method_call: $ => prec(5, seq(
-      $.simple_expression,
+    method_call: $ => prec(7, seq(
+      choice(
+        $.identifier,                // Simple case: obj.method()
+        $.dotted_identifier         // Complex case: obj.prop.method()
+      ),
       '.',
       $.identifier,
       choice(

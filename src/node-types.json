@@ -753,6 +753,10 @@
           "named": true
         },
         {
+          "type": "dotted_identifier",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
@@ -923,6 +927,40 @@
     }
   },
   {
+    "type": "process_invocation",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "process_output",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "process_output",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "script_content",
     "named": true,
     "fields": {},
@@ -1026,6 +1064,10 @@
         },
         {
           "type": "pipe_expression",
+          "named": true
+        },
+        {
+          "type": "process_output",
           "named": true
         },
         {
@@ -1234,6 +1276,18 @@
         {
           "type": "variable_declaration",
           "named": true
+        },
+        {
+          "type": "workflow_emit",
+          "named": true
+        },
+        {
+          "type": "workflow_input",
+          "named": true
+        },
+        {
+          "type": "workflow_main",
+          "named": true
         }
       ]
     }
@@ -1252,6 +1306,67 @@
         },
         {
           "type": "workflow_body",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "workflow_emit",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "workflow_input",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "workflow_main",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
+        {
+          "type": "expression_statement",
+          "named": true
+        },
+        {
+          "type": "process_invocation",
+          "named": true
+        },
+        {
+          "type": "variable_declaration",
           "named": true
         }
       ]
@@ -1407,6 +1522,10 @@
     "named": false
   },
   {
+    "type": "emit:",
+    "named": false
+  },
+  {
     "type": "env",
     "named": false
   },
@@ -1452,6 +1571,10 @@
     "extra": true
   },
   {
+    "type": "main:",
+    "named": false
+  },
+  {
     "type": "map",
     "named": false
   },
@@ -1461,6 +1584,10 @@
   },
   {
     "type": "of",
+    "named": false
+  },
+  {
+    "type": "out",
     "named": false
   },
   {
@@ -1489,6 +1616,10 @@
   },
   {
     "type": "stub:",
+    "named": false
+  },
+  {
+    "type": "take:",
     "named": false
   },
   {

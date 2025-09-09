@@ -38,7 +38,17 @@ workflow {
         (identifier)
         (identifier))
       (workflow_main
-        (string)))))
+        (expression_statement
+          (simple_expression
+            (interpolated_string
+              (string_content)
+              (interpolation
+                (simple_expression
+                  (identifier)))
+              (string_content)
+              (interpolation
+                (simple_expression
+                  (identifier))))))))))
 
 ==================
 Workflow with process calls
@@ -92,12 +102,17 @@ workflow {
         (process_invocation
           (identifier)
           (identifier)
-          (identifier))
-        (process_invocation
-          (identifier)
-          (process_output
-            (identifier))))
+          (identifier)))
+      (expression_statement
+        (simple_expression
+          (function_call
+            (identifier)
+            (simple_expression
+              (process_output
+                (identifier))))))
       (workflow_emit
-        (identifier)
-        (process_output
-          (identifier))))))
+        (assignment
+          (identifier)
+          (simple_expression
+            (process_output
+              (identifier))))))))
