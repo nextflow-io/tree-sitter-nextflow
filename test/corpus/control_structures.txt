@@ -23,7 +23,8 @@ if (x > 5) {
         (simple_expression
           (command_expression
             (identifier)
-            (string_literal)))))
+            (interpolated_string
+              (string_content))))))
     (else_if_clause
       (simple_expression
         (binary_expression
@@ -34,98 +35,16 @@ if (x > 5) {
           (simple_expression
             (command_expression
               (identifier)
-              (string_literal))))))
+              (interpolated_string
+                (string_content)))))))
     (else_clause
       (block
         (expression_statement
           (simple_expression
             (command_expression
               (identifier)
-              (string_literal))))))))
-
-==================
-For loops
-:skip
-==================
-
-for (i in 1..10) {
-    println i
-}
-
-items = ['a', 'b', 'c']
-for (item in items) {
-    println item
-}
-
----
-
-(source_file
-  (for_statement
-    (range_expression)
-    (block
-      (expression_statement)))
-  (assignment
-    (identifier)
-    (list))
-  (for_statement
-    (identifier)
-    (block
-      (expression_statement))))
-
-==================
-While loops
-:skip
-==================
-
-count = 0
-while (count < 5) {
-    println count
-    count++
-}
-
----
-
-(source_file
-  (assignment
-    (identifier)
-    (number))
-  (while_statement
-    (binary_expression)
-    (block
-      (expression_statement)
-      (unary_expression))))
-
-==================
-Switch case
-:skip
-==================
-
-switch(x) {
-    case 1:
-        println 'one'
-        break
-    case 2:
-        println 'two'
-        break
-    default:
-        println 'other'
-}
-
----
-
-(source_file
-  (switch_statement
-    (identifier)
-    (case_clause
-      (number)
-      (expression_statement)
-      (break_statement))
-    (case_clause
-      (number)
-      (expression_statement)
-      (break_statement))
-    (default_clause
-      (expression_statement)))) 
+              (interpolated_string
+                (string_content)))))))))
 
 =================
 Function call assignment
@@ -142,7 +61,8 @@ foo = bar("baz")
       (function_call
         (identifier)
         (simple_expression
-          (string_literal)))))) 
+          (interpolated_string
+            (string_content)))))))
 
 =================
 Operator precedence
@@ -157,28 +77,33 @@ def c = (1 + x) * y + 5 * z + 3
 (source_file
   (variable_declaration
     (identifier)
-    (binary_expression
-      (identifier)
+    (simple_expression
       (binary_expression
-        (identifier)
+        (binary_expression
+          (identifier)
+          (identifier))
         (identifier))))
   (variable_declaration
     (identifier)
-    (binary_expression
+    (simple_expression
       (binary_expression
-        (identifier)
-        (identifier))
-      (identifier)))
+        (binary_expression
+          (identifier)
+          (identifier))
+        (identifier))))
   (variable_declaration
     (identifier)
-    (binary_expression
+    (simple_expression
       (binary_expression
         (binary_expression
           (binary_expression
-            (number)
-            (identifier))
+            (binary_expression
+              (parenthesized_expression
+                (simple_expression
+                  (binary_expression
+                    (integer_literal)
+                    (identifier))))
+              (identifier))
+            (integer_literal))
           (identifier))
-        (binary_expression
-          (number)
-          (identifier)))
-      (number)))) 
+        (integer_literal)))))

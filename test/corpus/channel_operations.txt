@@ -46,19 +46,17 @@ Channel.from(1, 2, 3) | map { it * 2 }
   (expression_statement
     (simple_expression
       (pipe_expression
-        (simple_expression
-          (channel_expression
-            (channel_from
-              (simple_expression
-                (integer_literal))
-              (simple_expression
-                (integer_literal))
-              (simple_expression
-                (integer_literal)))))
+        (channel_expression
+          (channel_from
+            (simple_expression
+              (integer_literal))
+            (simple_expression
+              (integer_literal))
+            (simple_expression
+              (integer_literal))))
         (pipe_operation
           (map_operation
             (closure
-              (identifier)
               (simple_expression
                 (binary_expression
                   (identifier)
@@ -94,10 +92,22 @@ line ${text}""")
 ---
 
 (source_file
-  (channel_expression
-    (channel_of
-      (string)
-      (string))))
+  (expression_statement
+    (simple_expression
+      (channel_expression
+        (channel_of
+          (simple_expression
+            (interpolated_string
+              (string_content)
+              (interpolation
+                (simple_expression
+                  (identifier)))))
+          (simple_expression
+            (interpolated_triple_quoted_string
+              (string_content)
+              (interpolation
+                (simple_expression
+                  (identifier))))))))))
 
 ==================
 Channel with list input
@@ -108,12 +118,17 @@ Channel.fromList(['a', 'b', 'c'])
 ---
 
 (source_file
-  (channel_expression
-    (channel_from_list
-      (list
-        (string)
-        (string)
-        (string)))))
+  (expression_statement
+    (simple_expression
+      (channel_expression
+        (channel_from_list
+          (list
+            (simple_expression
+              (string_literal))
+            (simple_expression
+              (string_literal))
+            (simple_expression
+              (string_literal))))))))
 
 ==================
 Channel with map input
@@ -124,12 +139,17 @@ Channel.value([foo: 'bar', baz: 'qux'])
 ---
 
 (source_file
-  (channel_expression
-    (channel_value
-      (map
-        (map_entry
-          (identifier)
-          (string))
-        (map_entry
-          (identifier)
-          (string))))))
+  (expression_statement
+    (simple_expression
+      (channel_expression
+        (channel_value
+          (simple_expression
+            (map
+              (map_entry
+                (identifier)
+                (simple_expression
+                  (string_literal)))
+              (map_entry
+                (identifier)
+                (simple_expression
+                  (string_literal))))))))))

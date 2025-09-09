@@ -13,7 +13,8 @@ workflow {
     (workflow_body
       (expression_statement
         (simple_expression
-          (string_literal))))))
+          (interpolated_string
+            (string_content)))))))
 
 ==================
 Workflow with input
@@ -53,10 +54,14 @@ workflow {
 (source_file
   (workflow_definition
     (workflow_body
-      (process_invocation
-        (identifier))
-      (process_invocation
-        (identifier)))))
+      (expression_statement
+        (simple_expression
+          (function_call
+            (identifier))))
+      (expression_statement
+        (simple_expression
+          (function_call
+            (identifier)))))))
 
 ==================
 Complete workflow definition

@@ -220,6 +220,10 @@
           "named": true
         },
         {
+          "type": "channel_from_list",
+          "named": true
+        },
+        {
           "type": "channel_of",
           "named": true
         },
@@ -240,6 +244,21 @@
       "types": [
         {
           "type": "simple_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "channel_from_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "list",
           "named": true
         }
       ]
@@ -1106,6 +1125,11 @@
     "fields": {}
   },
   {
+    "type": "string_content",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "string_literal",
     "named": true,
     "fields": {}
@@ -1403,6 +1427,10 @@
     "named": false
   },
   {
+    "type": "fromList",
+    "named": false
+  },
+  {
     "type": "identifier",
     "named": true
   },
@@ -1458,10 +1486,6 @@
   {
     "type": "shell:",
     "named": false
-  },
-  {
-    "type": "string_content",
-    "named": true
   },
   {
     "type": "stub:",

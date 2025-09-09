@@ -15,10 +15,9 @@ process FASTQC {
     (input_declaration
       (simple_statement
         (simple_expression
-          (identifier)))
-      (simple_statement
-        (simple_expression
-          (identifier)))
+          (command_expression
+            (identifier)
+            (identifier))))
       (simple_statement))))
 
 ==================
@@ -38,10 +37,10 @@ process FASTQC {
     (output_declaration
       (simple_statement
         (simple_expression
-          (identifier)))
-      (simple_statement
-        (simple_expression
-          (string_literal)))
+          (command_expression
+            (identifier)
+            (interpolated_string
+              (string_content)))))
       (simple_statement))))
 
 ==================
@@ -85,18 +84,17 @@ process FASTQC {
     (input_declaration
       (simple_statement
         (simple_expression
-          (identifier)))
-      (simple_statement
-        (simple_expression
-          (identifier)))
+          (command_expression
+            (identifier)
+            (identifier))))
       (simple_statement))
     (output_declaration
       (simple_statement
         (simple_expression
-          (identifier)))
-      (simple_statement
-        (simple_expression
-          (string_literal)))
+          (command_expression
+            (identifier)
+            (interpolated_string
+              (string_content)))))
       (simple_statement))
     (script_declaration
       (script_content

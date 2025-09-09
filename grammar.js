@@ -444,9 +444,10 @@ module.exports = grammar({
     // Channel expressions create data streams for workflow processing
     // Channels are the fundamental data structure for connecting processes
     channel_expression: $ => choice(
-      $.channel_from,     // Channel.from(list) - create from collection
-      $.channel_value,    // Channel.value(item) - singleton channel
-      $.channel_of        // Channel.of(items) - modern factory method
+      $.channel_from,       // Channel.from(list) - create from collection
+      $.channel_from_list,  // Channel.fromList(list) - explicit list input
+      $.channel_value,      // Channel.value(item) - singleton channel
+      $.channel_of          // Channel.of(items) - modern factory method
     ),
 
     // Legacy channel factory: Channel.from([1,2,3])
@@ -457,6 +458,17 @@ module.exports = grammar({
       'from',
       '(',
       commaSep($.simple_expression),
+      ')'
+    ),
+
+    // Channel fromList: Channel.fromList([1,2,3])
+    // Explicit list-based channel creation
+    channel_from_list: $ => seq(
+      'Channel',
+      '.',
+      'fromList',
+      '(',
+      $.list,
       ')'
     ),
 
@@ -600,13 +612,10 @@ module.exports = grammar({
     // STRING LITERALS & INTERPOLATION SYSTEM
     // ======================================
     
-    // Plain string literals (no interpolation)
+    // Plain string literals (no interpolation) - SINGLE QUOTES ONLY
+    // Note: In Groovy/Nextflow, double-quoted strings are always GStrings (interpolated_string)
     // Single quotes: 'literal text' (never interpolated)
-    // Double quotes: "literal text" (only if no $ characters present)
-    string_literal: $ => choice(
-      seq("'", /[^']*/, "'"),
-      seq('"', /[^$"]*/, '"')  // No $ to avoid conflict with interpolated strings
-    ),
+    string_literal: $ => seq("'", /[^']*/, "'"),
 
     // GSTRING INTERPOLATION - PRECEDENCE LEVEL 10 (HIGHEST)
     // =====================================================
@@ -617,15 +626,15 @@ module.exports = grammar({
     //   "Result: ${x + y}"      - Expression interpolation  
     //   "$obj.property"         - Property access
     //   "File: $params.input"   - Nested property access
-    interpolated_string: $ => prec(10, seq(
+    interpolated_string: $ => seq(
       '"',
       repeat(choice(
-        $.string_content,       // Plain text content
+        $.string_content,       // Plain text content (moved first)
         $.escape_sequence,      // Escaped characters: \n, \t, etc.
-        $.interpolation         // $var or ${expr} patterns
+        $.interpolation         // $var or ${expr} patterns 
       )),
       '"'
-    )),
+    ),
 
     // String interpolation patterns - supports both forms:
     // 1. ${expression} - Full expression interpolation (can contain any Nextflow expression)
@@ -635,13 +644,13 @@ module.exports = grammar({
       '$',
       choice(
         seq('{', $.simple_expression, '}'),  // ${complex.expression + 1}
-        alias(token.immediate(/[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*/), $.identifier)  // $var.prop
+        $.identifier  // Simplified: just $var (no dot notation for now)
       )
     ),
 
     // String content between interpolations - excludes $ to avoid ambiguity
-    // Regex explanation: [^$"\\n]+ matches any chars except $, ", \, newline
-    string_content: $ => /[^$"\\n]+/,
+    // Removed token() wrapper to avoid conflicts with operators like !
+    string_content: $ => prec(-1, /[^$"\\]+/),
 
     // Escape sequences in strings - supports common escapes + Unicode
     // Examples: \n, \t, \", \\, \u0041 (for 'A')

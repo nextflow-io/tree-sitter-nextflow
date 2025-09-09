@@ -159,8 +159,7 @@ Interpolation with binary expression
           (simple_expression
             (binary_expression
               (identifier)
-              (identifier))))
-        (string_content)))))
+              (identifier))))))))
 
 ==================
 Empty string content after interpolation

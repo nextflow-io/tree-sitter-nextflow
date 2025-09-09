@@ -187,7 +187,8 @@ if (aligner == 'bowtie2') {
           (function_call
             (identifier)
             (simple_expression
-              (string_literal))))))
+              (interpolated_string
+                (string_content)))))))
     (else_if_clause
       (simple_expression
         (binary_expression
@@ -199,7 +200,8 @@ if (aligner == 'bowtie2') {
             (function_call
               (identifier)
               (simple_expression
-                (string_literal)))))))
+                (interpolated_string
+                  (string_content))))))))
     (else_clause
       (block
         (expression_statement
@@ -207,7 +209,8 @@ if (aligner == 'bowtie2') {
             (function_call
               (identifier)
               (simple_expression
-                (string_literal)))))))))
+                (interpolated_string
+                  (string_content))))))))))
 
 ==================
 Environment variables with env function
@@ -227,11 +230,9 @@ println("PWD = ${env('PWD')}")
             (string_content)
             (interpolation
               (simple_expression
-                (function_call
-                  (identifier)
+                (env_function
                   (simple_expression
-                    (string_literal)))))
-            (string_content)))))))
+                    (string_literal)))))))))))
 
 ==================
 Slashy string regex without interpolation
@@ -273,11 +274,15 @@ def cmd = """
     (simple_expression
       (interpolated_triple_quoted_string
         (string_content)
-        (interpolation
-          (simple_expression
-            (identifier)))
+        (escape_sequence)
         (string_content)
         (interpolation
           (simple_expression
             (identifier)))
+        (escape_sequence)
+        (string_content)
+        (interpolation
+          (simple_expression
+            (identifier)))
+        (escape_sequence)
         (string_content)))))
