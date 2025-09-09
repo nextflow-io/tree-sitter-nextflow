@@ -1085,7 +1085,7 @@
     },
     "binary_expression": {
       "type": "PREC_LEFT",
-      "value": 1,
+      "value": 3,
       "content": {
         "type": "SEQ",
         "members": [
@@ -1114,6 +1114,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "dotted_identifier"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "interpolated_string"
                 },
                 {
                   "type": "SYMBOL",
@@ -1232,6 +1236,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "dotted_identifier"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "interpolated_string"
                 },
                 {
                   "type": "SYMBOL",
@@ -1776,17 +1784,8 @@
           ]
         },
         {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "simple_expression"
-            },
-            {
-              "type": "SYMBOL",
-              "name": "block"
-            }
-          ]
+          "type": "SYMBOL",
+          "name": "closure_block"
         },
         {
           "type": "STRING",
@@ -1795,8 +1794,42 @@
       ]
     },
     "closure_parameter": {
-      "type": "SYMBOL",
-      "name": "identifier"
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "identifier"
+      },
+      "named": false,
+      "value": "parameter"
+    },
+    "closure_block": {
+      "type": "ALIAS",
+      "content": {
+        "type": "REPEAT1",
+        "content": {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "expression_statement"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "variable_declaration"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "assignment"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "if_statement"
+            }
+          ]
+        }
+      },
+      "named": false,
+      "value": "block"
     },
     "command_expression": {
       "type": "PREC",
@@ -1914,6 +1947,18 @@
               {
                 "type": "SYMBOL",
                 "name": "dotted_identifier"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "list"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "interpolated_string"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "parenthesized_expression"
               }
             ]
           },
@@ -2155,7 +2200,7 @@
               "members": [
                 {
                   "type": "PATTERN",
-                  "value": "[bfnrst\\\\'\"\\n]"
+                  "value": "[bfnrst\\\\'\"\\n.]"
                 },
                 {
                   "type": "PATTERN",

@@ -432,13 +432,14 @@ module.exports = grammar({
     // 3. Pattern matching: =~, !~ (regex operators)
     // 4. Range: .., ..< (Groovy range operators) 
     // 5. Logical: &&, || (short-circuiting)
-    binary_expression: $ => prec.left(1, seq(
+    binary_expression: $ => prec.left(3, seq(
       field('left', choice(
         $.identifier,
         $.string_literal, 
         $.integer_literal,
         $.boolean_literal,
         $.dotted_identifier,
+        $.interpolated_string,
         $.parenthesized_expression,
         $.binary_expression
       )),
@@ -455,6 +456,7 @@ module.exports = grammar({
         $.integer_literal, 
         $.boolean_literal,
         $.dotted_identifier,
+        $.interpolated_string,
         $.parenthesized_expression,
         $.binary_expression
       ))
@@ -603,16 +605,21 @@ module.exports = grammar({
         commaSep1($.closure_parameter),  // Parameter list: a, b, c
         '->'                             // Arrow separator
       )),
-      choice(
-        $.simple_expression,    // Single expression closure
-        $.block                 // Multi-statement closure block
-      ),
+      $.closure_block,            // Always use block structure
       '}'
     ),
 
     // Closure parameters - simple identifiers
     // Future enhancement: support typed parameters (String x, int y)
-    closure_parameter: $ => $.identifier,
+    closure_parameter: $ => alias($.identifier, 'parameter'),
+    
+    // Block statements inside closure (no braces, closure provides them)
+    closure_block: $ => alias(repeat1(choice(
+      $.expression_statement,
+      $.variable_declaration,
+      $.assignment,
+      $.if_statement
+    )), 'block'),
 
     // Command expressions for function calls (higher precedence)
     command_expression: $ => prec(3, seq(
@@ -637,7 +644,10 @@ module.exports = grammar({
     method_call: $ => prec(7, seq(
       choice(
         $.identifier,                // Simple case: obj.method()
-        $.dotted_identifier         // Complex case: obj.prop.method()
+        $.dotted_identifier,         // Complex case: obj.prop.method()
+        $.list,                      // List method calls: [1,2,3].each { }
+        $.interpolated_string,       // String method calls: "hello".toUpperCase()
+        $.parenthesized_expression   // Parenthesized expressions: (expr).method()
       ),
       '.',
       $.identifier,
@@ -708,7 +718,7 @@ module.exports = grammar({
     escape_sequence: $ => token(prec(1, seq(
       '\\',
       choice(
-        /[bfnrst\\'"\n]/,        // Basic escape sequences
+        /[bfnrst\\'"\n.]/,       // Basic escape sequences + dot for regex
         /u[0-9a-fA-F]{4}/        // Unicode escape sequences
       )
     ))),

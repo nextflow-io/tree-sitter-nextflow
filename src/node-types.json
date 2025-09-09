@@ -47,6 +47,10 @@
             "named": true
           },
           {
+            "type": "interpolated_string",
+            "named": true
+          },
+          {
             "type": "parenthesized_expression",
             "named": true
           },
@@ -156,6 +160,10 @@
           },
           {
             "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "interpolated_string",
             "named": true
           },
           {
@@ -303,34 +311,25 @@
       "required": true,
       "types": [
         {
-          "type": "block",
+          "type": "closure_block",
           "named": true
         },
         {
           "type": "closure_parameter",
-          "named": true
-        },
-        {
-          "type": "simple_expression",
           "named": true
         }
       ]
     }
   },
   {
+    "type": "closure_block",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "closure_parameter",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "identifier",
-          "named": true
-        }
-      ]
-    }
+    "fields": {}
   },
   {
     "type": "command_expression",
@@ -758,6 +757,18 @@
         },
         {
           "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "interpolated_string",
+          "named": true
+        },
+        {
+          "type": "list",
+          "named": true
+        },
+        {
+          "type": "parenthesized_expression",
           "named": true
         },
         {
@@ -1592,6 +1603,10 @@
   },
   {
     "type": "output:",
+    "named": false
+  },
+  {
+    "type": "parameter",
     "named": false
   },
   {
