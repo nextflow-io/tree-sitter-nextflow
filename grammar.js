@@ -473,7 +473,10 @@ module.exports = grammar({
     // Map literals
     map: $ => seq(
       '[',
-      commaSep($.map_entry),
+      choice(
+        ':',                        // Empty map: [:]
+        commaSep($.map_entry)       // Normal map: [key: value, ...]
+      ),
       ']'
     ),
 
