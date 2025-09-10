@@ -36,10 +36,10 @@ Process error handling
 process errorExample {
     errorStrategy 'retry'
     maxRetries 3
-    
+
     input:
     val x
-    
+
     script:
     """
     if [ \$x -lt 0 ]; then
@@ -70,7 +70,7 @@ process withErrorDirectives {
     errorStrategy { task.exitStatus == 1 ? 'retry' : 'terminate' }
     maxErrors 5
     maxRetries 3
-    
+
     script:
     """
     echo "doing work"
@@ -87,4 +87,4 @@ process withErrorDirectives {
       (directive)
       (directive))
     (script_block
-      (script_content)))) 
+      (script_content))))

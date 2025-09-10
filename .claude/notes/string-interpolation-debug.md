@@ -9,17 +9,17 @@ println("Hello ${name}!")
 
 ### Current Parsing Behavior
 ```
-✅ (string_content [0, 9] - [0, 15])     // "Hello " 
+✅ (string_content [0, 9] - [0, 15])     // "Hello "
 ✅ (interpolation [0, 15] - [0, 22])     // "${name}"
 ❌ (ERROR [0, 22] - [0, 24])             // "!" - should be string_content
 ```
 
-### Character Position Analysis  
+### Character Position Analysis
 ```
 println("Hello ${name}!")
 0123456789012345678901234567
 ```
-- Position 22: `!`  
+- Position 22: `!`
 - Position 23: `"` (closing quote)
 - ERROR at 22-24: Parser can't handle `!"` as `string_content` + string termination
 
@@ -30,10 +30,10 @@ println("Hello ${name}!")
 echo '"Hello ${name} world"' | tree-sitter parse  # " world" parses as string_content
 ```
 
-#### ❌ Fails (Single/few characters) 
-```bash  
+#### ❌ Fails (Single/few characters)
+```bash
 echo '"Hello ${name}!"'      # "!" fails
-echo '"Hello ${name}!!"'     # "!!" fails  
+echo '"Hello ${name}!!"'     # "!!" fails
 echo '"Hello ${name} x"'     # Need to test this
 ```
 
@@ -57,7 +57,7 @@ escape_sequence: $ => token(prec(1, seq('\\', choice(/[bfnrst\\'"\n]/, /u[0-9a-f
 
 ### Pattern Analysis
 - **Regex**: `/[^$"\\]+/` should match `!` (not $, ", or \)
-- **Precedence**: `prec(1)` should handle conflicts  
+- **Precedence**: `prec(1)` should handle conflicts
 - **Token Immediate**: Should handle context after interpolation
 
 ## Hypotheses
@@ -66,12 +66,12 @@ escape_sequence: $ => token(prec(1, seq('\\', choice(/[bfnrst\\'"\n]/, /u[0-9a-f
 **Theory**: `token.immediate()` might not work correctly after interpolation ends
 **Test**: Try without `token.immediate()` wrapper
 
-### 2. Lexer State Confusion  
+### 2. Lexer State Confusion
 **Theory**: After `${...}` ends, lexer may not return to string context properly
 **Test**: Check if issue exists with other characters besides `!`
 
 ### 3. Alias Pattern Issue
-**Theory**: `alias(token.immediate(...), $.string_content)` might cause recursion  
+**Theory**: `alias(token.immediate(...), $.string_content)` might cause recursion
 **Test**: Try simpler `string_content` definition
 
 ## Next Debugging Steps
@@ -79,7 +79,7 @@ escape_sequence: $ => token(prec(1, seq('\\', choice(/[bfnrst\\'"\n]/, /u[0-9a-f
 ### 1. Test Character Variations
 ```bash
 echo '"${x}a"' | tree-sitter parse    # Test 'a' after interpolation
-echo '"${x}ab"' | tree-sitter parse   # Test 'ab' after interpolation  
+echo '"${x}ab"' | tree-sitter parse   # Test 'ab' after interpolation
 echo '"${x}123"' | tree-sitter parse  # Test numbers after interpolation
 ```
 
@@ -100,12 +100,12 @@ echo 'println("Hello ${name}!")' | tree-sitter parse  # Test reference implement
 ### Option 1: Copy Exact Reference Pattern
 Use the exact reference grammar implementation with all their complexity
 
-### Option 2: Simplified Approach for v2  
+### Option 2: Simplified Approach for v2
 Since we're targeting strict syntax, maybe avoid complex token.immediate patterns:
 ```javascript
 interpolated_string: $ => seq(
-  '"', 
-  /[^"]*\$\{/, $.simple_expression, /\}[^"]*/, 
+  '"',
+  /[^"]*\$\{/, $.simple_expression, /\}[^"]*/,
   '"'
 )
 ```
@@ -115,7 +115,7 @@ Consider using external scanner for string content like some complex grammars do
 
 ## Current Status: 95% Working
 - ✅ Basic interpolation structure recognized
-- ✅ `${variable}` parsing works  
+- ✅ `${variable}` parsing works
 - ✅ String content before interpolation works
 - ❌ String content after interpolation fails (edge case)
 

@@ -170,7 +170,7 @@ If-else instead of switch
 if (aligner == 'bowtie2') {
     println("Using bowtie2")
 } else if (aligner == 'bwamem') {
-    println("Using bwamem") 
+    println("Using bwamem")
 } else {
     println("Unknown aligner")
 }

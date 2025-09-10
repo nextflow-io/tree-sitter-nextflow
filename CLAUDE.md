@@ -33,7 +33,7 @@ This is a tree-sitter grammar for the Nextflow workflow language. Tree-sitter is
 
 **grammar.js** - The main grammar definition file that defines Nextflow language syntax rules. This uses tree-sitter's JavaScript DSL to specify:
 - Nextflow-specific constructs (processes, workflows, includes)
-- Groovy-based expressions and control structures  
+- Groovy-based expressions and control structures
 - String interpolation patterns
 - Channel operations and DSL2 features
 
@@ -47,7 +47,7 @@ This is a tree-sitter grammar for the Nextflow workflow language. Tree-sitter is
 ### Language Bindings
 
 **bindings/node/** - Node.js bindings for npm package
-**bindings/rust/** - Rust crate bindings  
+**bindings/rust/** - Rust crate bindings
 **bindings/c/** - C library headers
 
 ### Generated Files
@@ -102,7 +102,7 @@ Test files in `test/corpus/` are organized by feature and complexity level in su
 - `dsl2_features.txt` - DSL2-specific language constructs
 
 ### `string_interpolation/` - String Processing
-- `string_interpolation.txt` - GString features and interpolation patterns  
+- `string_interpolation.txt` - GString features and interpolation patterns
 - `string_interpolation_debug.txt` - Edge cases and debugging scenarios
 
 ### `advanced/` - Complex Features (Can be `:skip`)
@@ -156,7 +156,7 @@ tree-sitter test 2>/dev/null | grep -E "✗|✓|⌀|failures:" | head -20
 tree-sitter test 2>/dev/null | grep -E "✗|✓|⌀" | cut -c7-9 | sort | uniq -c
 ```
 
-**3. Test Specific Files and Directories**  
+**3. Test Specific Files and Directories**
 ```bash
 # Test only specific corpus files (much faster iteration)
 tree-sitter test --file-name variable_declarations.txt
@@ -175,7 +175,7 @@ tree-sitter test --file-name strict_syntax_v2.txt -u  # Update modern syntax tes
 ```bash
 # Priority development order for new agents:
 tree-sitter test --file-name strict_syntax_v2.txt          # 1. Modern features (100% passing)
-tree-sitter test --file-name process_definition.txt        # 2. Core DSL2 features  
+tree-sitter test --file-name process_definition.txt        # 2. Core DSL2 features
 tree-sitter test --file-name workflow_definition.txt       # 3. Workflow syntax
 tree-sitter test --file-name string_interpolation.txt      # 4. String processing
 
@@ -196,7 +196,7 @@ tree-sitter generate >/dev/null 2>&1 && echo "✓ Generation OK" || echo "✗ Ge
 
 **6. Test Development Workflow**
 1. **Enable single test**: Remove `:skip` from one test case
-2. **Target test**: `tree-sitter test --file-name <specific_file.txt>`  
+2. **Target test**: `tree-sitter test --file-name <specific_file.txt>`
 3. **Fix grammar**: Edit `grammar.js` based on error output
 4. **Regenerate**: `tree-sitter generate`
 5. **Retest**: Repeat step 2
@@ -208,7 +208,7 @@ tree-sitter generate >/dev/null 2>&1 && echo "✓ Generation OK" || echo "✗ Ge
 ```bash
 # Track progression over time
 tree-sitter test 2>/dev/null | grep -c "✓.*32m" # Count passing
-tree-sitter test 2>/dev/null | grep -c "✗.*31m" # Count failing  
+tree-sitter test 2>/dev/null | grep -c "✗.*31m" # Count failing
 tree-sitter test 2>/dev/null | grep -c "⌀.*33m" # Count skipped
 ```
 
@@ -220,7 +220,7 @@ For comprehensive TreeSitter grammar development patterns, debugging techniques,
 
 Key insights include:
 - Precedence conflict resolution strategies
-- Binary expression extension patterns  
+- Binary expression extension patterns
 - String interpolation architecture
 - Method call and closure implementation
 - AST node aliasing techniques

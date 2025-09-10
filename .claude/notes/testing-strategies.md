@@ -7,7 +7,7 @@
 # Concise test summary
 tree-sitter test 2>/dev/null | grep -E "✗|✓|⌀|failures:" | head -20
 
-# Count by status type  
+# Count by status type
 tree-sitter test 2>/dev/null | grep "✓" | wc -l  # Passing
 tree-sitter test 2>/dev/null | grep "✗" | wc -l  # Failing
 tree-sitter test 2>/dev/null | grep "⌀" | wc -l  # Skipped
@@ -42,7 +42,7 @@ tree-sitter parse --show-fields < test.nf
 ### 1. Enable Single Test
 Remove `:skip` from one test case at a time
 
-### 2. Target Test  
+### 2. Target Test
 ```bash
 tree-sitter test --file-name <specific_file.txt>
 ```
@@ -94,7 +94,7 @@ new_rule: $ => prec(N, seq(/* rule definition */))
 - `closures.txt` - 4 tests, essential for Nextflow DSL
 - `control_structures.txt` - 6 tests, program logic
 
-### Medium Impact (DSL Features) 
+### Medium Impact (DSL Features)
 - `channel_operations.txt` - 7 tests, Nextflow-specific
 - `workflow_definition.txt` - 4 tests, core construct
 - `data_structures.txt` - 3 tests, collections
@@ -140,12 +140,12 @@ diff_test() {
 
 ### Don't Do These (Token Waste)
 - `tree-sitter test` without `--file-name` (parses everything)
-- Full error output without `head` limits  
+- Full error output without `head` limits
 - Reading entire corpus files when debugging single tests
 - Regenerating parser without checking generation success first
 
 ### Do These Instead
 - Target specific failing tests with `--file-name`
 - Use `grep` patterns to extract relevant error sections
-- Test individual expressions with `echo | tree-sitter parse`  
+- Test individual expressions with `echo | tree-sitter parse`
 - Check generation success before running tests

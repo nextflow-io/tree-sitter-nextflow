@@ -8,7 +8,7 @@
 ;; Process definitions
 (process_definition
   name: (identifier) @name) @definition.method
-  
+
 ;; Workflow definitions
 (workflow_definition
   name: (identifier) @name) @definition.function
@@ -29,7 +29,7 @@
 (simple_statement
   (identifier) @name) @reference.call
 
-;; Method calls on channels and objects  
+;; Method calls on channels and objects
 (method_call
   method: (identifier) @name) @reference.call
 

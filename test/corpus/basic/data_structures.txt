@@ -81,4 +81,4 @@ intersection = set1.intersect(set2)
     (binary_expression))
   (assignment
     (identifier)
-    (method_call))) 
+    (method_call)))

@@ -68,10 +68,10 @@ Complete process definition
 process FASTQC {
     input:
     path reads;
-    
+
     output:
     path "fastqc_*";
-    
+
     script:
     """fastqc $reads"""
 }

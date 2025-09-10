@@ -25,11 +25,11 @@ workflow ALIGN_READS {
     take:
     reads
     index
-    
+
     main:
     BWA_ALIGN(reads, index)
     SAMTOOLS_SORT(BWA_ALIGN.out)
-    
+
     emit:
     bam = SAMTOOLS_SORT.out.bam
 }
@@ -52,7 +52,7 @@ workflow {
     FASTQC(reads)
     BWA_INDEX(reference)
     BWA_ALIGN(reads, BWA_INDEX.out.index)
-    
+
     emit:
     fastqc_html = FASTQC.out.html
     bam = BWA_ALIGN.out.bam
@@ -63,4 +63,4 @@ workflow {
 (source_file
   (workflow_definition
     (workflow_body)
-    (workflow_emit))) 
+    (workflow_emit)))

@@ -81,11 +81,11 @@ workflow {
     take:
     reads
     reference
-    
+
     main:
     ALIGN(reads, reference)
     CALL_VARIANTS(ALIGN.out)
-    
+
     emit:
     variants = CALL_VARIANTS.out
 }

@@ -11,7 +11,7 @@ Implement Nextflow/Groovy string interpolation (`"Hello ${variable}!"`) in tree-
 - `string_content` before interpolation
 - Basic variable interpolation: `"Hello ${name}"` ✅
 
-### ❌ Issues  
+### ❌ Issues
 - `string_content` after interpolation fails
 - Example: `"Hello ${name}!"` - the `!"` part generates ERROR
 - Token positions 22-24 in `"Hello ${name}!"` not parsing
@@ -67,7 +67,7 @@ interpolated_string: $ => seq(
 string_content: $ => /[^$\\"\n]+/, // Remove our current token.immediate wrapper
 ```
 
-### Option 2: Add Escape Sequence Support  
+### Option 2: Add Escape Sequence Support
 Add missing escape sequence handling:
 ```javascript
 escape_sequence: $ => token(prec(1, seq(
@@ -106,7 +106,7 @@ escape_sequence: $ => token(prec(1, seq(
 ```bash
 # Test specific interpolation patterns
 echo '"Hello ${name}!"' | tree-sitter parse
-echo '"${variable}"' | tree-sitter parse  
+echo '"${variable}"' | tree-sitter parse
 echo '"text ${expr} more"' | tree-sitter parse
 
 # Debug with detailed parsing logs

@@ -73,4 +73,4 @@ if( "foo bar" =~ pattern ) {
   (if_statement
     (binary_expression)
     (block
-      (expression_statement)))) 
+      (expression_statement))))

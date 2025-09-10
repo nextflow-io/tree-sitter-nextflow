@@ -7,7 +7,7 @@
 **Rationale**: Previous complex grammar had unresolvable conflicts
 **Result**: Clean foundation, 28/80 tests passing, zero generation conflicts
 
-### Language Injection Priority ✅  
+### Language Injection Priority ✅
 **Decision**: Maintain bash/shell syntax highlighting throughout all changes
 **Implementation**: `queries/injections.scm` with `@injection.content` captures
 **Result**: Preserved through complete grammar rewrite and feature additions
@@ -19,7 +19,7 @@
 ```javascript
 simple_expression: $ => choice(
   $.binary_expression,
-  $.function_call, 
+  $.function_call,
   $.list, $.map,
   $.identifier,
   // ... all expression types
@@ -29,7 +29,7 @@ simple_expression: $ => choice(
 **Alternative**: Layered approach from reference grammars
 ```javascript
 _expression: $ => choice(/* top level */),
-_callable_expression: $ => choice(/* callable things */),  
+_callable_expression: $ => choice(/* callable things */),
 _primary_expression: $ => choice(/* atomic expressions */)
 ```
 
@@ -102,7 +102,7 @@ interpolated_string: $ => seq('"', repeat(choice(  // With ${...}
 ### Test-Driven Feature Development ✅
 1. Identify failing test
 2. Implement minimal grammar support
-3. Update test expectations to match grammar output  
+3. Update test expectations to match grammar output
 4. Verify test passes
 5. Commit incremental progress
 
@@ -132,7 +132,7 @@ interpolated_string: $ => seq('"', repeat(choice(  // With ${...}
 **Solution**: Adopt reference grammar's expression hierarchy
 **Timeline**: After string interpolation completion
 
-#### Precedence → Named Constants  
+#### Precedence → Named Constants
 **Trigger**: When operator precedence tests consistently fail
 **Solution**: Implement PREC constant system
 **Timeline**: Next major refactoring phase
@@ -150,7 +150,7 @@ interpolated_string: $ => seq('"', repeat(choice(  // With ${...}
 - ✅ Clean incremental feature additions
 - ✅ Test expectations aligned with grammar
 
-### Development Velocity  
+### Development Velocity
 - ✅ Features added without breaking existing functionality
 - ✅ Clear progression: 21 → 28 passing tests
 - ✅ Efficient debugging through targeted testing

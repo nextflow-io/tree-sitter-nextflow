@@ -13,7 +13,7 @@ Line comment
 Block comment
 ==================
 
-/* This is a 
+/* This is a
    block comment */
 
 ---

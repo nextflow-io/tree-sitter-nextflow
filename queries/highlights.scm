@@ -55,7 +55,7 @@
 (process_definition
   name: (identifier) @function)
 
-;; Workflow definitions  
+;; Workflow definitions
 (workflow_definition
   name: (identifier) @function)
 
@@ -79,7 +79,7 @@
 (identifier) @variable
 
 ;; ========================================
-;; OPERATORS AND PUNCTUATION  
+;; OPERATORS AND PUNCTUATION
 ;; ========================================
 
 ;; Assignment operators

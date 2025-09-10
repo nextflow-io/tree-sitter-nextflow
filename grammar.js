@@ -3,14 +3,14 @@
  * @author Edmund Miller <edmund@nf-co.re>
  * @author Ben Sherman <bentshermann@gmail.com>
  * @license MIT
- * 
+ *
  * GRAMMAR ARCHITECTURE & DESIGN DECISIONS
  * =====================================
- * 
+ *
  * This grammar implements a complete parser for the Nextflow workflow language,
  * which is built on Groovy with domain-specific extensions for bioinformatics
  * workflows. Key design principles:
- * 
+ *
  * 1. EXPRESSION PRECEDENCE HIERARCHY (lowest to highest):
  *    - Binary expressions (1): arithmetic, comparison, logical
  *    - Pipe expressions (2): channel operations like `| map { }`
@@ -19,35 +19,35 @@
  *    - Method calls (5): object.method() chains
  *    - Dotted identifiers (6): property access chains
  *    - Interpolated strings (10): GString expressions "${expr}"
- * 
+ *
  * 2. CONFLICT RESOLUTION:
  *    - [$.list, $.map]: Both use `[...]` syntax, resolved by content analysis
  *    - Lists contain expressions: `[1, 2, 3]`
  *    - Maps contain key:value pairs: `[key: value]`
- * 
+ *
  * 3. NEXTFLOW-SPECIFIC FEATURES:
  *    - Process definitions with script injection points for language servers
  *    - Channel operations with specialized pipe syntax
  *    - GString interpolation: `$var`, `${expr}`, `$var.property`
  *    - Multiple script types: script:, shell:, exec:, stub:
  *    - Feature flags: nextflow.enable.dsl=2
- * 
+ *
  * 4. LANGUAGE INJECTION SUPPORT:
  *    - script_content nodes enable Bash/shell highlighting in editors
  *    - Triple-quoted strings support heredoc syntax
  *    - Interpolation enables Nextflow expression highlighting within strings
- * 
+ *
  * 5. GROOVY COMPATIBILITY:
  *    - Supports Groovy expressions, closures, and data structures
  *    - Handles method chaining and property access
  *    - Implements GString interpolation patterns
- * 
+ *
  * TESTING STRATEGY:
  * - Use `tree-sitter test` to run comprehensive corpus tests
  * - Test individual expressions: `echo 'code' | tree-sitter parse`
  * - Update expectations: `tree-sitter test --update`
  * - Focus testing: `tree-sitter test --file-name specific_test.txt`
- * 
+ *
  * EXTENSION POINTS:
  * - Add new Nextflow operators to pipe_operation choices
  * - Extend channel_expression for new Channel factories
@@ -76,7 +76,7 @@ module.exports = grammar({
   // [$.list, $.map] - BRACKET AMBIGUITY:
   // Both lists and maps use square bracket syntax: [...]
   // - Lists: [1, 2, 3]           (comma-separated expressions)
-  // - Maps:  [key: value]        (colon-separated key-value pairs)  
+  // - Maps:  [key: value]        (colon-separated key-value pairs)
   // - Empty: []                  (could be either, defaults to empty list)
   //
   // Resolution strategy:
@@ -112,7 +112,7 @@ module.exports = grammar({
 
     // CORE NEXTFLOW LANGUAGE CONSTRUCTS
     // =================================
-    
+
     // Shebang line support for executable Nextflow scripts
     // Matches: #!/usr/bin/env nextflow
     shebang: $ => token(seq('#!', /.*/)),
@@ -128,7 +128,7 @@ module.exports = grammar({
     ),
 
     // Module inclusion with optional aliasing
-    // Examples: 
+    // Examples:
     //   include { processName } from './modules/process.nf'
     //   include { processName as myProcess } from './lib.nf'
     // Critical for Nextflow module system and code organization
@@ -161,7 +161,7 @@ module.exports = grammar({
 
     // PROCESS DEFINITIONS - CORE NEXTFLOW CONSTRUCT
     // ============================================
-    
+
     // Process definition: the fundamental unit of computation in Nextflow
     // Example:
     //   process EXAMPLE {
@@ -184,7 +184,7 @@ module.exports = grammar({
     ),
 
     // Input declarations specify process parameters and channels
-    // Examples: 
+    // Examples:
     //   input: val x           - simple value input
     //   input: path "*.txt"    - file path input
     //   input: env SAMPLE_ID   - environment variable
@@ -199,20 +199,20 @@ module.exports = grammar({
       $.string_literal,
       $.identifier
     )),
-    
+
     // Output declarations specify what the process produces
     // Examples:
     //   output: path "*.txt"   - file outputs
     //   output: stdout         - standard output
     output_declaration: $ => seq('output:', repeat1($.simple_statement)),
-    
+
     // Conditional execution guard for processes
     // Example: when: params.run_analysis
     when_declaration: $ => seq('when:', $.simple_expression),
 
     // SCRIPT DECLARATIONS - CRITICAL FOR LANGUAGE INJECTION
     // =====================================================
-    
+
     // Script types define different execution contexts:
     // - script: Standard Nextflow script (default)
     // - shell:  Bash shell script with special variable handling
@@ -233,7 +233,7 @@ module.exports = grammar({
 
     // WORKFLOW DEFINITIONS - ORCHESTRATION LAYER
     // ==========================================
-    
+
     // Workflow definition: orchestrates processes and defines data flow
     // Examples:
     //   workflow { ... }                    - main/default workflow
@@ -253,7 +253,7 @@ module.exports = grammar({
     workflow_body: $ => repeat1(choice(
       $.workflow_input,       // take: param1 param2 (input parameters)
       $.workflow_main,        // main: workflow_logic (main execution block)
-      $.workflow_emit,        // emit: output (output declarations) 
+      $.workflow_emit,        // emit: output (output declarations)
       $.expression_statement, // Process calls, channel operations
       $.assignment,           // Variable assignments: x = PROCESS(y)
       $.variable_declaration  // Typed declarations: def String result = ...
@@ -306,11 +306,11 @@ module.exports = grammar({
 
     // VARIABLE DECLARATIONS & ASSIGNMENTS
     // ===================================
-    
+
     // Variable declarations with optional type annotations
     // Examples:
     //   def x = 5                    - simple variable
-    //   def String name = "test"     - typed variable  
+    //   def String name = "test"     - typed variable
     //   def (a, b) = [1, 2]          - destructuring assignment
     //   def (String x, int y) = fn() - typed destructuring
     variable_declaration: $ => seq(
@@ -355,12 +355,12 @@ module.exports = grammar({
     // Examples: process calls, println statements, channel operations
     expression_statement: $ => $.simple_expression,
 
-    // Control structures  
+    // Control structures
     assert_statement: $ => seq(
       'assert',
       $.simple_expression
     ),
-    
+
     if_statement: $ => seq(
       'if',
       '(',
@@ -403,7 +403,7 @@ module.exports = grammar({
 
     // EXPRESSION HIERARCHY - COMPREHENSIVE NEXTFLOW EXPRESSIONS
     // =========================================================
-    
+
     // Main expression entry point - handles all Nextflow expression types
     // Ordered roughly by frequency of use in typical workflows
     simple_expression: $ => choice(
@@ -430,18 +430,18 @@ module.exports = grammar({
 
     // BINARY EXPRESSIONS - PRECEDENCE LEVEL 1 (LOWEST)
     // =================================================
-    
+
     // Binary operations with left associativity
     // Precedence groups (highest to lowest within binary expressions):
     // 1. Arithmetic: **, *, /, %, +, -
     // 2. Comparison: ==, !=, <, >, <=, >=
     // 3. Pattern matching: =~, !~ (regex operators)
-    // 4. Range: .., ..< (Groovy range operators) 
+    // 4. Range: .., ..< (Groovy range operators)
     // 5. Logical: &&, || (short-circuiting)
     binary_expression: $ => prec.left(3, seq(
       field('left', choice(
         $.identifier,
-        $.string_literal, 
+        $.string_literal,
         $.integer_literal,
         $.boolean_literal,
         $.dotted_identifier,
@@ -452,14 +452,14 @@ module.exports = grammar({
       field('operator', choice(
         '+', '-', '*', '/', '%', '**',        // Arithmetic operators
         '==', '!=', '<', '>', '<=', '>=',     // Comparison operators
-        '&&', '||',                           // Logical operators  
+        '&&', '||',                           // Logical operators
         '..', '..<',                          // Range operators (Groovy)
         '=~', '!~'                            // Pattern matching (regex)
       )),
       field('right', choice(
         $.identifier,
         $.string_literal,
-        $.integer_literal, 
+        $.integer_literal,
         $.boolean_literal,
         $.dotted_identifier,
         $.interpolated_string,
@@ -471,7 +471,7 @@ module.exports = grammar({
     // Parenthesized expressions
     parenthesized_expression: $ => seq('(', $.simple_expression, ')'),
 
-    // List literals  
+    // List literals
     list: $ => seq(
       '[',
       commaSep($.simple_expression),
@@ -496,7 +496,7 @@ module.exports = grammar({
 
     // CHANNEL OPERATIONS - NEXTFLOW DATA FLOW SYSTEM
     // ==============================================
-    
+
     // Channel expressions create data streams for workflow processing
     // Channels are the fundamental data structure for connecting processes
     channel_expression: $ => choice(
@@ -552,17 +552,17 @@ module.exports = grammar({
 
     // PIPE EXPRESSIONS - PRECEDENCE LEVEL 2
     // =====================================
-    
+
     // Pipe operations transform channels using functional programming patterns
     // Higher precedence than binary expressions to ensure correct parsing:
     //   Channel.of(1,2,3) | map { it * 2 } | filter { it > 2 }
-    // 
+    //
     // CRITICAL: Precedence level 2 ensures pipes bind tighter than arithmetic:
     //   x + ch | map { it } is parsed as x + (ch | map { it })
     pipe_expression: $ => prec.left(2, seq(
       choice(
         $.channel_expression,       // Channel.of() | map
-        $.parenthesized_expression, // (expr) | map  
+        $.parenthesized_expression, // (expr) | map
         $.list,                     // [1,2,3] | map
         $.map,                      // [a:1] | map
         $.identifier,               // myChannel | map
@@ -594,7 +594,7 @@ module.exports = grammar({
 
     // GROOVY CLOSURES - FUNCTIONAL PROGRAMMING CONSTRUCTS
     // ===================================================
-    
+
     // Closure syntax: { param -> expression } or { expression }
     // Used extensively in Nextflow for channel operations and process definitions
     // Examples:
@@ -618,7 +618,7 @@ module.exports = grammar({
     // Closure parameters - simple identifiers
     // Future enhancement: support typed parameters (String x, int y)
     closure_parameter: $ => alias($.identifier, 'parameter'),
-    
+
     // Block statements inside closure (no braces, closure provides them)
     closure_block: $ => alias(repeat1(choice(
       $.expression_statement,
@@ -678,7 +678,7 @@ module.exports = grammar({
 
     // STRING LITERALS & INTERPOLATION SYSTEM
     // ======================================
-    
+
     // Plain string literals (no interpolation) - SINGLE QUOTES ONLY
     // Note: In Groovy/Nextflow, double-quoted strings are always GStrings (interpolated_string)
     // Single quotes: 'literal text' (never interpolated)
@@ -686,11 +686,11 @@ module.exports = grammar({
 
     // GSTRING INTERPOLATION - PRECEDENCE LEVEL 10 (HIGHEST)
     // =====================================================
-    
+
     // Interpolated strings (GString) - Nextflow's template strings
     // Examples:
     //   "Hello $name"           - Variable interpolation
-    //   "Result: ${x + y}"      - Expression interpolation  
+    //   "Result: ${x + y}"      - Expression interpolation
     //   "$obj.property"         - Property access
     //   "File: $params.input"   - Nested property access
     interpolated_string: $ => seq(
@@ -698,7 +698,7 @@ module.exports = grammar({
       repeat(choice(
         $.string_content,       // Plain text content (moved first)
         $.escape_sequence,      // Escaped characters: \n, \t, etc.
-        $.interpolation         // $var or ${expr} patterns 
+        $.interpolation         // $var or ${expr} patterns
       )),
       '"'
     ),
@@ -730,7 +730,7 @@ module.exports = grammar({
     ))),
 
     // Slashy strings for regex patterns (Groovy feature)
-    // Example: /pattern[a-z]+/ 
+    // Example: /pattern[a-z]+/
     // Note: No interpolation in strict syntax mode for security
     slashy_string: $ => seq('/', /[^\/]+/, '/'),
 
@@ -751,7 +751,7 @@ module.exports = grammar({
     ),
 
     // Plain triple-quoted strings (heredoc without interpolation)
-    // Single quotes: '''literal text''' (never interpolated) 
+    // Single quotes: '''literal text''' (never interpolated)
     // Double quotes: """literal text""" (only if no $ present)
     // Regex explanation: ([^"]|"[^"]|""[^"])* matches any sequence avoiding """
     triple_quoted_string: $ => choice(
@@ -761,17 +761,17 @@ module.exports = grammar({
 
     // PRIMITIVE LITERALS & TOKENS
     // ===========================
-    
+
     // Integer literals - supports decimal numbers
     // Regex: \d+ matches one or more digits: 0, 42, 1234
     // Future enhancement: support hex (0xFF), octal (0777), binary (0b1010)
     integer_literal: $ => /\d+/,
-    
-    // Boolean literals - standard true/false keywords  
+
+    // Boolean literals - standard true/false keywords
     boolean_literal: $ => choice('true', 'false'),
-    
+
     // Identifier pattern - standard programming language identifiers
-    // Regex: [a-zA-Z_][a-zA-Z0-9_]* 
+    // Regex: [a-zA-Z_][a-zA-Z0-9_]*
     // - Must start with letter or underscore: a, _var, MyClass
     // - Can contain letters, digits, underscores: var1, my_variable, CLASS_NAME
     identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
@@ -780,30 +780,30 @@ module.exports = grammar({
     // =====================================================
     // These aliases maintain compatibility with existing test corpus
     // that expects generic 'string', 'number', 'boolean' node types
-    
+
     // Generic string alias (for backwards compatibility)
     string: $ => choice(
       seq("'", /[^']*/, "'"),  // Single quoted: 'text'
       seq('"', /[^"]*/, '"')   // Double quoted: "text" (no interpolation)
     ),
-    
+
     // Generic number alias
     number: $ => /\d+/,
-    
-    // Generic boolean alias  
+
+    // Generic boolean alias
     boolean: $ => choice('true', 'false'),
 
     // COMMENT SYNTAX
     // ==============
-    
+
     // Line comments: // comment text until end of line
     // Regex: /.*/  matches any characters until newline
     line_comment: $ => token(seq('//', /.*/)),
-    
+
     // Block comments: /* comment text */ (can span multiple lines)
     // Complex regex explanation: /[^*]*\*+([^/*][^*]*\*+)*/
     // - [^*]*: any chars except *
-    // - \*+: one or more * characters  
+    // - \*+: one or more * characters
     // - ([^/*][^*]*\*+)*: zero or more groups of:
     //   - [^/*]: char that's not / or *
     //   - [^*]*: any chars except *
@@ -832,7 +832,7 @@ function commaSep1(rule) {
   );
 }
 
-// Comma-separated list with zero or more elements (optional comma separation)  
+// Comma-separated list with zero or more elements (optional comma separation)
 // Usage: commaSep($.simple_expression) -> "" or "a" or "a, b, c"
 // Pattern: (rule (, rule)* ,?)?
 // Examples:

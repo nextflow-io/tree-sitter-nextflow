@@ -10,21 +10,21 @@
 
 ### Phase 1: Foundation (Grammar Rewrite)
 - Complete grammar rewrite to eliminate all conflicts
-- Minimal viable parser architecture 
+- Minimal viable parser architecture
 - Language injection preservation
 - 10/10 core tests passing
 
 ### Phase 2: Variable Declarations (5 → 5 tests)
 - Binary expressions with arithmetic operators
 - Assignment statements (x = 42)
-- List literals ([1, 2, 3])  
+- List literals ([1, 2, 3])
 - Map literals ([key: value])
 - Channel expressions (Channel.from())
 - **Result**: All variable declaration tests passing
 
 ### Phase 3: Expression System (+7 tests)
 - Binary operators: +, -, *, /, %, **, ==, !=, <, >, <=, >=, &&, ||, .., ..<
-- Parenthesized expressions for precedence  
+- Parenthesized expressions for precedence
 - Command expressions (println "text")
 - Function calls (foo("arg"))
 - If/else control structures with blocks
@@ -45,7 +45,7 @@
 
 ### 3. AST-grep Integration (Strategic)
 **Status**: Documentation complete, grammar ready
-**Actions**: 
+**Actions**:
 - Build dynamic library: `tree-sitter build --output nextflow.so`
 - Create `sgconfig.yml` configuration
 - Test integration with sample Nextflow files
@@ -58,9 +58,9 @@
 - **Advanced Closures** (4 tests): Multi-parameter, complex closures
 - **Channel Operations** (7 tests): Remaining pipe operations, advanced methods
 
-### Tier 2: Language Constructs (Medium Impact)  
+### Tier 2: Language Constructs (Medium Impact)
 - **Control Flow** (3 tests): For/while loops, switch statements
-- **Workflow Features** (3 tests): Take/main/emit, process invocations  
+- **Workflow Features** (3 tests): Take/main/emit, process invocations
 - **Data Structures** (3 tests): Ranges, sets, complex collections
 
 ### Tier 3: Advanced Features (Lower Priority)
@@ -106,7 +106,7 @@
 3. **Test-Driven Development**: Enabling tests one by one ensured progress visibility
 4. **Language Injection**: Maintained throughout all changes
 
-### Challenges Overcome  
+### Challenges Overcome
 1. **Grammar Conflicts**: Solved with complete rewrite approach
 2. **Expression Precedence**: Managed through careful precedence assignment
 3. **Test Alignment**: Updated expectations to match grammar structure
@@ -114,5 +114,5 @@
 
 ### Future Considerations
 - **Token Handling**: `token.immediate()` and `alias()` patterns need careful implementation
-- **Conflict Management**: Prefer precedence over conflicts where possible  
+- **Conflict Management**: Prefer precedence over conflicts where possible
 - **Test Organization**: Maintain clear correlation between test files and grammar features

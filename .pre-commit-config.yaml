@@ -1,0 +1,35 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+
+# Tree-sitter specific hooks
+-   repo: local
+    hooks:
+    -   id: tree-sitter-generate
+        name: Generate tree-sitter grammar
+        entry: tree-sitter generate
+        language: system
+        files: ^grammar\.js$
+        pass_filenames: false
+        always_run: false
+    -   id: tree-sitter-build
+        name: Build tree-sitter grammar
+        entry: tree-sitter build
+        language: system
+        files: ^(grammar\.js|src/grammar\.json|src/parser\.c)$
+        pass_filenames: false
+        always_run: false
+    # -   id: tree-sitter-test
+    #     name: Run tree-sitter tests
+    #     entry: tree-sitter test
+    #     language: system
+    #     files: ^(grammar\.js|test/corpus/.*)$
+    #     pass_filenames: false
+    #     always_run: false

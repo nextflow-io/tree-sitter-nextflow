@@ -178,4 +178,4 @@ def text = '''
       (interpolation
         (constructor_call
           (identifier)))
-      (string_content)))) 
+      (string_content))))

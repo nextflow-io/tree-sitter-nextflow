@@ -83,7 +83,7 @@ _interpolate_string: $ => choice(
 string_content: $ => alias(token.immediate(prec(1, /[^$\\"\n]+/)), $.string_content)
 ```
 
-### Medium-term: Precedence Refactoring  
+### Medium-term: Precedence Refactoring
 **Current**: Single precedence levels cause operator precedence issues
 **Solution**: Implement PREC constant system for proper operator precedence
 
