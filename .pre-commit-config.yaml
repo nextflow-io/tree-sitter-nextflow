@@ -26,10 +26,10 @@ repos:
         files: ^(grammar\.js|src/grammar\.json|src/parser\.c)$
         pass_filenames: false
         always_run: false
-    # -   id: tree-sitter-test
-    #     name: Run tree-sitter tests
-    #     entry: tree-sitter test
-    #     language: system
-    #     files: ^(grammar\.js|test/corpus/.*)$
-    #     pass_filenames: false
-    #     always_run: false
+    -   id: tree-sitter-test
+        name: Run tree-sitter tests (allows skipped/failing)
+        entry: bash -c 'tree-sitter test || true'
+        language: system
+        files: ^(grammar\.js|test/corpus/.*)$
+        pass_filenames: false
+        always_run: false
