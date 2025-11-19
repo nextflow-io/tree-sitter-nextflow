@@ -1,0 +1,11 @@
+id: deprecated-channel-from
+language: nextflow
+message: Channel.from() is deprecated in DSL2, use Channel.of() or Channel.fromList() instead
+severity: warning
+note: |
+  DSL2 replaced Channel.from() with more specific factory methods:
+  - Channel.of(1, 2, 3) for creating channels from values
+  - Channel.fromList([1, 2, 3]) for creating from lists
+rule:
+  pattern: Channel.from($$$)
+fix: Channel.of($$$)

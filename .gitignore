@@ -26,6 +26,9 @@ dist/
 *.dll
 *.pc
 
+# Exception: Include ast-grep parser library
+!libnextflow.so
+
 # Example dirs
 /examples/*/
 

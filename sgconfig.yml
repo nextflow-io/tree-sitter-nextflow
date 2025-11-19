@@ -1,0 +1,19 @@
+# AST-Grep Configuration for Nextflow
+# https://ast-grep.github.io/advanced/custom-language.html
+
+ruleDirs:
+  - rules
+
+customLanguages:
+  nextflow:
+    # Path to the compiled tree-sitter parser library
+    # Build with: tree-sitter build --output libnextflow.so
+    libraryPath: libnextflow.so
+
+    # File extensions for Nextflow files
+    extensions: [nf, config]
+
+    # expandoChar: Replace $ with _ in patterns
+    # Since Nextflow uses $ for string interpolation ($var, ${expr}),
+    # use _ in ast-grep patterns instead (e.g., _VAR instead of $VAR)
+    expandoChar: _

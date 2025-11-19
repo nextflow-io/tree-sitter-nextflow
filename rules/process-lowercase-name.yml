@@ -1,0 +1,9 @@
+id: process-lowercase-name
+language: nextflow
+message: Process names should use UPPERCASE or camelCase, not starting with lowercase
+severity: warning
+note: |
+  Nextflow convention is to use UPPERCASE for process names (e.g., FASTQC, TRIMMOMATIC)
+  or camelCase for complex names (e.g., alignReads, quantifyExpression)
+rule:
+  pattern: process $_NAME { $$$ }

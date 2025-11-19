@@ -1,0 +1,9 @@
+id: hardcoded-paths
+language: nextflow
+message: Avoid hardcoded absolute paths, use params or projectDir variables
+severity: warning
+note: |
+  Instead of hardcoding paths like "/data/file.txt",
+  use: params.input_file or file("${projectDir}/data/file.txt")
+rule:
+  pattern: path("$_PATH")
