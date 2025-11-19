@@ -8,4 +8,3 @@ note: |
   - Channel.fromList([1, 2, 3]) for creating from lists
 rule:
   pattern: Channel.from($$$)
-fix: Channel.of($$$)

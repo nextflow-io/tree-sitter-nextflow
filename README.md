@@ -28,15 +28,74 @@ Nextflow grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter).
 
 This grammar includes full [ast-grep](https://ast-grep.github.io/) support for advanced Nextflow code analysis, linting, and refactoring.
 
-### Quick Start
+### Quick Install
 
-The repository is pre-configured for ast-grep. Simply install ast-grep and start using it:
+Install ast-grep support with a single command:
 
 ```bash
-# Install ast-grep (if not already installed)
-npm install --global @ast-grep/cli
-# or: cargo install ast-grep
+curl -fsSL https://raw.githubusercontent.com/nextflow-io/tree-sitter-nextflow/main/scripts/install-ast-grep.sh | bash
+```
 
+For global installation:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nextflow-io/tree-sitter-nextflow/main/scripts/install-ast-grep.sh | bash -s -- --global
+```
+
+### Installation
+
+#### Option 1: Automated Installation (Recommended)
+
+Use the installation script to set up ast-grep for your project:
+
+```bash
+# Clone or download the repository
+git clone https://github.com/nextflow-io/tree-sitter-nextflow.git
+cd tree-sitter-nextflow
+
+# Run the installation script
+./scripts/install-ast-grep.sh
+
+# Or install globally
+./scripts/install-ast-grep.sh --global
+```
+
+The script will:
+
+- Detect your platform (macOS, Linux)
+- Verify the appropriate parser library exists
+- Copy `sgconfig.yml` to your project or `~/.config/ast-grep/`
+
+#### Option 2: Manual Installation
+
+If you prefer manual setup or need a custom configuration:
+
+```bash
+# 1. Copy sgconfig.yml to your Nextflow project
+cp path/to/tree-sitter-nextflow/sgconfig.yml .
+
+# 2. Update libraryPath if needed (for global install)
+# Edit sgconfig.yml and use absolute paths to lib/ directory
+```
+
+#### Platform Support
+
+Pre-built parser libraries are included for:
+
+- ✅ macOS ARM64 (Apple Silicon) - `lib/macos-arm64/libnextflow.dylib`
+- ✅ Linux x64 - `lib/linux-x64/libnextflow.so`
+
+For other platforms, you can build the library yourself:
+
+```bash
+tree-sitter build --output libnextflow.so
+```
+
+### Quick Start
+
+Once installed, ast-grep works seamlessly with Nextflow files:
+
+```bash
 # Search for process definitions
 ast-grep -l nextflow -p 'process _NAME { ___ }' .
 
@@ -49,9 +108,9 @@ ast-grep -l nextflow -p 'Channel.from($___)' .
 
 ### Configuration
 
-The project includes `sgconfig.yml` with:
+The project includes `sgconfig.yml` with platform-specific parser libraries:
 
-- **Custom Language**: Nextflow parser (`libnextflow.so`)
+- **Custom Language**: Nextflow with platform detection
 - **File Extensions**: `.nf`, `.config`
 - **expandoChar**: `_` (use `_VAR` instead of `$VAR` in patterns, since Nextflow uses `$` for string interpolation)
 

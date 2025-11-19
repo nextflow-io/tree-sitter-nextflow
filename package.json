@@ -31,7 +31,12 @@
     "bindings/node/*",
     "queries/*",
     "src/**",
-    "*.wasm"
+    "*.wasm",
+    "lib/**",
+    "sgconfig.yml",
+    "rules/*.yml",
+    "scripts/install-ast-grep.sh",
+    "docs/ast-grep-*.md"
   ],
   "dependencies": {
     "node-addon-api": "^8.2.1",
