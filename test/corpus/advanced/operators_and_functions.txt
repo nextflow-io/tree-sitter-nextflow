@@ -1,0 +1,76 @@
+==================
+Channel operators
+:skip
+==================
+
+ch1 = Channel.from(1,2,3)
+ch2 = Channel.from(4,5,6)
+
+result = ch1
+    .mix(ch2)
+    .map { it * 2 }
+    .filter { it > 5 }
+    .collect()
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (channel_expression
+      (channel_from)))
+  (assignment
+    (identifier)
+    (channel_expression
+      (channel_from)))
+  (assignment
+    (identifier)
+    (pipe_expression
+      (identifier)
+      (operator_expression)
+      (operator_expression)
+      (operator_expression)
+      (operator_expression))))
+
+==================
+Math operations
+:skip
+==================
+
+x = 1 + 2 * 3
+y = Math.pow(2, 3)
+z = Math.round(3.14)
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (binary_expression))
+  (assignment
+    (identifier)
+    (function_call))
+  (assignment
+    (identifier)
+    (function_call)))
+
+==================
+Regular expressions
+:skip
+==================
+
+pattern = ~/foo.*/
+if( "foo bar" =~ pattern ) {
+    println "match"
+}
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (regex_literal))
+  (if_statement
+    (binary_expression)
+    (block
+      (expression_statement))))

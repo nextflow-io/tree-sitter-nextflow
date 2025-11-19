@@ -1,0 +1,22 @@
+==================
+Line comment
+==================
+
+// This is a line comment
+
+---
+
+(source_file
+  (line_comment))
+
+==================
+Block comment
+==================
+
+/* This is a
+   block comment */
+
+---
+
+(source_file
+  (block_comment))

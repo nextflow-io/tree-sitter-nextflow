@@ -1,0 +1,79 @@
+==================
+Simple script block
+==================
+
+process SIMPLE {
+    script:
+    """
+    echo hello
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))
+
+==================
+Shell script block
+==================
+
+process SHELL_TEST {
+    shell:
+    '''
+    echo world
+    '''
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))
+
+==================
+Exec script block
+==================
+
+process EXEC_TEST {
+    exec:
+    """
+    echo exec
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))
+
+==================
+Stub script block
+==================
+
+process STUB_TEST {
+    stub:
+    """
+    echo stub
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))

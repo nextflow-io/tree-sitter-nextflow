@@ -1,5 +1,20 @@
 [
   {
+    "type": "assert_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "simple_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "assignment",
     "named": true,
     "fields": {},
@@ -8,86 +23,11 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
           "type": "identifier",
           "named": true
         },
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "assignment_statement",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -96,48 +36,161 @@
   {
     "type": "binary_expression",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        }
-      ]
+    "fields": {
+      "left": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "dotted_identifier",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "interpolated_string",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          }
+        ]
+      },
+      "operator": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "!=",
+            "named": false
+          },
+          {
+            "type": "!~",
+            "named": false
+          },
+          {
+            "type": "%",
+            "named": false
+          },
+          {
+            "type": "&&",
+            "named": false
+          },
+          {
+            "type": "*",
+            "named": false
+          },
+          {
+            "type": "**",
+            "named": false
+          },
+          {
+            "type": "+",
+            "named": false
+          },
+          {
+            "type": "-",
+            "named": false
+          },
+          {
+            "type": "..",
+            "named": false
+          },
+          {
+            "type": "..<",
+            "named": false
+          },
+          {
+            "type": "/",
+            "named": false
+          },
+          {
+            "type": "<",
+            "named": false
+          },
+          {
+            "type": "<=",
+            "named": false
+          },
+          {
+            "type": "==",
+            "named": false
+          },
+          {
+            "type": "=~",
+            "named": false
+          },
+          {
+            "type": ">",
+            "named": false
+          },
+          {
+            "type": ">=",
+            "named": false
+          },
+          {
+            "type": "||",
+            "named": false
+          }
+        ]
+      },
+      "right": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "dotted_identifier",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "interpolated_string",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -149,7 +202,7 @@
       "required": false,
       "types": [
         {
-          "type": "assignment_statement",
+          "type": "assignment",
           "named": true
         },
         {
@@ -159,12 +212,21 @@
         {
           "type": "if_statement",
           "named": true
+        },
+        {
+          "type": "variable_declaration",
+          "named": true
         }
       ]
     }
   },
   {
     "type": "boolean",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "boolean_literal",
     "named": true,
     "fields": {}
   },
@@ -201,42 +263,10 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -266,39 +296,7 @@
       "required": false,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -310,42 +308,10 @@
     "fields": {},
     "children": {
       "multiple": false,
-      "required": false,
+      "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -360,43 +326,25 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
+          "type": "closure_block",
           "named": true
         },
         {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "closure_parameter",
           "named": true
         }
       ]
     }
+  },
+  {
+    "type": "closure_block",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "closure_parameter",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "command_expression",
@@ -411,19 +359,22 @@
           "named": true
         },
         {
-          "type": "string",
+          "type": "integer_literal",
+          "named": true
+        },
+        {
+          "type": "interpolated_string",
+          "named": true
+        },
+        {
+          "type": "string_literal",
           "named": true
         }
       ]
     }
   },
   {
-    "type": "comment",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "directive",
+    "type": "destructuring_pattern",
     "named": true,
     "fields": {},
     "children": {
@@ -431,54 +382,26 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
           "type": "identifier",
           "named": true
         },
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "typed_identifier",
           "named": true
         }
       ]
     }
   },
   {
-    "type": "directive_block",
+    "type": "dotted_identifier",
     "named": true,
     "fields": {},
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
-          "type": "directive",
+          "type": "identifier",
           "named": true
         }
       ]
@@ -508,43 +431,45 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
           "type": "block",
           "named": true
         },
         {
-          "type": "boolean",
+          "type": "simple_expression",
           "named": true
-        },
+        }
+      ]
+    }
+  },
+  {
+    "type": "env_function",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
         {
-          "type": "channel_expression",
+          "type": "simple_expression",
           "named": true
-        },
+        }
+      ]
+    }
+  },
+  {
+    "type": "env_input",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
         {
           "type": "identifier",
           "named": true
         },
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "string_literal",
           "named": true
         }
       ]
@@ -559,43 +484,7 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "command_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -629,6 +518,25 @@
     }
   },
   {
+    "type": "function_call",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "simple_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "if_statement",
     "named": true,
     "fields": {},
@@ -637,19 +545,7 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
           "type": "block",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
           "named": true
         },
         {
@@ -661,27 +557,7 @@
           "named": true
         },
         {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -722,21 +598,6 @@
     }
   },
   {
-    "type": "input_block",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "input_declaration",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "input_declaration",
     "named": true,
     "fields": {},
@@ -745,39 +606,81 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
+          "type": "env_input",
           "named": true
         },
         {
-          "type": "boolean",
+          "type": "simple_statement",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "integer_literal",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "interpolated_string",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "escape_sequence",
           "named": true
         },
         {
-          "type": "channel_expression",
+          "type": "interpolation",
           "named": true
         },
+        {
+          "type": "string_content",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "interpolated_triple_quoted_string",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "escape_sequence",
+          "named": true
+        },
+        {
+          "type": "interpolation",
+          "named": true
+        },
+        {
+          "type": "string_content",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "interpolation",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
         {
           "type": "identifier",
           "named": true
         },
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -792,39 +695,7 @@
       "required": false,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -836,7 +707,7 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
         {
           "type": "map_entry",
@@ -854,39 +725,15 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
           "type": "identifier",
           "named": true
         },
         {
-          "type": "list",
+          "type": "simple_expression",
           "named": true
         },
         {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "string_literal",
           "named": true
         }
       ]
@@ -908,24 +755,48 @@
     }
   },
   {
-    "type": "number",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "output_block",
+    "type": "method_call",
     "named": true,
     "fields": {},
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
-          "type": "output_declaration",
+          "type": "closure",
+          "named": true
+        },
+        {
+          "type": "dotted_identifier",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "interpolated_string",
+          "named": true
+        },
+        {
+          "type": "list",
+          "named": true
+        },
+        {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "simple_expression",
           "named": true
         }
       ]
     }
+  },
+  {
+    "type": "number",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "output_declaration",
@@ -936,39 +807,7 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "simple_statement",
           "named": true
         }
       ]
@@ -983,15 +822,7 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
           "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
           "named": true
         },
         {
@@ -999,23 +830,26 @@
           "named": true
         },
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
           "type": "number",
           "named": true
         },
         {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
           "type": "string",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "parenthesized_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -1030,11 +864,7 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
+          "type": "boolean_literal",
           "named": true
         },
         {
@@ -1042,7 +872,15 @@
           "named": true
         },
         {
+          "type": "dotted_identifier",
+          "named": true
+        },
+        {
           "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "integer_literal",
           "named": true
         },
         {
@@ -1054,19 +892,30 @@
           "named": true
         },
         {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "pipe_operation",
+          "named": true
+        },
+        {
+          "type": "string_literal",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "pipe_operation",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
           "type": "map_operation",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
           "named": true
         }
       ]
@@ -1081,23 +930,23 @@
       "required": true,
       "types": [
         {
-          "type": "directive_block",
-          "named": true
-        },
-        {
           "type": "identifier",
           "named": true
         },
         {
-          "type": "input_block",
+          "type": "input_declaration",
           "named": true
         },
         {
-          "type": "output_block",
+          "type": "output_declaration",
           "named": true
         },
         {
-          "type": "script_block",
+          "type": "script_declaration",
+          "named": true
+        },
+        {
+          "type": "when_declaration",
           "named": true
         }
       ]
@@ -1112,43 +961,11 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
           "type": "identifier",
           "named": true
         },
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
           "type": "process_output",
-          "named": true
-        },
-        {
-          "type": "string",
           "named": true
         }
       ]
@@ -1159,7 +976,7 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
@@ -1170,7 +987,26 @@
     }
   },
   {
-    "type": "script_block",
+    "type": "script_content",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "string_literal",
+          "named": true
+        },
+        {
+          "type": "triple_quoted_string",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "script_declaration",
     "named": true,
     "fields": {},
     "children": {
@@ -1185,12 +1021,109 @@
     }
   },
   {
-    "type": "script_content",
+    "type": "simple_expression",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "boolean_literal",
+          "named": true
+        },
+        {
+          "type": "channel_expression",
+          "named": true
+        },
+        {
+          "type": "command_expression",
+          "named": true
+        },
+        {
+          "type": "dotted_identifier",
+          "named": true
+        },
+        {
+          "type": "env_function",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "integer_literal",
+          "named": true
+        },
+        {
+          "type": "interpolated_string",
+          "named": true
+        },
+        {
+          "type": "interpolated_triple_quoted_string",
+          "named": true
+        },
+        {
+          "type": "list",
+          "named": true
+        },
+        {
+          "type": "map",
+          "named": true
+        },
+        {
+          "type": "method_call",
+          "named": true
+        },
+        {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "pipe_expression",
+          "named": true
+        },
+        {
+          "type": "process_output",
+          "named": true
+        },
+        {
+          "type": "slashy_string",
+          "named": true
+        },
+        {
+          "type": "string_literal",
+          "named": true
+        }
+      ]
+    }
   },
   {
-    "type": "shebang",
+    "type": "simple_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "simple_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "slashy_string",
     "named": true,
     "fields": {}
   },
@@ -1204,15 +1137,19 @@
       "required": false,
       "types": [
         {
+          "type": "assert_statement",
+          "named": true
+        },
+        {
           "type": "assignment",
           "named": true
         },
         {
-          "type": "channel_expression",
+          "type": "block_comment",
           "named": true
         },
         {
-          "type": "comment",
+          "type": "expression_statement",
           "named": true
         },
         {
@@ -1228,11 +1165,11 @@
           "named": true
         },
         {
-          "type": "parameter",
+          "type": "line_comment",
           "named": true
         },
         {
-          "type": "pipe_expression",
+          "type": "parameter",
           "named": true
         },
         {
@@ -1260,6 +1197,55 @@
     "fields": {}
   },
   {
+    "type": "string_content",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "string_literal",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "triple_quoted_string",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "type_annotation",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "typed_identifier",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "type_annotation",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "variable_declaration",
     "named": true,
     "fields": {},
@@ -1268,15 +1254,7 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
+          "type": "destructuring_pattern",
           "named": true
         },
         {
@@ -1284,23 +1262,26 @@
           "named": true
         },
         {
-          "type": "list",
+          "type": "simple_expression",
           "named": true
         },
         {
-          "type": "map",
+          "type": "type_annotation",
           "named": true
-        },
+        }
+      ]
+    }
+  },
+  {
+    "type": "when_declaration",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
         {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -1315,47 +1296,15 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
+          "type": "assignment",
           "named": true
         },
         {
-          "type": "boolean",
+          "type": "expression_statement",
           "named": true
         },
         {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "process_invocation",
-          "named": true
-        },
-        {
-          "type": "process_output",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "variable_declaration",
           "named": true
         },
         {
@@ -1378,9 +1327,13 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
-      "required": false,
+      "multiple": true,
+      "required": true,
       "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
         {
           "type": "workflow_body",
           "named": true
@@ -1397,47 +1350,11 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
+          "type": "assignment",
           "named": true
         },
         {
           "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
-          "named": true
-        },
-        {
-          "type": "process_invocation",
-          "named": true
-        },
-        {
-          "type": "process_output",
-          "named": true
-        },
-        {
-          "type": "string",
           "named": true
         }
       ]
@@ -1467,35 +1384,11 @@
       "required": true,
       "types": [
         {
-          "type": "binary_expression",
+          "type": "assignment",
           "named": true
         },
         {
-          "type": "boolean",
-          "named": true
-        },
-        {
-          "type": "channel_expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "map",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "pipe_expression",
+          "type": "expression_statement",
           "named": true
         },
         {
@@ -1503,11 +1396,7 @@
           "named": true
         },
         {
-          "type": "process_output",
-          "named": true
-        },
-        {
-          "type": "string",
+          "type": "variable_declaration",
           "named": true
         }
       ]
@@ -1515,6 +1404,10 @@
   },
   {
     "type": "!=",
+    "named": false
+  },
+  {
+    "type": "!~",
     "named": false
   },
   {
@@ -1526,7 +1419,7 @@
     "named": false
   },
   {
-    "type": "#!",
+    "type": "$",
     "named": false
   },
   {
@@ -1574,6 +1467,10 @@
     "named": false
   },
   {
+    "type": "->",
+    "named": false
+  },
+  {
     "type": ".",
     "named": false
   },
@@ -1587,14 +1484,6 @@
   },
   {
     "type": "/",
-    "named": false
-  },
-  {
-    "type": "/*",
-    "named": false
-  },
-  {
-    "type": "//",
     "named": false
   },
   {
@@ -1622,6 +1511,10 @@
     "named": false
   },
   {
+    "type": "=~",
+    "named": false
+  },
+  {
     "type": ">",
     "named": false
   },
@@ -1646,11 +1539,16 @@
     "named": false
   },
   {
-    "type": "def",
+    "type": "assert",
     "named": false
   },
   {
-    "type": "directive:",
+    "type": "block_comment",
+    "named": true,
+    "extra": true
+  },
+  {
+    "type": "def",
     "named": false
   },
   {
@@ -1664,6 +1562,10 @@
   {
     "type": "env",
     "named": false
+  },
+  {
+    "type": "escape_sequence",
+    "named": true
   },
   {
     "type": "exec:",
@@ -1698,8 +1600,9 @@
     "named": false
   },
   {
-    "type": "into",
-    "named": false
+    "type": "line_comment",
+    "named": true,
+    "extra": true
   },
   {
     "type": "main:",
@@ -1726,11 +1629,11 @@
     "named": false
   },
   {
-    "type": "params",
+    "type": "parameter",
     "named": false
   },
   {
-    "type": "path",
+    "type": "params",
     "named": false
   },
   {
@@ -1742,15 +1645,15 @@
     "named": false
   },
   {
+    "type": "shebang",
+    "named": true
+  },
+  {
     "type": "shell:",
     "named": false
   },
   {
-    "type": "stdin",
-    "named": false
-  },
-  {
-    "type": "stdout",
+    "type": "stub:",
     "named": false
   },
   {
@@ -1762,15 +1665,11 @@
     "named": false
   },
   {
-    "type": "tuple",
-    "named": false
-  },
-  {
-    "type": "val",
-    "named": false
-  },
-  {
     "type": "value",
+    "named": false
+  },
+  {
+    "type": "when:",
     "named": false
   },
   {

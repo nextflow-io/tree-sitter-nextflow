@@ -1,0 +1,155 @@
+==================
+Channel from operation
+==================
+
+Channel.from(1, 2, 3)
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (channel_expression
+        (channel_from
+          (simple_expression
+            (integer_literal))
+          (simple_expression
+            (integer_literal))
+          (simple_expression
+            (integer_literal)))))))
+
+==================
+Channel value operation
+==================
+
+Channel.value('Hello')
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (channel_expression
+        (channel_value
+          (simple_expression
+            (string_literal)))))))
+
+==================
+Channel pipe operation
+==================
+
+Channel.from(1, 2, 3) | map { it * 2 }
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (pipe_expression
+        (channel_expression
+          (channel_from
+            (simple_expression
+              (integer_literal))
+            (simple_expression
+              (integer_literal))
+            (simple_expression
+              (integer_literal))))
+        (pipe_operation
+          (map_operation
+            (closure
+              (simple_expression
+                (binary_expression
+                  (identifier)
+                  (integer_literal))))))))))
+
+==================
+Channel of operation
+==================
+
+Channel.of('a', 'b', 'c')
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (channel_expression
+        (channel_of
+          (simple_expression
+            (string_literal))
+          (simple_expression
+            (string_literal))
+          (simple_expression
+            (string_literal)))))))
+
+==================
+Channel with dynamic strings
+==================
+
+Channel.of("Hello ${name}", """Multi
+line ${text}""")
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (channel_expression
+        (channel_of
+          (simple_expression
+            (interpolated_string
+              (string_content)
+              (interpolation
+                (simple_expression
+                  (identifier)))))
+          (simple_expression
+            (interpolated_triple_quoted_string
+              (string_content)
+              (interpolation
+                (simple_expression
+                  (identifier))))))))))
+
+==================
+Channel with list input
+==================
+
+Channel.fromList(['a', 'b', 'c'])
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (channel_expression
+        (channel_from_list
+          (list
+            (simple_expression
+              (string_literal))
+            (simple_expression
+              (string_literal))
+            (simple_expression
+              (string_literal))))))))
+
+==================
+Channel with map input
+==================
+
+Channel.value([foo: 'bar', baz: 'qux'])
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (channel_expression
+        (channel_value
+          (simple_expression
+            (map
+              (map_entry
+                (identifier)
+                (simple_expression
+                  (string_literal)))
+              (map_entry
+                (identifier)
+                (simple_expression
+                  (string_literal))))))))))

@@ -29,6 +29,7 @@
   },
   "bindings": {
     "c": true,
-    "rust": true
+    "rust": true,
+    "python": true
   }
 }

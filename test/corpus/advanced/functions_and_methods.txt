@@ -1,0 +1,79 @@
+==================
+Function declarations
+:skip
+==================
+
+def square(x) {
+    return x * x
+}
+
+def greet(name, greeting = 'Hello') {
+    return "$greeting, $name!"
+}
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (return_statement)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (return_statement))))
+
+==================
+Method calls
+:skip
+==================
+
+result = [1,2,3].collect { it * 2 }
+filtered = [1,2,3,4].findAll { it % 2 == 0 }
+joined = ['a','b','c'].join('-')
+mapped = [1,2,3].collectEntries { [(it): it * 2] }
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (method_call))
+  (assignment
+    (identifier)
+    (method_call))
+  (assignment
+    (identifier)
+    (method_call))
+  (assignment
+    (identifier)
+    (method_call)))
+
+==================
+Complex closures
+:skip
+==================
+
+transform = { x, y ->
+    def result = x * y
+    return result > 10 ? result : 0
+}
+
+numbers = [1,2,3,4]
+    .collect { it * 2 }
+    .findAll { it > 4 }
+    .each { println it }
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (closure
+      (parameter_list)
+      (block)))
+  (assignment
+    (identifier)
+    (pipe_expression)))

@@ -1,0 +1,109 @@
+==================
+If else statements
+==================
+
+if (x > 5) {
+    println "greater"
+} else if (x < 0) {
+    println "negative"
+} else {
+    println "other"
+}
+
+---
+
+(source_file
+  (if_statement
+    (simple_expression
+      (binary_expression
+        (identifier)
+        (integer_literal)))
+    (block
+      (expression_statement
+        (simple_expression
+          (command_expression
+            (identifier)
+            (interpolated_string
+              (string_content))))))
+    (else_if_clause
+      (simple_expression
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (block
+        (expression_statement
+          (simple_expression
+            (command_expression
+              (identifier)
+              (interpolated_string
+                (string_content)))))))
+    (else_clause
+      (block
+        (expression_statement
+          (simple_expression
+            (command_expression
+              (identifier)
+              (interpolated_string
+                (string_content)))))))))
+
+=================
+Function call assignment
+=================
+
+foo = bar("baz")
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (simple_expression
+      (function_call
+        (identifier)
+        (simple_expression
+          (interpolated_string
+            (string_content)))))))
+
+=================
+Operator precedence
+=================
+
+def a = x + y * z
+def b = x * y + z
+def c = (1 + x) * y + 5 * z + 3
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (binary_expression
+        (binary_expression
+          (identifier)
+          (identifier))
+        (identifier))))
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (binary_expression
+        (binary_expression
+          (identifier)
+          (identifier))
+        (identifier))))
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (binary_expression
+        (binary_expression
+          (binary_expression
+            (binary_expression
+              (parenthesized_expression
+                (simple_expression
+                  (binary_expression
+                    (integer_literal)
+                    (identifier))))
+              (identifier))
+            (integer_literal))
+          (identifier))
+        (integer_literal)))))

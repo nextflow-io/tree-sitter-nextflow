@@ -1,0 +1,101 @@
+==================
+Process with input block
+==================
+
+process FASTQC {
+    input:
+    path reads;
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_declaration
+      (simple_statement
+        (simple_expression
+          (command_expression
+            (identifier)
+            (identifier))))
+      (simple_statement))))
+
+==================
+Process with output block
+==================
+
+process FASTQC {
+    output:
+    path "fastqc_*";
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (output_declaration
+      (simple_statement
+        (simple_expression
+          (command_expression
+            (identifier)
+            (interpolated_string
+              (string_content)))))
+      (simple_statement))))
+
+==================
+Process with script block
+==================
+
+process FASTQC {
+    script:
+    """fastqc $reads"""
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))
+
+==================
+Complete process definition
+==================
+
+process FASTQC {
+    input:
+    path reads;
+
+    output:
+    path "fastqc_*";
+
+    script:
+    """fastqc $reads"""
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_declaration
+      (simple_statement
+        (simple_expression
+          (command_expression
+            (identifier)
+            (identifier))))
+      (simple_statement))
+    (output_declaration
+      (simple_statement
+        (simple_expression
+          (command_expression
+            (identifier)
+            (interpolated_string
+              (string_content)))))
+      (simple_statement))
+    (script_declaration
+      (script_content
+        (triple_quoted_string)))))

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Context7__resolve-library-id",
+      "mcp__Context7__get-library-docs",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:tree-sitter.github.io)",
+      "WebFetch(domain:ast-grep.github.io)",
+      "WebFetch(domain:nextflow.io)",
+      "Bash(echo:* | tree-sitter parse:*)",
+      "Bash(tree-sitter:*)",
+      "Bash(:* | tree-sitter parse:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

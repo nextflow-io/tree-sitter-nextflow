@@ -1,0 +1,118 @@
+==================
+Basic workflow declaration
+==================
+
+workflow {
+    "Hello world"
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (workflow_body
+      (expression_statement
+        (simple_expression
+          (interpolated_string
+            (string_content)))))))
+
+==================
+Workflow with input
+==================
+
+workflow {
+    take:
+    x
+    y
+
+    main:
+    "Processing ${x} and ${y}"
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (workflow_body
+      (workflow_input
+        (identifier)
+        (identifier))
+      (workflow_main
+        (expression_statement
+          (simple_expression
+            (interpolated_string
+              (string_content)
+              (interpolation
+                (simple_expression
+                  (identifier)))
+              (string_content)
+              (interpolation
+                (simple_expression
+                  (identifier))))))))))
+
+==================
+Workflow with process calls
+==================
+
+workflow {
+    PROCESS_A()
+    PROCESS_B()
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (workflow_body
+      (expression_statement
+        (simple_expression
+          (function_call
+            (identifier))))
+      (expression_statement
+        (simple_expression
+          (function_call
+            (identifier)))))))
+
+==================
+Complete workflow definition
+==================
+
+workflow {
+    take:
+    reads
+    reference
+
+    main:
+    ALIGN(reads, reference)
+    CALL_VARIANTS(ALIGN.out)
+
+    emit:
+    variants = CALL_VARIANTS.out
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (workflow_body
+      (workflow_input
+        (identifier)
+        (identifier))
+      (workflow_main
+        (process_invocation
+          (identifier)
+          (identifier)
+          (identifier)))
+      (expression_statement
+        (simple_expression
+          (function_call
+            (identifier)
+            (simple_expression
+              (process_output
+                (identifier))))))
+      (workflow_emit
+        (assignment
+          (identifier)
+          (simple_expression
+            (process_output
+              (identifier))))))))

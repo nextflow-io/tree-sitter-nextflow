@@ -1,0 +1,181 @@
+==================
+Simple string interpolation
+==================
+
+def name = 'world'
+println("Hello ${name}!")
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (string_literal)))
+  (expression_statement
+    (simple_expression
+      (function_call
+        (identifier)
+        (simple_expression
+          (interpolated_string
+            (string_content)
+            (interpolation
+              (simple_expression
+                (identifier)))
+            (string_content)))))))
+
+==================
+Simple property access
+:skip
+==================
+
+def person = [first: 'John', last: 'Doe']
+println("Hello ${person.first} ${person.last}!")
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (map
+      (map_entry
+        (identifier)
+        (string))
+      (map_entry
+        (identifier)
+        (string))))
+  (function_call
+    (identifier)
+    (interpolated_string
+      (string_content)
+      (property_access
+        (identifier)
+        (identifier))
+      (string_content)
+      (property_access
+        (identifier)
+        (identifier))
+      (string_content))))
+
+==================
+Triple-quoted string interpolation
+:skip
+==================
+
+def input = 'sample.fa'
+def output = 'result.txt'
+def cmd = """
+    blastp \\
+        -in ${input} \\
+        -out ${output} \\
+        -db blast_db
+"""
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (string))
+  (variable_declaration
+    (identifier)
+    (string))
+  (variable_declaration
+    (identifier)
+    (interpolated_string
+      (string_content)
+      (identifier)
+      (string_content)
+      (identifier)
+      (string_content))))
+
+==================
+Complex interpolation with expressions
+:skip
+==================
+
+def names = ['Thing 1', 'Thing 2']
+println "Hello, ${names.join(' and ')}!"
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (list
+      (string)
+      (string)))
+  (function_call
+    (identifier)
+    (interpolated_string
+      (string_content)
+      (interpolation
+        (function_call
+          (property_access
+            (identifier)
+            (identifier))
+          (string)))
+      (string_content))))
+
+==================
+Mixed interpolation styles
+:skip
+==================
+
+def user = [name: 'John', age: 30]
+println "User $user.name is ${user.age} years old"
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (map
+      (map_entry
+        (identifier)
+        (string))
+      (map_entry
+        (identifier)
+        (number))))
+  (function_call
+    (identifier)
+    (interpolated_string
+      (string_content)
+      (property_access
+        (identifier)
+        (identifier))
+      (string_content)
+      (interpolation
+        (property_access
+          (identifier)
+          (identifier)))
+      (string_content))))
+
+==================
+Triple single-quoted string interpolation
+:skip
+==================
+
+def tool = 'blastp'
+def text = '''
+    Running $tool
+    with default parameters
+    on ${new Date()}
+'''
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (string))
+  (variable_declaration
+    (identifier)
+    (interpolated_string
+      (string_content)
+      (identifier)
+      (string_content)
+      (interpolation
+        (constructor_call
+          (identifier)))
+      (string_content))))
