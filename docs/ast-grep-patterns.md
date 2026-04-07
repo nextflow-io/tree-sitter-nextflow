@@ -419,8 +419,8 @@ ast-grep scan --rule rules/string-interpolation.yml
 Automated code transformations:
 
 ```bash
-# Rename process directive
-ast-grep -l nextflow -p 'container ___' -r 'container ___'
+# Update container directive
+ast-grep -l nextflow -p 'container "old-image:___"' -r 'container "new-image:___"'
 
 # Update parameter names
 ast-grep -l nextflow -p 'params.old_name' -r 'params.new_name'

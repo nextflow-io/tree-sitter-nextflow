@@ -32,7 +32,6 @@
     "queries/*",
     "src/**",
     "*.wasm",
-    "lib/**",
     "sgconfig.yml",
     "rules/*.yml",
     "scripts/install-ast-grep.sh",
