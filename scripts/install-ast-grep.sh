@@ -173,7 +173,7 @@ install_config() {
         # Check if config already exists
         if [[ -f "$target_file" ]]; then
             echo -e "${YELLOW}Warning: sgconfig.yml already exists${NC}"
-            read -p "Overwrite? [y/N] " -n 1 -r
+            read -p "Overwrite? [y/N] " -n 1 -r < /dev/tty || REPLY="n"
             echo
             if [[ ! $REPLY =~ ^[Yy]$ ]]; then
                 echo "Installation cancelled"
