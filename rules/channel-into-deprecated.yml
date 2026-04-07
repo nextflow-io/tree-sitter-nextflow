@@ -1,0 +1,10 @@
+id: channel-into-deprecated
+language: nextflow
+message: The into operator is deprecated in DSL2, use multiple outputs instead
+severity: error
+note: |
+  Instead of: channel.into { out1; out2 }
+  Use multiple outputs: (out1, out2) = channel.multiMap { ... }
+  Or simply reference the channel multiple times in DSL2
+rule:
+  pattern: $_.into { $$$ }
