@@ -7,3 +7,6 @@ note: |
   or camelCase for complex names (e.g., alignReads, quantifyExpression)
 rule:
   pattern: process $_NAME { $$$ }
+constraints:
+  _NAME:
+    regex: '^[a-z]'
