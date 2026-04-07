@@ -27,7 +27,6 @@ dist/
 *.pc
 
 # Exception: Include ast-grep parser libraries
-!libnextflow.so
 !lib/**/libnextflow.dylib
 !lib/**/libnextflow.so
 
