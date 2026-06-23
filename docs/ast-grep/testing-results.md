@@ -26,26 +26,30 @@ Single-quoted strings with interpolation are hard to detect via simple patterns:
 'Value: $var'  # Hard to detect without complex rules
 ```
 
-### 3. expandoChar Requirement
+### 3. Metavariable syntax
 
-Due to Nextflow's use of `$` for string interpolation, patterns must use `_` instead:
+Write metavariables with the standard `$NAME` / `$$$` syntax:
 
 ```bash
-# Wrong
 ast-grep -l nextflow -p 'process $NAME { $$$ }'
-
-# Correct
-ast-grep -l nextflow -p 'process _NAME { ___ }'
 ```
+
+`sgconfig.yml` sets `expandoChar: _` only so the parser can tokenize patterns
+(Nextflow uses `$` for string interpolation); ast-grep maps `$`↔`_` internally,
+so you do **not** write `_NAME`. Earlier docs advised `_NAME`/`___` — that was a
+misreading of expandoChar. Verified against ast-grep 0.43+/0.44; releases
+<= 0.40.x mishandled some block patterns.
 
 ### 4. Auto-fix Metavariable Capture
 
-Pattern replacement doesn't reliably capture arguments:
+Pattern replacement may not reliably capture multi-argument lists:
 
 ```bash
-ast-grep -l nextflow -p 'Channel.from($_ARGS)' -r 'Channel.of($_ARGS)'
-# Produces: Channel.of()  — loses the arguments
+ast-grep -l nextflow -p 'Channel.from($$$ARGS)' -r 'Channel.of($$$ARGS)'
 ```
+
+**Workaround**: Use ast-grep to identify patterns, then refactor manually if a
+rewrite drops arguments.
 
 **Workaround**: Use ast-grep to identify patterns, then refactor manually.
 
@@ -55,13 +59,13 @@ ast-grep -l nextflow -p 'Channel.from($_ARGS)' -r 'Channel.of($_ARGS)'
 
 ```bash
 # Find all processes
-ast-grep -l nextflow -p 'process _NAME { ___ }' .
+ast-grep -l nextflow -p 'process $NAME { $$$ }' .
 
 # Find deprecated patterns
 ast-grep -l nextflow -p 'Channel.from($$$)' .
 
 # Find workflows
-ast-grep -l nextflow -p 'workflow _NAME { ___ }' .
+ast-grep -l nextflow -p 'workflow $NAME { $$$ }' .
 ```
 
 ### For Linting
@@ -122,5 +126,5 @@ jobs:
 
 - [AST-grep Documentation](https://ast-grep.github.io/)
 - [Pattern Guide](./ast-grep-patterns.md)
-- [Configuration File](../sgconfig.yml)
-- [Rule Examples](../rules/)
+- [Configuration File](../../sgconfig.yml)
+- [Rule Examples](../../rules/)

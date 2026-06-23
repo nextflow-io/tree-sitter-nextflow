@@ -5,7 +5,7 @@ severity: warning
 note: |
   nf-core convention is UPPERCASE with underscores (e.g., FASTQC, ALIGN_READS, QUANTIFY_EXPRESSION)
 rule:
-  pattern: process $_NAME { $$$ }
+  pattern: process $NAME { $$$ }
 constraints:
-  _NAME:
+  NAME:
     regex: '^[a-z]'

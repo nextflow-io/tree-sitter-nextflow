@@ -97,13 +97,17 @@ Once installed, ast-grep works seamlessly with Nextflow files:
 
 ```bash
 # Search for process definitions
-ast-grep -l nextflow -p 'process _NAME { ___ }' .
+ast-grep -l nextflow -p 'process $NAME { $$$ }' .
 
 # Run built-in rules
 ast-grep scan
 
+# Outline a file (ast-grep >= 0.44.0)
+ast-grep outline --lang nextflow \
+  --outline-rules outline/nextflow.yml --no-default-outline-rules main.nf
+
 # Find deprecated Channel.from() usage
-ast-grep -l nextflow -p 'Channel.from($___)' .
+ast-grep -l nextflow -p 'Channel.from($$$)' .
 ```
 
 ### Configuration
@@ -112,7 +116,7 @@ The project includes `sgconfig.yml` with platform-specific parser libraries:
 
 - **Custom Language**: Nextflow with platform detection
 - **File Extensions**: `.nf`, `.config`
-- **expandoChar**: `_` (use `_VAR` instead of `$VAR` in patterns, since Nextflow uses `$` for string interpolation)
+- **expandoChar**: `_` — an internal detail so the parser can tokenize patterns (Nextflow uses `$` for string interpolation). You still write metavariables as `$VAR` / `$$$`; ast-grep maps `$`↔`_` for you.
 
 ### Built-in Rules
 
@@ -127,22 +131,20 @@ The `rules/` directory includes linting rules for:
 
 ```bash
 # Find all process definitions
-ast-grep -l nextflow -p 'process _NAME { ___ }'
+ast-grep -l nextflow -p 'process $NAME { $$$ }'
 
 # Find workflows with take/main/emit structure
-ast-grep -l nextflow -p 'workflow _NAME { take: ___ main: ___ emit: ___ }'
+ast-grep -l nextflow -p 'workflow $NAME { take: $$$ main: $$$ emit: $$$ }'
 
 # Find deprecated Channel.from() (flagged by rules)
 ast-grep -l nextflow -p 'Channel.from($$$)'
 
 # Search for hardcoded paths
-ast-grep -l nextflow -p 'path("/___")'
-
-# Find string interpolation
-ast-grep -l nextflow -p '"$___"'
+ast-grep -l nextflow -p 'path("/$$$")'
 ```
 
-**Note**: Use `_` instead of `$` in patterns due to expandoChar configuration.
+See [`docs/ast-grep/`](docs/ast-grep/) for the full setup guide, pattern
+library, and `ast-grep outline` documentation.
 
 ### Custom Rules
 
@@ -154,7 +156,7 @@ language: nextflow
 message: Custom rule message
 severity: warning
 rule:
-  pattern: process _NAME { ___ }
+  pattern: process $NAME { $$$ }
 ```
 
 See [ast-grep rule documentation](https://ast-grep.github.io/guide/rule-config.html) for details.

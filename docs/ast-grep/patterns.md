@@ -33,13 +33,21 @@ ast-grep -l nextflow -p 'OLD_PATTERN' -r 'NEW_PATTERN' FILE
 
 ### Pattern Wildcards
 
-| Wildcard | Meaning              | Example                 |
-| -------- | -------------------- | ----------------------- |
-| `_`      | Single node          | `process _NAME { ___ }` |
-| `___`    | Multiple nodes (any) | `Channel.from(___)`     |
-| `$$$`    | Multiple statements  | `workflow { $$$ }`      |
+| Wildcard | Meaning            | Example                 |
+| -------- | ------------------ | ----------------------- |
+| `$NAME`  | Single named node  | `process $NAME { $$$ }` |
+| `$_`     | Single node (any)  | `$_.into { $$$ }`       |
+| `$$$`    | Zero or more nodes | `Channel.from($$$)`     |
 
-**Important**: Due to `expandoChar: _` configuration, use `_` instead of `$` in patterns.
+**Metavariables use the standard `$NAME` / `$$$` syntax**, the same as every
+other ast-grep language. `sgconfig.yml` sets `expandoChar: _` only so the parser
+can tokenize patterns (Nextflow uses `$` for string interpolation); ast-grep
+maps `$`↔`_` internally, so you write `$NAME`, not `_NAME`. In
+`constraints`/`fix`/`name`, reference a captured metavariable by its bare name
+(`$NAME` → key `NAME`).
+
+> Verified against ast-grep 0.43+/0.44. Older releases (<= 0.40.x) failed to
+> parse some Nextflow block patterns.
 
 ## Pattern Syntax
 
@@ -49,37 +57,37 @@ Match and capture parts of code:
 
 ```bash
 # Match process name
-ast-grep -l nextflow -p 'process _NAME { ___ }'
+ast-grep -l nextflow -p 'process $NAME { $$$ }'
 
 # Match workflow with name
-ast-grep -l nextflow -p 'workflow _WORKFLOW { ___ }'
+ast-grep -l nextflow -p 'workflow $WORKFLOW { $$$ }'
 
 # Match variable assignment
-ast-grep -l nextflow -p 'def _VAR = _VALUE'
+ast-grep -l nextflow -p 'def $VAR = $VALUE'
 ```
 
 ### Multiple Nodes
 
-Use `___` (three underscores) for multiple nodes:
+Use `$$$` to match multiple sibling nodes:
 
 ```bash
 # Match any channel operation arguments
-ast-grep -l nextflow -p 'Channel.from(___)'
+ast-grep -l nextflow -p 'Channel.from($$$)'
 
 # Match any function call
-ast-grep -l nextflow -p '_FUNC(___)'
+ast-grep -l nextflow -p '$FUNC($$$)'
 
 # Match any list contents
-ast-grep -l nextflow -p '[___]'
+ast-grep -l nextflow -p '[$$$]'
 ```
 
 ### Statement Wildcards
 
-Use `$$$` for multiple statements (converted to `___` due to expandoChar):
+Use `$$$` to match multiple statements inside a block:
 
 ```bash
 # Match process with any body
-ast-grep -l nextflow -p 'process _NAME { $$$ }'
+ast-grep -l nextflow -p 'process $NAME { $$$ }'
 
 # Match workflow with any content
 ast-grep -l nextflow -p 'workflow { $$$ }'
@@ -94,124 +102,124 @@ ast-grep -l nextflow -p 'script: """ $$$ """'
 
 ```bash
 # Find all process definitions
-ast-grep -l nextflow -p 'process _NAME { ___ }'
+ast-grep -l nextflow -p 'process $NAME { $$$ }'
 
 # Find processes with specific directive
-ast-grep -l nextflow -p 'process _NAME { publishDir ___ $$$ }'
+ast-grep -l nextflow -p 'process $NAME { publishDir $$$ $$$ }'
 
 # Find process inputs
-ast-grep -l nextflow -p 'input: ___'
+ast-grep -l nextflow -p 'input: $$$'
 
 # Find process outputs
-ast-grep -l nextflow -p 'output: ___'
+ast-grep -l nextflow -p 'output: $$$'
 
 # Find process script blocks
 ast-grep -l nextflow -p 'script: """ $$$ """'
 
 # Find tuple inputs
-ast-grep -l nextflow -p 'tuple val(_ID), path(_FILE)'
+ast-grep -l nextflow -p 'tuple val($ID), path($FILE)'
 ```
 
 ### Workflow Patterns
 
 ```bash
 # Find workflow definitions
-ast-grep -l nextflow -p 'workflow _NAME { ___ }'
+ast-grep -l nextflow -p 'workflow $NAME { $$$ }'
 
 # Find workflows with take block
-ast-grep -l nextflow -p 'workflow _NAME { take: ___ }'
+ast-grep -l nextflow -p 'workflow $NAME { take: $$$ }'
 
 # Find workflows with emit block
-ast-grep -l nextflow -p 'workflow { $$$ emit: ___ }'
+ast-grep -l nextflow -p 'workflow { $$$ emit: $$$ }'
 
 # Find workflow calls
-ast-grep -l nextflow -p '_WORKFLOW(___)'
+ast-grep -l nextflow -p '$WORKFLOW($$$)'
 ```
 
 ### Channel Patterns
 
 ```bash
 # Find Channel.from() (deprecated)
-ast-grep -l nextflow -p 'Channel.from(___)'
+ast-grep -l nextflow -p 'Channel.from($$$)'
 
 # Find Channel.of()
-ast-grep -l nextflow -p 'Channel.of(___)'
+ast-grep -l nextflow -p 'Channel.of($$$)'
 
 # Find Channel.fromPath()
-ast-grep -l nextflow -p 'Channel.fromPath(___)'
+ast-grep -l nextflow -p 'Channel.fromPath($$$)'
 
 # Find channel operations with map
-ast-grep -l nextflow -p '_CH.map { ___ }'
+ast-grep -l nextflow -p '$CH.map { $$$ }'
 
 # Find channel operations with filter
-ast-grep -l nextflow -p '_CH.filter { ___ }'
+ast-grep -l nextflow -p '$CH.filter { $$$ }'
 
 # Find into operator (deprecated)
-ast-grep -l nextflow -p '_CH.into { ___ }'
+ast-grep -l nextflow -p '$CH.into { $$$ }'
 ```
 
 ### Variable and Parameter Patterns
 
 ```bash
 # Find parameter declarations
-ast-grep -l nextflow -p 'params._NAME = ___'
+ast-grep -l nextflow -p 'params.$NAME = $$$'
 
 # Find variable declarations with def
-ast-grep -l nextflow -p 'def _VAR = ___'
+ast-grep -l nextflow -p 'def $VAR = $$$'
 
 # Find variable declarations with type
-ast-grep -l nextflow -p 'def _VAR: _TYPE = ___'
+ast-grep -l nextflow -p 'def $VAR: $TYPE = $$$'
 
 # Find assignments
-ast-grep -l nextflow -p '_VAR = _VALUE'
+ast-grep -l nextflow -p '$VAR = $VALUE'
 ```
 
 ### String and Interpolation Patterns
 
 ```bash
 # Find string interpolation
-ast-grep -l nextflow -p '"$___"'
+ast-grep -l nextflow -p '"$$$"'
 
 # Find strings with variables
-ast-grep -l nextflow -p '"${_VAR}"'
+ast-grep -l nextflow -p '"${$VAR}"'
 
 # Find single-quoted strings
-ast-grep -l nextflow -p "'___'"
+ast-grep -l nextflow -p "'$$$'"
 
 # Find multiline strings
-ast-grep -l nextflow -p '"""___"""'
+ast-grep -l nextflow -p '"""$$$"""'
 
 # Find GString usage
-ast-grep -l nextflow -p '"_TEXT${_VAR}_TEXT"'
+ast-grep -l nextflow -p '"${$VAR}"'
 ```
 
 ### Control Flow Patterns
 
 ```bash
 # Find if statements
-ast-grep -l nextflow -p 'if (_COND) { $$$ }'
+ast-grep -l nextflow -p 'if ($COND) { $$$ }'
 
 # Find if-else statements
-ast-grep -l nextflow -p 'if (_COND) { $$$ } else { $$$ }'
+ast-grep -l nextflow -p 'if ($COND) { $$$ } else { $$$ }'
 
 # Find each loops
-ast-grep -l nextflow -p '_LIST.each { ___ }'
+ast-grep -l nextflow -p '$LIST.each { $$$ }'
 
 # Find closures
-ast-grep -l nextflow -p '{ _PARAMS -> $$$ }'
+ast-grep -l nextflow -p '{ $PARAMS -> $$$ }'
 ```
 
 ### Include and Import Patterns
 
 ```bash
 # Find include statements
-ast-grep -l nextflow -p 'include { ___ } from ___'
+ast-grep -l nextflow -p 'include { $$$ } from $$$'
 
 # Find specific module includes
-ast-grep -l nextflow -p 'include { _MODULE } from _PATH'
+ast-grep -l nextflow -p 'include { $MODULE } from $PATH'
 
 # Find wildcard includes
-ast-grep -l nextflow -p 'include _MODULE from ___'
+ast-grep -l nextflow -p 'include $MODULE from $$$'
 ```
 
 ## Advanced Patterns
@@ -228,12 +236,12 @@ message: Process should have cache directive
 severity: hint
 rule:
   pattern: |
-    process _NAME {
+    process $NAME {
       $$$
     }
   not:
     has:
-      pattern: cache ___
+      pattern: cache $$$
 ```
 
 ### Contextual Matching
@@ -245,9 +253,9 @@ Match patterns within specific contexts:
 id: string-var-usage
 language: nextflow
 rule:
-  pattern: $_VAR
+  pattern: $VAR
   inside:
-    pattern: '"$___"'
+    pattern: '"$$$"'
 ```
 
 ### Combining Patterns
@@ -258,8 +266,8 @@ id: channel-from-to-of
 language: nextflow
 message: Replace Channel.from() with Channel.of()
 rule:
-  pattern: Channel.from($___)
-fix: Channel.of($___)
+  pattern: Channel.from($$$)
+fix: Channel.of($$$)
 ```
 
 ### Field Matching
@@ -271,9 +279,9 @@ Match specific fields in structures:
 id: publishdir-mode
 language: nextflow
 rule:
-  pattern: publishDir $_PATH, mode: '$_MODE'
+  pattern: publishDir $PATH, mode: '$MODE'
   follows:
-    pattern: $_MODE
+    pattern: $MODE
     regex: 'copy|move|link'
 ```
 
@@ -288,24 +296,26 @@ rule:
 **Solution**: Use `--debug-query` to see the AST structure:
 
 ```bash
-echo 'process TEST { script: "echo hello" }' | ast-grep -l nextflow --debug-query 'process _NAME { ___ }'
+echo 'process TEST { script: "echo hello" }' | ast-grep -l nextflow --debug-query 'process $NAME { $$$ }'
 ```
 
 Compare the pattern with the actual AST structure.
 
-#### 2. Dollar Sign in Patterns
+#### 2. Metavariables and the `$` sign
 
-**Problem**: Pattern with `$` doesn't work.
-
-**Solution**: Use `_` instead of `$` due to `expandoChar: _` configuration:
+Write metavariables with the standard `$NAME` / `$$$` syntax:
 
 ```bash
-# Wrong
 ast-grep -l nextflow -p 'process $NAME { $$$ }'
-
-# Correct
-ast-grep -l nextflow -p 'process _NAME { ___ }'
 ```
+
+`sgconfig.yml` sets `expandoChar: _` so the parser can tokenize patterns
+(Nextflow uses `$` for string interpolation), but ast-grep maps `$`↔`_`
+internally — you should **not** write `_NAME`. In `constraints`, `fix`, and
+`name`, reference a captured metavariable by its bare name (`$NAME` → `NAME`).
+
+If a pattern fails to parse, upgrade ast-grep: releases <= 0.40.x mishandled
+some Nextflow block patterns. These examples are verified against 0.43+/0.44.
 
 #### 3. String Interpolation
 
@@ -315,10 +325,10 @@ ast-grep -l nextflow -p 'process _NAME { ___ }'
 
 ```bash
 # Match any interpolated string
-ast-grep -l nextflow -p '"$___"'
+ast-grep -l nextflow -p '"$$$"'
 
 # Match specific variable interpolation
-ast-grep -l nextflow -p '"${_VAR}"'
+ast-grep -l nextflow -p '"${$VAR}"'
 ```
 
 #### 4. Parser Not Found
@@ -349,11 +359,11 @@ rule:
   pattern: |
     workflow {
       take:
-        ___
+        $$$
       main:
-        ___
+        $$$
       emit:
-        ___
+        $$$
     }
 ```
 
@@ -365,7 +375,7 @@ rule:
 
    ```bash
    echo 'process TEST { script: "echo hello" }' > test.nf
-   ast-grep -l nextflow -p 'process _NAME { ___ }' test.nf
+   ast-grep -l nextflow -p 'process $NAME { $$$ }' test.nf
    ```
 
 3. **Check AST Structure**: Use tree-sitter to see how code is parsed:
@@ -393,10 +403,10 @@ Find and replace deprecated patterns:
 
 ```bash
 # Find Channel.from() usage
-ast-grep -l nextflow -p 'Channel.from(___)' -r 'Channel.of(___)'
+ast-grep -l nextflow -p 'Channel.from($$$)' -r 'Channel.of($$$)'
 
 # Find into operators
-ast-grep -l nextflow -p '_CH.into { ___ }' .
+ast-grep -l nextflow -p '$CH.into { $$$ }' .
 ```
 
 ### Code Quality Checks
@@ -408,7 +418,7 @@ Enforce standards across codebase:
 ast-grep scan --rule rules/dsl2-best-practices.yml
 
 # Find hardcoded paths
-ast-grep -l nextflow -p 'path("/___")' .
+ast-grep -l nextflow -p 'path("/$$$")' .
 
 # Find single quotes with interpolation (error)
 ast-grep scan --rule rules/string-interpolation.yml
@@ -420,7 +430,7 @@ Automated code transformations:
 
 ```bash
 # Update container directive
-ast-grep -l nextflow -p 'container "old-image:___"' -r 'container "new-image:___"'
+ast-grep -l nextflow -p 'container "old-image:$$$"' -r 'container "new-image:$$$"'
 
 # Update parameter names
 ast-grep -l nextflow -p 'params.old_name' -r 'params.new_name'
@@ -430,8 +440,8 @@ ast-grep -l nextflow -p 'params.old_name' -r 'params.new_name'
 
 - [AST-grep Documentation](https://ast-grep.github.io/)
 - [AST-grep Rule Config](https://ast-grep.github.io/guide/rule-config.html)
-- [Tree-sitter Nextflow Grammar](../grammar.js)
-- [Example Rules](../rules/)
+- [Tree-sitter Nextflow Grammar](../../grammar.js)
+- [Example Rules](../../rules/)
 
 ## Contributing Patterns
 
