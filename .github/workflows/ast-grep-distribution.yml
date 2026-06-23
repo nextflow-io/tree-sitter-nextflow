@@ -50,18 +50,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
-      # Skip the package `install` script (node-gyp-build); we only need the
-      # tree-sitter CLI to generate and build the parser library.
+      # Install the CLI globally rather than via `npm ci`: building the parser
+      # library only needs the tree-sitter CLI, not the project's node bindings
+      # (whose install runs node-gyp). The global install's postinstall fetches
+      # the platform tree-sitter binary.
       - name: Install tree-sitter CLI
-        run: npm ci --ignore-scripts
+        run: npm install -g tree-sitter-cli@^0.24.5
 
       - name: Generate parser
-        run: npx tree-sitter generate
+        run: tree-sitter generate
 
       - name: Build parser library
-        run: npx tree-sitter build --output "${{ matrix.libname }}"
+        run: tree-sitter build --output "${{ matrix.libname }}"
 
       - name: Verify parser symbol
         run: |
