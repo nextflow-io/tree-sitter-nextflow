@@ -1,0 +1,121 @@
+name: ast-grep distribution
+
+# Builds the tree-sitter parser shared libraries that ast-grep loads as the
+# `nextflow` custom language, verifies each is a usable parser, and smoke-tests
+# the shipped sgconfig + outline rules end-to-end.
+
+on:
+  push:
+    branches: [main, ast-grep-distribution]
+    paths:
+      - grammar.js
+      - src/**
+      - sgconfig.yml
+      - rules/**
+      - outline/**
+      - lib/**
+      - scripts/install-ast-grep.sh
+      - .github/workflows/ast-grep-distribution.yml
+  pull_request:
+    paths:
+      - grammar.js
+      - src/**
+      - sgconfig.yml
+      - rules/**
+      - outline/**
+      - lib/**
+      - scripts/install-ast-grep.sh
+      - .github/workflows/ast-grep-distribution.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & verify (${{ matrix.triple }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            triple: aarch64-apple-darwin
+            libdir: lib/macos-arm64
+            libname: libnextflow.dylib
+          - os: ubuntu-latest
+            triple: x86_64-unknown-linux-gnu
+            libdir: lib/linux-x64
+            libname: libnextflow.so
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Skip the package `install` script (node-gyp-build); we only need the
+      # tree-sitter CLI to generate and build the parser library.
+      - name: Install tree-sitter CLI
+        run: npm ci --ignore-scripts
+
+      - name: Generate parser
+        run: npx tree-sitter generate
+
+      - name: Build parser library
+        run: npx tree-sitter build --output "${{ matrix.libname }}"
+
+      - name: Verify parser symbol
+        run: |
+          lib="${{ matrix.libname }}"
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            symbols=$(nm -gU "$lib")
+          else
+            symbols=$(nm -D "$lib")
+          fi
+          if echo "$symbols" | grep -q tree_sitter_nextflow; then
+            echo "✓ tree_sitter_nextflow exported by $lib"
+          else
+            echo "✗ tree_sitter_nextflow not found in $lib" >&2
+            exit 1
+          fi
+
+      - name: Stage library at distribution path
+        run: |
+          mkdir -p "${{ matrix.libdir }}"
+          cp "${{ matrix.libname }}" "${{ matrix.libdir }}/${{ matrix.libname }}"
+
+      - name: Install ast-grep
+        run: npm install -g @ast-grep/cli@^0.44.0
+
+      - name: Smoke-test outline rules against freshly built parser
+        run: |
+          cat > /tmp/smoke.nf <<'NF'
+          include { FASTQC, MULTIQC as QC } from './modules/qc'
+
+          process ALIGN {
+            script:
+            """echo hi"""
+          }
+
+          workflow RNASEQ {
+            x = 1
+          }
+
+          workflow {
+            y = 2
+          }
+          NF
+          out=$(ast-grep outline --lang nextflow \
+            --outline-rules outline/nextflow.yml \
+            --no-default-outline-rules --items all --json=compact /tmp/smoke.nf)
+          echo "$out"
+          for sym in FASTQC MULTIQC ALIGN RNASEQ main; do
+            echo "$out" | grep -q "\"name\":\"$sym\"" || { echo "✗ outline missing $sym" >&2; exit 1; }
+          done
+          echo "✓ outline extracted all expected symbols"
+
+      - name: Upload parser library
+        uses: actions/upload-artifact@v4
+        with:
+          name: libnextflow-${{ matrix.triple }}
+          path: ${{ matrix.libdir }}/${{ matrix.libname }}
+          if-no-files-found: error
