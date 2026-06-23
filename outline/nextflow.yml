@@ -1,0 +1,74 @@
+# ast-grep outline extractor rules for Nextflow
+# https://ast-grep.github.io/blog/ast-grep-outline.html
+#
+# These are NOT `ast-grep scan` rules (they use the outline schema: role,
+# symbolType, name). Load them with:
+#
+#   ast-grep outline --lang nextflow \
+#     --outline-rules outline/nextflow.yml --no-default-outline-rules <path>
+#
+# Requires ast-grep >= 0.44.0 (the release that added `ast-grep outline`) and
+# the `nextflow` custom language registered via sgconfig.yml in the project.
+#
+# Scope: per-file structural declarations only. ast-grep outline parses on
+# demand and stays local (no cross-file include resolution). For the resolved
+# project call graph (subworkflow/module nesting, alias resolution) see the
+# `nextflow tree` ADR: https://github.com/nextflow-io/nextflow/pull/7196
+#
+# Patterns are kind-based rather than `pattern:`-based on purpose: this grammar
+# cannot parse a standalone block body (`{ $$$ }`) or an `as` clause as an
+# isolated pattern, so `kind` + `has` is the robust way to select declarations.
+# Metavariables use the normal `$NAME` form; sgconfig.yml's `expandoChar: _`
+# maps `$` to `_` internally for the parser.
+
+# Process definitions: `process FOO { ... }`
+id: nextflow-process
+language: nextflow
+role: item
+symbolType: function
+rule:
+  kind: process_definition
+  has:
+    kind: identifier
+    pattern: $NAME
+name: $NAME
+---
+# Named workflows: `workflow FOO { ... }` (reusable subworkflows)
+id: nextflow-workflow
+language: nextflow
+role: item
+symbolType: function
+rule:
+  kind: workflow_definition
+  has:
+    kind: identifier
+    pattern: $NAME
+name: $NAME
+---
+# Entry workflow: anonymous `workflow { ... }`, conventionally named `main`
+id: nextflow-workflow-entry
+language: nextflow
+role: item
+symbolType: function
+rule:
+  kind: workflow_definition
+  not:
+    has:
+      kind: identifier
+name: main
+---
+# Included components: `include { FOO; BAR as BAZ } from './m'`
+# Each imported symbol is one import item. The first identifier is the
+# imported name (the original name for aliased imports).
+id: nextflow-include
+language: nextflow
+role: item
+symbolType: module
+rule:
+  kind: include_item
+  has:
+    kind: identifier
+    pattern: $NAME
+name: $NAME
+isImport: true
+isExported: false

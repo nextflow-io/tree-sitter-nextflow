@@ -7,6 +7,7 @@ repos:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
+        args: [--allow-multiple-documents]  # ast-grep outline rules are multi-doc YAML
     -   id: check-added-large-files
 
 # Tree-sitter specific hooks

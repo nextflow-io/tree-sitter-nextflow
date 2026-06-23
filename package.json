@@ -34,6 +34,7 @@
     "*.wasm",
     "sgconfig.yml",
     "rules/*.yml",
+    "outline/*.yml",
     "scripts/install-ast-grep.sh",
     "docs/ast-grep-*.md"
   ],
@@ -57,6 +58,7 @@
     "install": "node-gyp-build",
     "prestart": "tree-sitter build --wasm",
     "start": "tree-sitter playground",
-    "test": "node --test bindings/node/*_test.js"
+    "test": "node --test bindings/node/*_test.js",
+    "outline": "ast-grep outline --lang nextflow --outline-rules outline/nextflow.yml --no-default-outline-rules"
   }
 }
