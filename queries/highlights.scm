@@ -1,5 +1,6 @@
 ;; Tree-sitter highlighting queries for Nextflow
 ;; These patterns define how syntax highlighting should be applied in editors
+;; Note: the grammar defines no named fields yet, so queries match by position.
 
 ;; ========================================
 ;; KEYWORDS AND DECLARATIONS
@@ -13,27 +14,21 @@
   "nextflow"
   "params"
   "def"
+  "as"
+  "from"
 ] @keyword
 
 ;; Control flow keywords
 [
   "if"
   "else"
-  "for"
-  "while"
-  "try"
-  "catch"
   "assert"
 ] @keyword.control
 
 ;; Built-in types and qualifiers
 [
   "env"
-  "path"
-  "val"
-  "file"
-  "tuple"
-  "each"
+  "Channel"
 ] @type.builtin
 
 ;; Process/workflow sections
@@ -41,6 +36,9 @@
   "input:"
   "output:"
   "script:"
+  "shell:"
+  "exec:"
+  "stub:"
   "when:"
   "main:"
   "take:"
@@ -53,27 +51,15 @@
 
 ;; Process definitions
 (process_definition
-  name: (identifier) @function)
+  (identifier) @function)
 
 ;; Workflow definitions
 (workflow_definition
-  name: (identifier) @function)
-
-;; Function declarations
-(function_declaration
-  name: (identifier) @function)
-
-;; Channel operations and method calls
-(method_call
-  method: (identifier) @function.method)
-
-;; Property access
-(dotted_identifier
-  property: (identifier) @property)
+  (identifier) @function)
 
 ;; Parameters
 (parameter
-  name: (identifier) @variable.parameter)
+  (identifier) @variable.parameter)
 
 ;; Regular identifiers
 (identifier) @variable
@@ -82,14 +68,8 @@
 ;; OPERATORS AND PUNCTUATION
 ;; ========================================
 
-;; Assignment operators
-[
-  "="
-  "+="
-  "-="
-  "*="
-  "/="
-] @operator.assignment
+;; Assignment operator
+"=" @operator.assignment
 
 ;; Comparison and logical operators
 [
@@ -105,20 +85,22 @@
   "!~"
 ] @operator
 
-;; Arithmetic operators
+;; Arithmetic and range operators
 [
   "+"
   "-"
   "*"
   "/"
   "%"
+  "**"
+  ".."
+  "..<"
 ] @operator
 
 ;; Channel operators
 [
   "|"
   "->"
-  "<-"
 ] @operator.channel
 
 ;; Punctuation
@@ -149,11 +131,11 @@
 
 ;; String interpolation
 (interpolated_string) @string
-(interpolation_expression) @embedded
+(interpolation) @embedded
 
 ;; Numbers
 (integer_literal) @number
-(float_literal) @number
+(number) @number
 
 ;; Booleans
 (boolean_literal) @constant.builtin
@@ -162,7 +144,8 @@
 ;; COMMENTS
 ;; ========================================
 
-(comment) @comment
+(line_comment) @comment
+(block_comment) @comment
 
 ;; ========================================
 ;; SPECIAL CONSTRUCTS
@@ -170,14 +153,6 @@
 
 ;; Script content (will be highlighted as bash via injections)
 (script_content) @embedded
-
-;; Include statements
-(include_statement
-  source: (string_literal) @string.special)
-
-;; Nextflow version specification
-(nextflow_version
-  version: (string_literal) @string.special)
 
 ;; ========================================
 ;; ERROR NODES

@@ -4,7 +4,10 @@
       "name": "nextflow",
       "camelcase": "Nextflow",
       "scope": "source.nextflow",
-      "file-types": [".nf", ".nf.test", ".config"],
+      "file-types": [
+        "nf",
+        "config"
+      ],
       "injection-regex": "^nextflow$"
     }
   ],
