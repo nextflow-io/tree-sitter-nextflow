@@ -59,9 +59,11 @@ setup(
                 "bindings/python/tree_sitter_nextflow/binding.c",
                 "src/parser.c",
             ],
+            # TREE_SITTER_HIDE_SYMBOLS deliberately NOT defined: keeping
+            # tree_sitter_nextflow() in the dynamic export table lets the
+            # installed wheel double as an ast-grep customLanguages library.
             define_macros=[
                 ("PY_SSIZE_T_CLEAN", None),
-                ("TREE_SITTER_HIDE_SYMBOLS", None),
             ],
             include_dirs=["src"],
             py_limited_api=not get_config_var("Py_GIL_DISABLED"),
