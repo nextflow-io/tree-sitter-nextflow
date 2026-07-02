@@ -1,6 +1,7 @@
 {
   "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
   "name": "nextflow",
+  "word": "identifier",
   "rules": {
     "source_file": {
       "type": "REPEAT",
@@ -1458,6 +1459,80 @@
         {
           "type": "SYMBOL",
           "name": "channel_of"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "channel_factory"
+        }
+      ]
+    },
+    "channel_factory": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "Channel"
+        },
+        {
+          "type": "STRING",
+          "value": "."
+        },
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "simple_expression"
+                },
+                {
+                  "type": "REPEAT",
+                  "content": {
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": ","
+                      },
+                      {
+                        "type": "SYMBOL",
+                        "name": "simple_expression"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": ","
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ")"
         }
       ]
     },
@@ -1976,6 +2051,10 @@
               {
                 "type": "SYMBOL",
                 "name": "parenthesized_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "channel_expression"
               }
             ]
           },

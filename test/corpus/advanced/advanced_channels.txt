@@ -1,6 +1,5 @@
 ==================
 Channel factories
-:skip
 ==================
 
 numbers = Channel.of(1..10)
@@ -13,20 +12,36 @@ values = Channel.value('constant')
 (source_file
   (assignment
     (identifier)
-    (channel_expression
-      (channel_of)))
+    (simple_expression
+      (channel_expression
+        (channel_of
+          (simple_expression
+            (binary_expression
+              (integer_literal)
+              (integer_literal)))))))
   (assignment
     (identifier)
-    (channel_expression
-      (channel_from_path)))
+    (simple_expression
+      (channel_expression
+        (channel_factory
+          (identifier)
+          (simple_expression
+            (string_literal))))))
   (assignment
     (identifier)
-    (channel_expression
-      (channel_from_pairs)))
+    (simple_expression
+      (channel_expression
+        (channel_factory
+          (identifier)
+          (simple_expression
+            (string_literal))))))
   (assignment
     (identifier)
-    (channel_expression
-      (channel_value))))
+    (simple_expression
+      (channel_expression
+        (channel_value
+          (simple_expression
+            (string_literal)))))))
 
 ==================
 Channel operators
