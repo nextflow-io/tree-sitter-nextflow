@@ -57,10 +57,12 @@ Channel.from(1, 2, 3) | map { it * 2 }
         (pipe_operation
           (map_operation
             (closure
-              (simple_expression
-                (binary_expression
-                  (identifier)
-                  (integer_literal))))))))))
+              (closure_block
+                (expression_statement
+                  (simple_expression
+                    (binary_expression
+                      (identifier)
+                      (integer_literal))))))))))))
 
 ==================
 Channel of operation

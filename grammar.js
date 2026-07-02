@@ -61,6 +61,11 @@
 module.exports = grammar({
   name: "nextflow",
 
+  // KEYWORD EXTRACTION:
+  // Ensures keyword tokens ('from', 'of', 'value', ...) only match complete
+  // identifiers, so e.g. Channel.fromPath is not tokenized as 'from' + ERROR.
+  word: $ => $.identifier,
+
   extras: $ => [
     $.line_comment,
     $.block_comment,
@@ -503,7 +508,20 @@ module.exports = grammar({
       $.channel_from,       // Channel.from(list) - create from collection
       $.channel_from_list,  // Channel.fromList(list) - explicit list input
       $.channel_value,      // Channel.value(item) - singleton channel
-      $.channel_of          // Channel.of(items) - modern factory method
+      $.channel_of,         // Channel.of(items) - modern factory method
+      $.channel_factory     // Channel.<anyFactory>(args) - fromPath, fromFilePairs, empty, ...
+    ),
+
+    // Generic channel factory: Channel.fromPath('*.txt'), Channel.empty(), ...
+    // Catch-all for factories without a dedicated rule above; keyword
+    // extraction (word rule) ensures the specific rules win for their names.
+    channel_factory: $ => seq(
+      'Channel',
+      '.',
+      $.identifier,
+      '(',
+      commaSep($.simple_expression),
+      ')'
     ),
 
     // Legacy channel factory: Channel.from([1,2,3])
@@ -653,7 +671,8 @@ module.exports = grammar({
         $.dotted_identifier,         // Complex case: obj.prop.method()
         $.list,                      // List method calls: [1,2,3].each { }
         $.interpolated_string,       // String method calls: "hello".toUpperCase()
-        $.parenthesized_expression   // Parenthesized expressions: (expr).method()
+        $.parenthesized_expression,  // Parenthesized expressions: (expr).method()
+        $.channel_expression         // Chained factories: Channel.fromPath(x).ifEmpty(y)
       ),
       '.',
       $.identifier,
