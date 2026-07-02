@@ -155,3 +155,38 @@ Channel.value([foo: 'bar', baz: 'qux'])
                 (identifier)
                 (simple_expression
                   (string_literal))))))))))
+
+==================
+Pipe to operator with arguments
+==================
+
+ch | ifEmpty(null)
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (pipe_expression
+        (identifier)
+        (pipe_operation
+          (function_call
+            (identifier)
+            (simple_expression
+              (identifier))))))))
+
+==================
+Pipe to bare operator
+==================
+
+ch | view
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (pipe_expression
+        (identifier)
+        (pipe_operation
+          (identifier))))))

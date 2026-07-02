@@ -1798,6 +1798,14 @@
         {
           "type": "SYMBOL",
           "name": "map_operation"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "function_call"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
         }
       ]
     },
