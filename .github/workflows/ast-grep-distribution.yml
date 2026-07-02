@@ -56,7 +56,7 @@ jobs:
       # (whose install runs node-gyp). The global install's postinstall fetches
       # the platform tree-sitter binary.
       - name: Install tree-sitter CLI
-        run: npm install -g tree-sitter-cli@^0.24.5
+        run: npm install -g tree-sitter-cli@^0.26.10
 
       - name: Generate parser
         run: tree-sitter generate
