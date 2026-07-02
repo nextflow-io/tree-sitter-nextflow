@@ -594,10 +594,10 @@ module.exports = grammar({
     )),
 
     // Pipe operations - extensible for new Nextflow operators
-    // Currently supports: map (transform), filter, collect, etc.
-    // Future: add flatten, groupBy, join, combine, etc.
     pipe_operation: $ => choice(
-      $.map_operation   // map { transformation }
+      $.map_operation,  // map { transformation }
+      $.function_call,  // ch | ifEmpty(null), ch | groupTuple(by: 0)
+      $.identifier      // ch | view, ch | flatten
     ),
 
     // Map operation: transforms each channel item
