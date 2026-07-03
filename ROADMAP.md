@@ -23,7 +23,8 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | ---------- | ----------------------------- | ------------------------------------------ |
 | 2026-07-02 | 0% (effectively)              | before directive/expression support        |
 | 2026-07-02 | 50.0% (1035/2070)             | after PR #22 (directives, ternary, …)      |
-| 2026-07-02 | **66.4% (1374/2070)**         | Phase 1 lexer items (floats, escapes, …)   |
+| 2026-07-02 | 66.4% (1374/2070)             | Phase 1 lexer items (floats, escapes, …)   |
+| 2026-07-03 | **76.1% (1575/2070)**         | newline-terminator external scanner        |
 
 A file counts only if it has **zero** ERROR nodes — that is the bar
 nf-core/tools uses to trust structural matching over regex fallback
@@ -37,32 +38,19 @@ preludes); `==~`; interpolated map keys; braceless `if` bodies; chained
 subscripts; single-qualifier outputs with named options (`path "x", emit: y`);
 `option_entry`/`option_value` so option values don't include `command_expression`.
 
-**Next — the highest-leverage remaining item:**
-
-0. **Newline-sensitive statement termination (external scanner).** This is the
-   single biggest remaining blocker. A newline-blind parser cannot disambiguate
-   consecutive declarations that abut across a line break — e.g.
-
-   ```
-   output:
-   tuple val(meta), path("*.tsv"), emit: embedding
-   path "versions.yml", emit: versions
-   ```
-
-   `emit: embedding` followed by `path` on the next line is genuinely ambiguous
-   without a statement terminator: the GLR parser greedily tries to extend the
-   value across the newline (`command_expression(embedding, path)`) and then
-   errors. The same greediness hits directive lists, `input:`/`output:` blocks,
-   workflow bodies, and script preludes.
-
-   Fix: add `externals: [$._terminator]` + a `src/scanner.c` that emits a token
-   at a newline (and `;`), suppressed inside `(...)`/`[...]`/`{...}` and inside
-   strings so line continuations still work. Then thread `$._terminator` as the
-   separator in the `repeat1` of declaration/statement/directive/prelude rules,
-   and drop the `prec.right` band-aids those rules currently carry. Validate
-   against `scripts/parse_rate.py` — this should clear the bulk of the remaining
-   ~700 failures. Do it as its own PR; it touches many rules and carries the
-   most regression risk.
+**Done — newline-sensitive statement termination (external scanner).**
+`src/scanner.c` emits a `_terminator` token at newlines/`;` where the parser
+state allows a statement to end (`valid_symbols`), so continuations inside
+`(...)`/`[...]` and mid-expression fall through as whitespace for free. A
+one-character lookahead suppresses the terminator when the next line begins a
+continuation (`.`, `?`, `:`, `,`, closing bracket, or the `else` keyword), and
+comment lines are folded into the terminator run so a comment between two
+statements yields one terminator, not two. Process bodies are now parsed in
+three ordered phases (directives → input/output/when → script/stub) and each
+declaration self-terminates, which removes the directive-vs-input and
+directive-vs-prelude-assignment ambiguities the terminator exposed. This took
+66.4% → 76.1% and unblocked multi-line inputs, multi-statement script preludes,
+and processes with both `script:` and `stub:` sections.
 
 **After the scanner, remaining measured failures:**
 

@@ -86,16 +86,14 @@ process FASTQC {
         (simple_expression
           (command_expression
             (identifier)
-            (identifier))))
-      (simple_statement))
+            (identifier)))))
     (output_declaration
       (simple_statement
         (simple_expression
           (command_expression
             (identifier)
             (interpolated_string
-              (string_content)))))
-      (simple_statement))
+              (string_content))))))
     (script_declaration
       (script_content
         (triple_quoted_string)))))
