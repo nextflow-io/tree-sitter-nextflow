@@ -17,8 +17,7 @@ process FASTQC {
         (simple_expression
           (command_expression
             (identifier)
-            (identifier))))
-      (simple_statement))))
+            (identifier)))))))
 
 ==================
 Process with output block
@@ -40,8 +39,7 @@ process FASTQC {
           (command_expression
             (identifier)
             (interpolated_string
-              (string_content)))))
-      (simple_statement))))
+              (string_content))))))))
 
 ==================
 Process with script block

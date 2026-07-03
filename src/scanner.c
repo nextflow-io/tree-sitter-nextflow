@@ -60,19 +60,50 @@ bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
   // (e.g. TODO linting). A comment between two statements therefore yields two
   // terminators around it; the grammar's `_terminators` rule (repeat1) absorbs
   // the pair so it still reads as a single separator.
+  bool saw_semicolon = false;
   while (lexer->lookahead == '\n' || lexer->lookahead == ';' ||
          lexer->lookahead == ' ' || lexer->lookahead == '\t' ||
          lexer->lookahead == '\r' || lexer->lookahead == '\f') {
+    if (lexer->lookahead == ';') saw_semicolon = true;
     lexer->advance(lexer, false);
   }
   lexer->mark_end(lexer);
+
+  // After an explicit ';', fold a trailing comment (and following blank
+  // lines) into the terminator's extent. A comment left as a separate extra
+  // at a `stmt; /* c */`-style boundary would attach to the enclosing node and
+  // reduce a script prelude early. The ';' already made the intent explicit,
+  // so consuming the comment here does not affect statement separation.
+  if (saw_semicolon && lexer->lookahead == '/') {
+    if (lexer->lookahead == '/') {
+      lexer->advance(lexer, false);
+      if (lexer->lookahead == '/') {              // // line comment → to EOL
+        while (lexer->lookahead != '\n' && lexer->lookahead != 0) lexer->advance(lexer, false);
+      } else if (lexer->lookahead == '*') {       // /* block */ → to */
+        lexer->advance(lexer, false);
+        int32_t prev = 0;
+        while (lexer->lookahead != 0 && !(prev == '*' && lexer->lookahead == '/')) {
+          prev = lexer->lookahead;
+          lexer->advance(lexer, false);
+        }
+        if (lexer->lookahead == '/') lexer->advance(lexer, false);
+      }
+      // consume trailing blank space/newlines after the folded comment
+      while (lexer->lookahead == '\n' || lexer->lookahead == ' ' ||
+             lexer->lookahead == '\t' || lexer->lookahead == '\r' ||
+             lexer->lookahead == '\f') {
+        lexer->advance(lexer, false);
+      }
+      lexer->mark_end(lexer);
+    }
+  }
 
   // If a comment follows the newline run, do not emit a terminator here: let
   // the comment be lexed as an ordinary extra and emit the terminator on the
   // next line instead. This keeps comment nodes in the tree (needed for
   // comment-based tooling like TODO linting) while still yielding exactly one
   // terminator between two statements separated by a comment.
-  if (lexer->lookahead == '/') {
+  if (!saw_semicolon && lexer->lookahead == '/') {
     lexer->advance(lexer, false);
     if (lexer->lookahead == '/' || lexer->lookahead == '*') {
       return false;
@@ -82,8 +113,9 @@ bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
   }
 
   // Lookahead: if the next real character continues the statement, suppress
-  // the terminator so the expression parses across the line break.
-  if (is_continuation(lexer->lookahead)) {
+  // the terminator so the expression parses across the line break. An explicit
+  // ';' always terminates, though — even before a '}' (return x ? a : b ; }).
+  if (!saw_semicolon && is_continuation(lexer->lookahead)) {
     return false;
   }
 
