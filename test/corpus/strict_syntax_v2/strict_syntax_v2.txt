@@ -687,3 +687,35 @@ x = """
           (simple_expression
             (dotted_identifier (identifier) (identifier))))
         (triple_string_content)))))
+
+==================
+Exit with code and message, env output with emit
+==================
+
+process P {
+  output:
+  env "VER", emit: v
+  script:
+  if (x) { exit 1, "no" }
+  "y"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (output_declaration
+      (emit_declaration
+        (env_input (interpolated_string (string_content)))
+        (option_entry (identifier) (option_value (identifier)))))
+    (script_declaration
+      (script_statement
+        (if_statement
+          (simple_expression (identifier))
+          (block
+            (exit_statement
+              (simple_expression (integer_literal))
+              (simple_expression (interpolated_string (string_content)))))))
+      (script_content
+        (interpolated_string (string_content))))))

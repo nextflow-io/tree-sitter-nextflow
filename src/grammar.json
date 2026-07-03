@@ -586,6 +586,10 @@
             },
             {
               "type": "SYMBOL",
+              "name": "interpolated_string"
+            },
+            {
+              "type": "SYMBOL",
               "name": "identifier"
             }
           ]
@@ -670,6 +674,10 @@
               {
                 "type": "SYMBOL",
                 "name": "function_call"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "env_input"
               },
               {
                 "type": "SYMBOL",
@@ -891,6 +899,10 @@
         {
           "type": "SYMBOL",
           "name": "return_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "exit_statement"
         },
         {
           "type": "SYMBOL",
@@ -1934,6 +1946,10 @@
                   {
                     "type": "SYMBOL",
                     "name": "assert_statement"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "exit_statement"
                   }
                 ]
               },
@@ -1974,6 +1990,44 @@
               {
                 "type": "SYMBOL",
                 "name": "simple_expression"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "exit_statement": {
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "exit"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "simple_expression"
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": ","
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "simple_expression"
+                  }
+                ]
               },
               {
                 "type": "BLANK"
@@ -3325,6 +3379,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "label_statement"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "exit_statement"
                 }
               ]
             },

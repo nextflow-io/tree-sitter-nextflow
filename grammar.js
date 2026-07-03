@@ -239,10 +239,10 @@ module.exports = grammar({
       commaSep1(choice($.option_entry, $.function_call, $.env_function, $.identifier))
     )),
 
-    // Environment variable inputs for process isolation
-    // Examples: env VAR_NAME, env "SAMPLE_ID"
+    // Environment variable inputs/outputs: env VAR, env 'X', env "X"
     env_input: $ => seq('env', choice(
       $.string_literal,
+      $.interpolated_string,
       $.identifier
     )),
 
@@ -261,7 +261,7 @@ module.exports = grammar({
     //   val meta, emit: meta, optional: true
     // Requires at least one option so bare 'path "x"' stays a simple_statement.
     emit_declaration: $ => prec.right(seq(
-      choice($.command_expression, $.function_call, $.identifier),
+      choice($.command_expression, $.function_call, $.env_input, $.identifier),
       repeat1(seq(',', $.option_entry))
     )),
 
@@ -319,6 +319,7 @@ module.exports = grammar({
       $.if_statement,
       $.assert_statement,
       $.return_statement,
+      $.exit_statement,
       $.method_call,
       $.function_call
     ),
@@ -528,13 +529,21 @@ module.exports = grammar({
         $.assignment,
         $.if_statement,
         $.return_statement,
-        $.assert_statement
+        $.assert_statement,
+        $.exit_statement
       ), optional($._terminator))),
       '}'
     ),
 
     // return, return expr — valid in functions and closures.
     return_statement: $ => prec.right(seq('return', optional($.simple_expression))),
+
+    // exit code, exit code, message — Groovy no-paren call with up to two args.
+    exit_statement: $ => prec.right(seq(
+      'exit',
+      $.simple_expression,
+      optional(seq(',', $.simple_expression))
+    )),
 
     simple_statement: $ => choice(
       $.simple_expression,
@@ -849,7 +858,8 @@ module.exports = grammar({
       $.if_statement,
       $.return_statement,
       $.assert_statement,
-      $.label_statement
+      $.label_statement,
+      $.exit_statement
     ), optional($._terminator))), 'block'),
 
     // Labeled statement: multiMap/branch emit labels — db: [meta, db]
