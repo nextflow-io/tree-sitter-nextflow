@@ -106,6 +106,10 @@
             "named": true
           },
           {
+            "type": "property_expression",
+            "named": true
+          },
+          {
             "type": "string_literal",
             "named": true
           },
@@ -275,6 +279,10 @@
           },
           {
             "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "property_expression",
             "named": true
           },
           {
@@ -523,6 +531,10 @@
       "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "closure",
+          "named": true
+        },
         {
           "type": "identifier",
           "named": true
@@ -829,6 +841,10 @@
       "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "emit_declaration",
+          "named": true
+        },
         {
           "type": "env_input",
           "named": true
@@ -1349,6 +1365,10 @@
           "named": true
         },
         {
+          "type": "integer_literal",
+          "named": true
+        },
+        {
           "type": "method_call",
           "named": true
         },
@@ -1522,6 +1542,10 @@
         },
         {
           "type": "process_output",
+          "named": true
+        },
+        {
+          "type": "property_expression",
           "named": true
         },
         {

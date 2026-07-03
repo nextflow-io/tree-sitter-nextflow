@@ -204,9 +204,14 @@ module.exports = grammar({
 
     // Process directives: tag "$meta.id", label 'process_medium',
     // container "...", publishDir "path", mode: 'copy', cpus 4, debug true
+    // A dynamic directive can take a closure body: memory { 7.B * x.size() },
+    // containerOptions { ... }, publishDir path, mode: 'copy'.
     directive: $ => prec.right(-1, seq(
       $.identifier,
-      commaSep1(choice($.option_entry, $.simple_expression)),
+      choice(
+        $.closure,
+        commaSep1(choice($.option_entry, $.simple_expression))
+      ),
       optional($._terminator)
     )),
 
@@ -217,6 +222,7 @@ module.exports = grammar({
     //   input: env SAMPLE_ID   - environment variable
     input_declaration: $ => prec.right(seq('input:', optional($._terminator), repeat1(seq(choice(
       $.tuple_declaration,
+      $.emit_declaration,   // qualifier with named options: path x, name: 'y'
       $.simple_statement,
       $.env_input
     ), optional($._terminator))))),
@@ -507,6 +513,7 @@ module.exports = grammar({
       $.command_expression,                   // No-paren calls: println "hello"
       $.function_call,                        // Function calls: fn(args)
       $.method_call,                          // Object methods: obj.method()
+      $.property_expression,                  // (expr).name, 7.GB
       $.env_function,                         // Environment: env('VAR')
       $.list,                                 // Lists: [1, 2, 3]
       $.map,                                  // Maps: [key: value]
@@ -546,6 +553,7 @@ module.exports = grammar({
         $.unary_expression,
         $.index_expression,
         $.method_call,
+        $.property_expression,
         $.function_call,
         $.list,
         $.map,
@@ -575,6 +583,7 @@ module.exports = grammar({
         $.unary_expression,
         $.index_expression,
         $.method_call,
+        $.property_expression,
         $.function_call,
         $.list,
         $.map,
@@ -836,9 +845,11 @@ module.exports = grammar({
       repeat1(seq('.', $.identifier))
     )),
 
-    // Property access on a non-identifier receiver: (expr).name, x[0].name
+    // Property access on a non-identifier receiver: (expr).name, x[0].name,
+    // and memory-unit literals 7.GB / 280.MB (property on an integer literal;
+    // float_literal needs a digit after '.', so 7.GB is unambiguous).
     property_expression: $ => prec(6, seq(
-      choice($.parenthesized_expression, $.index_expression, $.method_call),
+      choice($.parenthesized_expression, $.index_expression, $.method_call, $.integer_literal),
       '.',
       $.identifier
     )),
