@@ -33,8 +33,9 @@ void tree_sitter_nextflow_external_scanner_deserialize(void *payload, const char
 
 static bool is_continuation(int32_t c) {
   // A next line beginning with one of these continues the current statement.
+  // '|' covers multi-line channel pipes: ch \n | combine(x) \n | map { }.
   return c == '.' || c == '?' || c == ':' || c == ',' ||
-         c == ')' || c == ']' || c == '}';
+         c == ')' || c == ']' || c == '}' || c == '|';
 }
 
 bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
