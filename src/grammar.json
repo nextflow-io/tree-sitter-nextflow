@@ -994,6 +994,10 @@
           {
             "type": "SYMBOL",
             "name": "variable_declaration"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "if_statement"
           }
         ]
       }
@@ -1048,6 +1052,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "variable_declaration"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "if_statement"
                 }
               ]
             }
