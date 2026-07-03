@@ -180,6 +180,7 @@ module.exports = grammar({
       $.identifier, // Process name, must be unique in scope
       '{',
       repeat(choice(
+        $.directive,
         $.input_declaration,
         $.output_declaration,
         $.when_declaration,
@@ -188,15 +189,30 @@ module.exports = grammar({
       '}'
     ),
 
+    // Process directives: tag "$meta.id", label 'process_medium',
+    // container "...", publishDir "path", mode: 'copy', cpus 4, debug true
+    directive: $ => prec.right(seq(
+      $.identifier,
+      commaSep1(choice($.simple_expression, $.map_entry))
+    )),
+
     // Input declarations specify process parameters and channels
     // Examples:
     //   input: val x           - simple value input
     //   input: path "*.txt"    - file path input
     //   input: env SAMPLE_ID   - environment variable
-    input_declaration: $ => seq('input:', repeat1(choice(
+    input_declaration: $ => prec.right(seq('input:', repeat1(choice(
+      $.tuple_declaration,
       $.simple_statement,
       $.env_input
-    ))),
+    )))),
+
+    // Tuple inputs/outputs: tuple val(meta), path(bam)
+    // Output form adds named options: tuple val(meta), path("*.bam"), emit: bam, optional: true
+    tuple_declaration: $ => prec.right(seq(
+      'tuple',
+      commaSep1(choice($.function_call, $.map_entry))
+    )),
 
     // Environment variable inputs for process isolation
     // Examples: env VAR_NAME, env "SAMPLE_ID"
@@ -209,7 +225,10 @@ module.exports = grammar({
     // Examples:
     //   output: path "*.txt"   - file outputs
     //   output: stdout         - standard output
-    output_declaration: $ => seq('output:', repeat1($.simple_statement)),
+    output_declaration: $ => prec.right(seq('output:', repeat1(choice(
+      $.tuple_declaration,
+      $.simple_statement
+    )))),
 
     // Conditional execution guard for processes
     // Example: when: params.run_analysis
@@ -223,17 +242,31 @@ module.exports = grammar({
     // - shell:  Bash shell script with special variable handling
     // - exec:   Direct command execution
     // - stub:   Mock/test script for development
-    script_declaration: $ => seq(
+    script_declaration: $ => prec.right(seq(
       choice('script:', 'shell:', 'exec:', 'stub:'),
-      $.script_content
+      repeat($.script_statement),  // Groovy prelude: def args = task.ext.args ?: ''
+      optional($.script_content)
+    )),
+
+    // Groovy statements allowed before the script string.
+    // Deliberately excludes bare string expressions so the final
+    // string is parsed as script_content, not a statement.
+    script_statement: $ => choice(
+      $.variable_declaration,
+      $.assignment,
+      $.if_statement,
+      $.method_call,
+      $.function_call
     ),
 
     // Script content enables language server integration
     // Language servers can inject Bash/shell highlighting into these nodes
     // Supports both single-line strings and multi-line heredoc syntax
     script_content: $ => choice(
-      $.string_literal,        // Simple string: "echo hello"
-      $.triple_quoted_string   // Heredoc: """complex bash script"""
+      $.string_literal,                      // Simple string: "echo hello"
+      $.triple_quoted_string,                // Heredoc: """complex bash script"""
+      $.interpolated_string,                 // "echo ${prefix}"
+      $.interpolated_triple_quoted_string    // Heredoc with ${...} interpolation
     ),
 
     // WORKFLOW DEFINITIONS - ORCHESTRATION LAYER
@@ -412,7 +445,10 @@ module.exports = grammar({
     // Main expression entry point - handles all Nextflow expression types
     // Ordered roughly by frequency of use in typical workflows
     simple_expression: $ => choice(
+      $.ternary_expression,                   // Conditional: cond ? a : b
       $.binary_expression,                    // Arithmetic, comparison: x + y, a == b
+      $.unary_expression,                     // Negation: !flag
+      $.index_expression,                     // Subscript: list[0]
       $.parenthesized_expression,             // Grouping: (expr)
       $.pipe_expression,                      // Channel ops: ch | map { }
       $.command_expression,                   // No-paren calls: println "hello"
@@ -452,14 +488,22 @@ module.exports = grammar({
         $.dotted_identifier,
         $.interpolated_string,
         $.parenthesized_expression,
-        $.binary_expression
+        $.binary_expression,
+        $.unary_expression,
+        $.index_expression,
+        $.method_call,
+        $.function_call,
+        $.list
       )),
       field('operator', choice(
         '+', '-', '*', '/', '%', '**',        // Arithmetic operators
         '==', '!=', '<', '>', '<=', '>=',     // Comparison operators
         '&&', '||',                           // Logical operators
         '..', '..<',                          // Range operators (Groovy)
-        '=~', '!~'                            // Pattern matching (regex)
+        '=~', '!~',                           // Pattern matching (regex)
+        '?:',                                 // Elvis operator: x ?: default
+        'in',                                 // Membership: x in [1, 2]
+        'instanceof'                          // Type check: x instanceof List
       )),
       field('right', choice(
         $.identifier,
@@ -469,8 +513,34 @@ module.exports = grammar({
         $.dotted_identifier,
         $.interpolated_string,
         $.parenthesized_expression,
-        $.binary_expression
+        $.binary_expression,
+        $.unary_expression,
+        $.index_expression,
+        $.method_call,
+        $.function_call,
+        $.list
       ))
+    )),
+
+    // Conditional (ternary) expression: cond ? a : b
+    // Right-associative so nested ternaries chain: a ? x : b ? y : z
+    ternary_expression: $ => prec.right(1, seq(
+      field('condition', $.simple_expression),
+      '?',
+      field('consequence', $.simple_expression),
+      ':',
+      field('alternative', $.simple_expression)
+    )),
+
+    // Logical negation: !flag
+    unary_expression: $ => prec(5, seq('!', $.simple_expression)),
+
+    // Subscript access: list[0], map['key']
+    index_expression: $ => prec(6, seq(
+      choice($.identifier, $.dotted_identifier, $.method_call, $.function_call, $.list),
+      '[',
+      $.simple_expression,
+      ']'
     )),
 
     // Parenthesized expressions
@@ -665,15 +735,21 @@ module.exports = grammar({
     )),
 
     // Method calls on objects (collection.method)
+    // The navigation path (a.b.c) is inlined rather than a reduced
+    // dotted_identifier receiver, so the parser can defer the
+    // dotted-chain-vs-method-call decision until it sees '(' or '{'.
     method_call: $ => prec(7, seq(
       choice(
         $.identifier,                // Simple case: obj.method()
-        $.dotted_identifier,         // Complex case: obj.prop.method()
         $.list,                      // List method calls: [1,2,3].each { }
         $.interpolated_string,       // String method calls: "hello".toUpperCase()
         $.parenthesized_expression,  // Parenthesized expressions: (expr).method()
-        $.channel_expression         // Chained factories: Channel.fromPath(x).ifEmpty(y)
+        $.channel_expression,        // Chained factories: Channel.fromPath(x).ifEmpty(y)
+        $.method_call,               // Chained methods: x.a().b()
+        $.index_expression,          // Subscript receivers: list[0].name()
+        $.property_expression        // Property receivers: (expr).name.endsWith(y)
       ),
+      repeat(seq('.', $.identifier)),  // Navigation path: task.ext.args.contains(...)
       '.',
       $.identifier,
       choice(
@@ -690,9 +766,16 @@ module.exports = grammar({
       ')'
     ),
 
-    dotted_identifier: $ => prec(6, seq(
+    dotted_identifier: $ => prec(7, seq(
       $.identifier,
       repeat1(seq('.', $.identifier))
+    )),
+
+    // Property access on a non-identifier receiver: (expr).name, x[0].name
+    property_expression: $ => prec(6, seq(
+      choice($.parenthesized_expression, $.index_expression, $.method_call),
+      '.',
+      $.identifier
     )),
 
     // STRING LITERALS & INTERPOLATION SYSTEM
