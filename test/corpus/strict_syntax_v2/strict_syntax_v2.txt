@@ -398,3 +398,37 @@ def i = fasta - ~/\.gz$/
         left: (identifier)
         right: (unary_expression
           (simple_expression (slashy_string)))))))
+
+==================
+Dynamic directive closure, memory-unit literal, and input named option
+==================
+
+process P {
+  memory { 7.GB * task.attempt }
+  input:
+  path ref, name: 'ref/*'
+  script:
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (directive
+      (identifier)
+      (closure
+        (closure_block
+          (expression_statement
+            (simple_expression
+              (binary_expression
+                left: (property_expression (integer_literal) (identifier))
+                right: (dotted_identifier (identifier) (identifier))))))))
+    (input_declaration
+      (emit_declaration
+        (command_expression (identifier) (identifier))
+        (option_entry (identifier) (option_value (string_literal)))))
+    (script_declaration
+      (script_content
+        (interpolated_string (string_content))))))
