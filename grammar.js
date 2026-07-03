@@ -101,7 +101,8 @@ module.exports = grammar({
     [$.list, $.map],  // Square bracket ambiguity: [expr, expr] vs [key: value]
     [$.variable_declaration, $.function_definition],  // `def foo` prefix: (params) vs = init
     [$.method_call, $.dotted_identifier],  // a.b.c: property chain vs method receiver path
-    [$.process_output]  // PROCESS.out.ch: channel name vs method navigation start
+    [$.process_output],  // PROCESS.out.ch: channel name vs method navigation start
+    [$.exit_statement, $.parenthesized_expression]  // exit (x): args vs grouped expr
   ],
 
   rules: {
@@ -538,11 +539,14 @@ module.exports = grammar({
     // return, return expr — valid in functions and closures.
     return_statement: $ => prec.right(seq('return', optional($.simple_expression))),
 
-    // exit code, exit code, message — Groovy no-paren call with up to two args.
+    // exit code / exit code, message / exit(code, message) — up to two args,
+    // with or without parens (exit is otherwise a keyword now).
     exit_statement: $ => prec.right(seq(
       'exit',
-      $.simple_expression,
-      optional(seq(',', $.simple_expression))
+      choice(
+        seq('(', commaSep($.simple_expression), ')'),
+        seq($.simple_expression, optional(seq(',', $.simple_expression)))
+      )
     )),
 
     simple_statement: $ => choice(
