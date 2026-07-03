@@ -1863,6 +1863,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "float_literal"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "slashy_string"
                 }
               ]
             }
@@ -3062,11 +3066,14 @@
       ]
     },
     "string_content": {
-      "type": "PREC",
-      "value": -1,
+      "type": "TOKEN",
       "content": {
-        "type": "PATTERN",
-        "value": "[^$\"\\\\]+"
+        "type": "PREC",
+        "value": 1,
+        "content": {
+          "type": "PATTERN",
+          "value": "[^$\"\\\\]+"
+        }
       }
     },
     "escape_sequence": {
@@ -3099,21 +3106,49 @@
       }
     },
     "slashy_string": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "/"
-        },
-        {
-          "type": "PATTERN",
-          "value": "[^\\/]+"
-        },
-        {
-          "type": "STRING",
-          "value": "/"
-        }
-      ]
+      "type": "TOKEN",
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "/"
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "PATTERN",
+                "value": "[^/*\\n\\\\]"
+              },
+              {
+                "type": "PATTERN",
+                "value": "\\\\."
+              }
+            ]
+          },
+          {
+            "type": "REPEAT",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "PATTERN",
+                  "value": "[^/\\n\\\\]"
+                },
+                {
+                  "type": "PATTERN",
+                  "value": "\\\\."
+                }
+              ]
+            }
+          },
+          {
+            "type": "STRING",
+            "value": "/"
+          }
+        ]
+      }
     },
     "interpolated_triple_quoted_string": {
       "type": "SEQ",

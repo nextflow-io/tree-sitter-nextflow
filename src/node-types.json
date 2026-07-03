@@ -254,6 +254,10 @@
             "named": true
           },
           {
+            "type": "slashy_string",
+            "named": true
+          },
+          {
             "type": "string_literal",
             "named": true
           },
@@ -1527,11 +1531,6 @@
     }
   },
   {
-    "type": "slashy_string",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "source_file",
     "named": true,
     "root": true,
@@ -1597,11 +1596,6 @@
   },
   {
     "type": "string",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "string_content",
     "named": true,
     "fields": {}
   },
@@ -2148,6 +2142,14 @@
   {
     "type": "shell:",
     "named": false
+  },
+  {
+    "type": "slashy_string",
+    "named": true
+  },
+  {
+    "type": "string_content",
+    "named": true
   },
   {
     "type": "string_literal",

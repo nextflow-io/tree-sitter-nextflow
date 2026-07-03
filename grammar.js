@@ -576,7 +576,8 @@ module.exports = grammar({
         $.function_call,
         $.list,
         $.map,
-        $.float_literal
+        $.float_literal,
+        $.slashy_string
       ))
     )),
 
@@ -875,9 +876,10 @@ module.exports = grammar({
       )
     ),
 
-    // String content between interpolations - excludes $ to avoid ambiguity
-    // Removed token() wrapper to avoid conflicts with operators like !
-    string_content: $ => prec(-1, /[^$"\\]+/),
+    // String content between interpolations - excludes $, ", \.
+    // token(prec(1, ...)) so a `//` inside a string (e.g. sed 's/.$//') is
+    // string content, not a line_comment extra that would eat the closing ".
+    string_content: $ => token(prec(1, /[^$"\\]+/)),
 
     // Escape sequences in strings - supports common escapes + Unicode
     // Examples: \n, \t, \", \\, \u0041 (for 'A')
@@ -892,7 +894,16 @@ module.exports = grammar({
     // Slashy strings for regex patterns (Groovy feature)
     // Example: /pattern[a-z]+/
     // Note: No interpolation in strict syntax mode for security
-    slashy_string: $ => seq('/', /[^\/]+/, '/'),
+    // Slashy strings (regex): /pattern/. Single token so its delimiters don't
+    // collide with the division operator or string escape tokens. The first
+    // body char excludes `*` so `/*...*/` stays a block comment, and excludes
+    // `/` so `//` stays a line comment; `\` escapes the next char (incl. `/`).
+    slashy_string: $ => token(seq(
+      '/',
+      choice(/[^/*\n\\]/, /\\./),
+      repeat(choice(/[^/\n\\]/, /\\./)),
+      '/'
+    )),
 
     // Multi-line interpolated strings (heredoc with interpolation)
     // Examples:
