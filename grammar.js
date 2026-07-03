@@ -921,6 +921,8 @@ module.exports = grammar({
       choice(
         $.interpolated_string,
         $.string_literal,
+        $.triple_quoted_string,              // error """..."""
+        $.interpolated_triple_quoted_string, // error """...${x}"""
         $.identifier,
         $.integer_literal,
         $.closure
