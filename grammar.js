@@ -718,7 +718,7 @@ module.exports = grammar({
 
     // Subscript access: list[0], map['key']
     index_expression: $ => prec(6, seq(
-      choice($.identifier, $.dotted_identifier, $.method_call, $.function_call, $.list, $.index_expression),
+      choice($.identifier, $.dotted_identifier, $.method_call, $.function_call, $.list, $.index_expression, $.parenthesized_expression, $.property_expression),
       '[',
       $.simple_expression,
       ']'
