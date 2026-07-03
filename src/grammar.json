@@ -509,6 +509,14 @@
                   {
                     "type": "SYMBOL",
                     "name": "function_call"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "env_function"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "identifier"
                   }
                 ]
               },
@@ -531,6 +539,14 @@
                         {
                           "type": "SYMBOL",
                           "name": "function_call"
+                        },
+                        {
+                          "type": "SYMBOL",
+                          "name": "env_function"
+                        },
+                        {
+                          "type": "SYMBOL",
+                          "name": "identifier"
                         }
                       ]
                     }
@@ -928,6 +944,32 @@
             {
               "type": "SYMBOL",
               "name": "interpolated_string"
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "("
+                },
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "SYMBOL",
+                      "name": "string_literal"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "interpolated_string"
+                    }
+                  ]
+                },
+                {
+                  "type": "STRING",
+                  "value": ")"
+                }
+              ]
             }
           ]
         }
@@ -1805,6 +1847,10 @@
               {
                 "type": "SYMBOL",
                 "name": "return_statement"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "assert_statement"
               }
             ]
           }
@@ -3163,6 +3209,10 @@
             {
               "type": "SYMBOL",
               "name": "return_statement"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "assert_statement"
             }
           ]
         }

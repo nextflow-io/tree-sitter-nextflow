@@ -534,3 +534,40 @@ y = args?.contains('j')
         (identifier)
         (identifier)
         (simple_expression (string_literal))))))
+
+==================
+Assert inside a closure and bare stdout tuple output
+==================
+
+process P {
+  output:
+  tuple val(meta), stdout, emit: gender
+  script:
+  input.collect{ f -> assert f.name != "x" : "same" }
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (output_declaration
+      (tuple_declaration
+        (function_call (identifier) (simple_expression (identifier)))
+        (identifier)
+        (option_entry (identifier) (option_value (identifier)))))
+    (script_declaration
+      (script_statement
+        (method_call
+          (identifier)
+          (identifier)
+          (closure
+            (closure_parameter)
+            (closure_block
+              (assert_statement
+                (simple_expression
+                  (binary_expression left: (dotted_identifier (identifier) (identifier)) right: (interpolated_string (string_content))))
+                (simple_expression (interpolated_string (string_content))))))))
+      (script_content
+        (interpolated_string (string_content))))))
