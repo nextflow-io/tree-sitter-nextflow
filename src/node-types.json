@@ -596,7 +596,15 @@
           "named": true
         },
         {
+          "type": "interpolated_triple_quoted_string",
+          "named": true
+        },
+        {
           "type": "string_literal",
+          "named": true
+        },
+        {
+          "type": "triple_quoted_string",
           "named": true
         }
       ]

@@ -3762,6 +3762,14 @@
               },
               {
                 "type": "SYMBOL",
+                "name": "triple_quoted_string"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "interpolated_triple_quoted_string"
+              },
+              {
+                "type": "SYMBOL",
                 "name": "identifier"
               },
               {
