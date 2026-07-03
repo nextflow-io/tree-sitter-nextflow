@@ -338,55 +338,64 @@
             "name": "identifier"
           },
           {
-            "type": "SEQ",
+            "type": "CHOICE",
             "members": [
               {
-                "type": "CHOICE",
-                "members": [
-                  {
-                    "type": "SYMBOL",
-                    "name": "option_entry"
-                  },
-                  {
-                    "type": "SYMBOL",
-                    "name": "simple_expression"
-                  }
-                ]
+                "type": "SYMBOL",
+                "name": "closure"
               },
               {
-                "type": "REPEAT",
-                "content": {
-                  "type": "SEQ",
-                  "members": [
-                    {
-                      "type": "STRING",
-                      "value": ","
-                    },
-                    {
-                      "type": "CHOICE",
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SYMBOL",
+                        "name": "option_entry"
+                      },
+                      {
+                        "type": "SYMBOL",
+                        "name": "simple_expression"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "REPEAT",
+                    "content": {
+                      "type": "SEQ",
                       "members": [
                         {
-                          "type": "SYMBOL",
-                          "name": "option_entry"
+                          "type": "STRING",
+                          "value": ","
                         },
                         {
-                          "type": "SYMBOL",
-                          "name": "simple_expression"
+                          "type": "CHOICE",
+                          "members": [
+                            {
+                              "type": "SYMBOL",
+                              "name": "option_entry"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "simple_expression"
+                            }
+                          ]
                         }
                       ]
                     }
-                  ]
-                }
-              },
-              {
-                "type": "CHOICE",
-                "members": [
-                  {
-                    "type": "STRING",
-                    "value": ","
                   },
                   {
-                    "type": "BLANK"
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": ","
+                      },
+                      {
+                        "type": "BLANK"
+                      }
+                    ]
                   }
                 ]
               }
@@ -440,6 +449,10 @@
                     {
                       "type": "SYMBOL",
                       "name": "tuple_declaration"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "emit_declaration"
                     },
                     {
                       "type": "SYMBOL",
@@ -1640,6 +1653,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "property_expression"
+        },
+        {
+          "type": "SYMBOL",
           "name": "env_function"
         },
         {
@@ -1751,6 +1768,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "method_call"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "property_expression"
                 },
                 {
                   "type": "SYMBOL",
@@ -1951,6 +1972,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "method_call"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "property_expression"
                 },
                 {
                   "type": "SYMBOL",
@@ -3090,6 +3115,10 @@
               {
                 "type": "SYMBOL",
                 "name": "method_call"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "integer_literal"
               }
             ]
           },
