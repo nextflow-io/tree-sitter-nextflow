@@ -326,6 +326,10 @@
           "named": true
         },
         {
+          "type": "exit_statement",
+          "named": true
+        },
+        {
           "type": "expression_statement",
           "named": true
         },
@@ -682,6 +686,10 @@
           "named": true
         },
         {
+          "type": "env_input",
+          "named": true
+        },
+        {
           "type": "function_call",
           "named": true
         },
@@ -724,7 +732,26 @@
           "named": true
         },
         {
+          "type": "interpolated_string",
+          "named": true
+        },
+        {
           "type": "string_literal",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "exit_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -1597,6 +1624,10 @@
           "named": true
         },
         {
+          "type": "exit_statement",
+          "named": true
+        },
+        {
           "type": "function_call",
           "named": true
         },
@@ -2374,6 +2405,10 @@
   },
   {
     "type": "exec:",
+    "named": false
+  },
+  {
+    "type": "exit",
     "named": false
   },
   {
