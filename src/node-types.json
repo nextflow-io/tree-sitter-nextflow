@@ -1498,7 +1498,11 @@
           "named": true
         },
         {
-          "type": "process_output",
+          "type": "option_entry",
+          "named": true
+        },
+        {
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -1527,6 +1531,10 @@
       "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "function_call",
+          "named": true
+        },
         {
           "type": "identifier",
           "named": true
