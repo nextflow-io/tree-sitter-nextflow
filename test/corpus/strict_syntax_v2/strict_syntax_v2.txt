@@ -735,3 +735,33 @@ if (x) { exit(1, "no") }
       (exit_statement
         (simple_expression (integer_literal))
         (simple_expression (interpolated_string (string_content)))))))
+
+==================
+Trailing closure after parenthesised args, and cast as binary operand
+==================
+
+def a = s.replaceAll(/x/) { m -> m }
+b = r.d as Float > 0
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (method_call
+        (identifier)
+        (identifier)
+        (simple_expression (slashy_string))
+        (closure
+          (closure_parameter)
+          (closure_block
+            (expression_statement (simple_expression (identifier))))))))
+  (assignment
+    (identifier)
+    (simple_expression
+      (binary_expression
+        left: (cast_expression
+          (simple_expression (dotted_identifier (identifier) (identifier)))
+          (identifier))
+        right: (integer_literal)))))

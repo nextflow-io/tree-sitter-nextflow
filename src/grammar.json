@@ -2306,6 +2306,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "float_literal"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "cast_expression"
                 }
               ]
             }
@@ -2522,6 +2526,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "slashy_string"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "cast_expression"
                 }
               ]
             }
@@ -3796,6 +3804,18 @@
                   {
                     "type": "STRING",
                     "value": ")"
+                  },
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SYMBOL",
+                        "name": "closure"
+                      },
+                      {
+                        "type": "BLANK"
+                      }
+                    ]
                   }
                 ]
               },

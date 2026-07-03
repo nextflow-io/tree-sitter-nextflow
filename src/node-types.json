@@ -62,6 +62,10 @@
             "named": true
           },
           {
+            "type": "cast_expression",
+            "named": true
+          },
+          {
             "type": "dotted_identifier",
             "named": true
           },
@@ -243,6 +247,10 @@
           },
           {
             "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "cast_expression",
             "named": true
           },
           {

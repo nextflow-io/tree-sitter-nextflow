@@ -616,7 +616,8 @@ module.exports = grammar({
         $.function_call,
         $.list,
         $.map,
-        $.float_literal
+        $.float_literal,
+        $.cast_expression
       )),
       field('operator', choice(
         '+', '-', '*', '/', '%', '**',        // Arithmetic operators
@@ -648,7 +649,8 @@ module.exports = grammar({
         $.list,
         $.map,
         $.float_literal,
-        $.slashy_string
+        $.slashy_string,
+        $.cast_expression
       ))
     )),
 
@@ -918,7 +920,8 @@ module.exports = grammar({
       choice('.', '?.', '*.'),
       $.identifier,
       choice(
-        seq('(', commaSep(choice($.option_entry, $.simple_expression)), ')'),
+        // foo(args), foo(args) { closure } (Groovy trailing closure), foo { }
+        seq('(', commaSep(choice($.option_entry, $.simple_expression)), ')', optional($.closure)),
         $.closure
       )
     )),
