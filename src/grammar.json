@@ -3419,6 +3419,10 @@
               {
                 "type": "SYMBOL",
                 "name": "property_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "process_output"
               }
             ]
           },
@@ -4060,6 +4064,9 @@
     [
       "method_call",
       "dotted_identifier"
+    ],
+    [
+      "process_output"
     ]
   ],
   "precedences": [],

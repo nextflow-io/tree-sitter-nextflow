@@ -100,7 +100,8 @@ module.exports = grammar({
   conflicts: $ => [
     [$.list, $.map],  // Square bracket ambiguity: [expr, expr] vs [key: value]
     [$.variable_declaration, $.function_definition],  // `def foo` prefix: (params) vs = init
-    [$.method_call, $.dotted_identifier]  // a.b.c: property chain vs method receiver path
+    [$.method_call, $.dotted_identifier],  // a.b.c: property chain vs method receiver path
+    [$.process_output]  // PROCESS.out.ch: channel name vs method navigation start
   ],
 
   rules: {
@@ -890,7 +891,8 @@ module.exports = grammar({
         $.function_call,             // Call results: foo().bar()
         $.constructor_call,          // new X().parseText(...)
         $.index_expression,          // Subscript receivers: list[0].name()
-        $.property_expression        // Property receivers: (expr).name.endsWith(y)
+        $.property_expression,       // Property receivers: (expr).name.endsWith(y)
+        $.process_output             // PROCESS.out.ch.join(...)
       ),
       // Navigation path with optional safe-navigation (?.) and spread (*.)
       repeat(seq(choice('.', '?.', '*.'), $.identifier)),
