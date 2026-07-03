@@ -326,6 +326,7 @@ module.exports = grammar({
       $.try_statement,
       $.method_call,
       $.function_call,
+      $.binary_expression,   // bare side-effecting op: outputs << "x"
       $.ternary_expression   // bare ternary for side effects: cond ? a.each{} : b
     ),
 

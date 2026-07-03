@@ -918,6 +918,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "binary_expression"
+        },
+        {
+          "type": "SYMBOL",
           "name": "ternary_expression"
         }
       ]
