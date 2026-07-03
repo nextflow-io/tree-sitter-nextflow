@@ -198,7 +198,7 @@ module.exports = grammar({
         $.output_declaration,
         $.when_declaration
       )),
-      repeat($.script_declaration),
+      repeat(seq($.script_declaration, optional($._terminator))),
       '}'
     ),
 
@@ -296,8 +296,7 @@ module.exports = grammar({
       optional($._terminator),
       repeat(seq($.script_statement, $._terminator)),  // Groovy prelude, each terminated
       // exec: sections are Groovy-only; script/shell/stub end in a string.
-      optional($.script_content),
-      optional($._terminator)
+      optional($.script_content)
     )),
 
     // Groovy statements allowed before the script string.

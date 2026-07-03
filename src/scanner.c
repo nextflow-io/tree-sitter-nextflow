@@ -54,39 +54,31 @@ bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
     return false;
   }
 
-  // Consume the run of newlines/';'/whitespace as the token extent, folding
-  // in any comment lines so that `stmt \n // note \n stmt` yields a single
-  // terminator (not one before and one after the comment).
-  for (;;) {
-    int32_t c = lexer->lookahead;
-    if (c == '\n' || c == ';' || c == ' ' || c == '\t' || c == '\r' || c == '\f') {
-      lexer->advance(lexer, false);
-    } else if (c == '/') {
-      lexer->advance(lexer, false);
-      if (lexer->lookahead == '/') {  // line comment
-        while (lexer->lookahead != '\n' && lexer->lookahead != 0) {
-          lexer->advance(lexer, false);
-        }
-      } else if (lexer->lookahead == '*') {  // block comment
-        lexer->advance(lexer, false);
-        int32_t prev = 0;
-        while (lexer->lookahead != 0 && !(prev == '*' && lexer->lookahead == '/')) {
-          prev = lexer->lookahead;
-          lexer->advance(lexer, false);
-        }
-        if (lexer->lookahead == '/') lexer->advance(lexer, false);
-      } else {
-        // A lone '/' (division/slashy) does not belong to the terminator;
-        // it was not preceded by whitespace we can give back, but this only
-        // happens at a statement boundary where '/' cannot legally start a
-        // token, so treating the run as ended here is safe.
-        break;
-      }
-    } else {
-      break;
-    }
+  // Consume the run of newlines/';'/whitespace as the token extent. Comments
+  // are NOT folded in — they must survive as nodes for comment-based tooling
+  // (e.g. TODO linting). A comment between two statements therefore yields two
+  // terminators around it; the grammar's `_terminators` rule (repeat1) absorbs
+  // the pair so it still reads as a single separator.
+  while (lexer->lookahead == '\n' || lexer->lookahead == ';' ||
+         lexer->lookahead == ' ' || lexer->lookahead == '\t' ||
+         lexer->lookahead == '\r' || lexer->lookahead == '\f') {
+    lexer->advance(lexer, false);
   }
   lexer->mark_end(lexer);
+
+  // If a comment follows the newline run, do not emit a terminator here: let
+  // the comment be lexed as an ordinary extra and emit the terminator on the
+  // next line instead. This keeps comment nodes in the tree (needed for
+  // comment-based tooling like TODO linting) while still yielding exactly one
+  // terminator between two statements separated by a comment.
+  if (lexer->lookahead == '/') {
+    lexer->advance(lexer, false);
+    if (lexer->lookahead == '/' || lexer->lookahead == '*') {
+      return false;
+    }
+    // A lone '/' at a statement boundary cannot start a valid token; treating
+    // the run as a terminator is safe. Fall through.
+  }
 
   // Lookahead: if the next real character continues the statement, suppress
   // the terminator so the expression parses across the line break.
