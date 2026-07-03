@@ -3129,7 +3129,7 @@
             "members": [
               {
                 "type": "SYMBOL",
-                "name": "string_content"
+                "name": "triple_string_content"
               },
               {
                 "type": "SYMBOL",
@@ -3147,6 +3147,17 @@
           "value": "\"\"\""
         }
       ]
+    },
+    "triple_string_content": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": -1,
+        "content": {
+          "type": "PATTERN",
+          "value": "([^$\"\\\\]|\"[^\"$\\\\]|\"\"[^\"$\\\\])+"
+        }
+      }
     },
     "triple_quoted_string": {
       "type": "CHOICE",

@@ -106,7 +106,7 @@ line ${text}""")
                   (identifier)))))
           (simple_expression
             (interpolated_triple_quoted_string
-              (string_content)
+              (triple_string_content)
               (interpolation
                 (simple_expression
                   (identifier))))))))))
