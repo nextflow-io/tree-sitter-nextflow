@@ -45,37 +45,37 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-03 | 98.9% (2047/2070)             | destructuring assignment, bare << statements |
 | 2026-07-03 | 99.1% (2052/2070)             | index on paren/interp, pipe-op closures, error """…""", typed closure params |
 | 2026-07-03 | 99.3% (2056/2070)             | method calls on triple strings ("""…""".stripIndent()); """ unified to one rule |
-| 2026-07-03 | **99.4% (2058/2070)**         | lenient string escapes (\\ + any char)     |
+| 2026-07-03 | 99.4% (2058/2070)             | lenient string escapes (\\ + any char)     |
+| 2026-07-03 | 99.5% (2059/2070)             | whitespace in section markers (stub :)      |
+| 2026-07-03 | **99.6% (2062/2070)**         | ; terminates before } / after comment; typed function defs (String f(String a){}) |
 
-## Remaining failures (12 files, 0.6%) — categorised
+## Remaining failures (8 files, 0.4%) — categorised
 
 Each was attempted and reverted with the measured cost; these are genuine
 LR/lexer limits or non-idiomatic source:
 
 - **`|` as boolean-or in conditions** (4): `if (a == b | c == d)`. Adding `|`
-  as a binary operator reaches 99.5% but deterministically reparses every
+  as a binary operator reaches 99.7% but deterministically reparses every
   channel pipe `ch | map` as a `binary_expression` instead of
   `pipe_expression` (2 corpus tests fail) — `binary_expression`'s static
   precedence wins and `prec.dynamic` does not apply (no real GLR conflict).
   Breaking the core channel-op node that lint rules read is not worth 4 files
   whose source should use `||`.
-- **`stmt; /* comment */` then more statements** (3): even with the scanner
-  emitting a terminator at the explicit `;`, tree-sitter attaches the trailing
-  inline block comment as an extra *after* the prelude repeat reduces, ending
-  the script section early. Needs external-scanner control over the
-  comment/terminator boundary.
-- **exotic single-file syntax** (5): `stub :` with a space before the colon
-  (section markers are atomic tokens); `( cond ? """a""" : "" ) << """b"""` as
-  a process script body (a binary expression producing the script string);
-  IIFE `{ … }()`; `stdout emit: x` without a comma; `log.debug "msg"`
-  (dotted-receiver no-paren command — a dedicated fix regressed other files).
+- **exotic / conflict-prone single-file syntax** (4):
+  - `( cond ? """a""" : "" ) << """b"""` as a process script body — a binary
+    expression *producing* the script string (rungx).
+  - IIFE `{ … }()` — adding a closure-call rule introduces an unresolved
+    grammar conflict for one file (scan).
+  - `stdout emit: x` without a comma — comma-optional `emit_declaration`
+    conflicts with `input_declaration` (download).
+  - `log.debug "msg"` — a dotted-receiver no-paren command; a dedicated rule
+    regressed other files (subsample).
 
-**Resolved this round** (was in the prior 18/29): the whole
-`"""…""".stripIndent()` cluster (~7 files) via routing all `"""…"""` through
-one `interpolated_triple_quoted_string` rule + a dedicated `string_method_call`
-that requires a `.method(...)`; try/catch/finally; chained pipes;
+**Resolved since the prior 12/18**: `"""…""".stripIndent()` cluster (~7 files,
+via one `"""` rule + `string_method_call`); try/catch/finally; chained pipes;
 destructuring assignment; index on parenthesized/interpolated expressions;
-lenient escapes.
+lenient escapes; `;` terminating before `}` and after an inline comment; typed
+function definitions (`String f(String a){}`); `stub :` whitespace.
 
 Known structural (error-free, not counted as failures): with terminators in
 workflow sections, an LALR reduction can place a trailing `take:` identifier
