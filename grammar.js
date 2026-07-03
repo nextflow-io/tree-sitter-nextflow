@@ -99,13 +99,12 @@ module.exports = grammar({
   // - Context-sensitive parsing (rejected - not supported by tree-sitter)
   conflicts: $ => [
     [$.list, $.map],  // Square bracket ambiguity: [expr, expr] vs [key: value]
-    [$.variable_declaration, $.function_definition],  // `def foo` prefix: (params) vs = init
     [$.method_call, $.dotted_identifier],  // a.b.c: property chain vs method receiver path
     [$.process_output],  // PROCESS.out.ch: channel name vs method navigation start
     [$.exit_statement, $.parenthesized_expression],  // exit (x): args vs grouped expr
     [$.script_content],  // script string optionally trailed by a template call
     [$.destructuring_pattern, $.simple_expression],  // (a,b)=f() vs grouped expr
-    [$.simple_expression, $.closure_parameter]  // { Type name -> }: typed param vs expr
+    [$.simple_expression, $.closure_parameter],  // { Type name -> }: typed param vs expr
   ],
 
   rules: {
@@ -453,18 +452,20 @@ module.exports = grammar({
 
     // Top-level function: def name(params) { ... }, optional -> return type.
     // Params may be typed (String x) and/or have defaults (y = 5).
-    function_definition: $ => seq(
-      'def',
+    function_definition: $ => prec(2, seq(
+      // `def name(...)` or a typed function `ReturnType name(...)`
+      choice('def', field('return_type', choice($.identifier, $.dotted_identifier))),
       $.identifier,
       '(',
       commaSep(seq(
-        choice($.typed_identifier, $.identifier),
+        // bare `a`, colon-typed `a: T`, or Groovy-typed `T a`
+        choice($.typed_identifier, seq(choice($.identifier, $.dotted_identifier), $.identifier), $.identifier),
         optional(seq('=', $.simple_expression))
       )),
       ')',
       optional(seq('->', choice($.identifier, $.dotted_identifier))),
       $.block
-    ),
+    )),
 
     // Type annotations for strict syntax and better IDE support
     // Examples: : String, : List<Integer>, : Path
