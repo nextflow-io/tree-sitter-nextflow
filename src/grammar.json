@@ -2972,6 +2972,10 @@
               {
                 "type": "SYMBOL",
                 "name": "property_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "interpolated_string"
               }
             ]
           },
@@ -3530,11 +3534,28 @@
         },
         {
           "type": "SYMBOL",
+          "name": "operator_closure"
+        },
+        {
+          "type": "SYMBOL",
           "name": "function_call"
         },
         {
           "type": "SYMBOL",
           "name": "identifier"
+        }
+      ]
+    },
+    "operator_closure": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "closure"
         }
       ]
     },

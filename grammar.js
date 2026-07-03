@@ -718,7 +718,7 @@ module.exports = grammar({
 
     // Subscript access: list[0], map['key']
     index_expression: $ => prec(6, seq(
-      choice($.identifier, $.dotted_identifier, $.method_call, $.function_call, $.list, $.index_expression, $.parenthesized_expression, $.property_expression),
+      choice($.identifier, $.dotted_identifier, $.method_call, $.function_call, $.list, $.index_expression, $.parenthesized_expression, $.property_expression, $.interpolated_string),
       '[',
       $.simple_expression,
       ']'
@@ -848,10 +848,14 @@ module.exports = grammar({
 
     // Pipe operations - extensible for new Nextflow operators
     pipe_operation: $ => choice(
-      $.map_operation,  // map { transformation }
-      $.function_call,  // ch | ifEmpty(null), ch | groupTuple(by: 0)
-      $.identifier      // ch | view, ch | flatten
+      $.map_operation,       // map { transformation }
+      $.operator_closure,    // multiMap { }, branch { }, filter { }
+      $.function_call,       // ch | ifEmpty(null), ch | groupTuple(by: 0)
+      $.identifier           // ch | view, ch | flatten
     ),
+
+    // A channel operator taking a closure with no parens: multiMap { ... }.
+    operator_closure: $ => seq($.identifier, $.closure),
 
     // Map operation: transforms each channel item
     // Examples:
