@@ -1706,6 +1706,10 @@
           "named": true
         },
         {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
           "type": "exit_statement",
           "named": true
         },
