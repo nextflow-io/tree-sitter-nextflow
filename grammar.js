@@ -307,7 +307,8 @@ module.exports = grammar({
     // - exec:   Direct command execution
     // - stub:   Mock/test script for development
     script_declaration: $ => prec.right(seq(
-      choice('script:', 'shell:', 'exec:', 'stub:'),
+      // seq(word, ':') not 'word:' so a stray space (stub :) is tolerated
+      choice(seq('script', ':'), seq('shell', ':'), seq('exec', ':'), seq('stub', ':')),
       optional($._terminator),
       repeat(seq($.script_statement, $._terminator)),  // Groovy prelude, each terminated
       // exec: sections are Groovy-only; script/shell/stub end in a string.
