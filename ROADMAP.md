@@ -44,30 +44,38 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-03 | 98.7% (2044/2070)             | try/catch/finally, catch-on-newline, chained pipes |
 | 2026-07-03 | 98.9% (2047/2070)             | destructuring assignment, bare << statements |
 | 2026-07-03 | 99.1% (2052/2070)             | index on paren/interp, pipe-op closures, error """…""", typed closure params |
-| 2026-07-03 | **99.1% (2052/2070)**         | current                                    |
+| 2026-07-03 | 99.3% (2056/2070)             | method calls on triple strings ("""…""".stripIndent()); """ unified to one rule |
+| 2026-07-03 | **99.4% (2058/2070)**         | lenient string escapes (\\ + any char)     |
 
-## Remaining failures (18 files, 0.9%) — categorised
+## Remaining failures (12 files, 0.6%) — categorised
 
-The residual failures are architectural lexer/LR limits where a fix regresses
-more files than it repairs (each was attempted and reverted with the measured
-cost), or non-strict syntax:
+Each was attempted and reverted with the measured cost; these are genuine
+LR/lexer limits or non-idiomatic source:
 
-- **`"""…""".stripIndent()`** (~7): a method call whose receiver is a triple
-  string. Adding triple strings as method_call receivers makes every bare
-  interpolated script body ambiguous — measured **−72 files** (99.1% → 95.7%).
-  A correct fix needs an external scanner that lexes a complete triple string
-  as one atomic token while still exposing interpolations; substantial work.
-- **`|` as boolean-or in conditions** (~4): `if (a == b | c == d)`. Adding `|`
-  as a binary operator reaches 99.0% but reparses every channel pipe
-  `ch | map` as a `binary_expression` instead of `pipe_expression`, breaking
-  the core channel-op node that lint rules depend on. Not worth it; the source
-  arguably should use `||`.
-- **`stmt; /* comment */` then more statements** (~3): the explicit `;`
-  terminator followed by an inline block comment; tree-sitter attaches the
-  comment as an extra after the prelude reduces, ending the script section
-  early. Needs external-scanner control over comment/terminator ordering.
-- **misc one-offs** (~4): IIFE `{ … }()`, `log.debug "msg"` (dotted-receiver
-  command), `stdout emit: x` without a comma, one whole-file cascade.
+- **`|` as boolean-or in conditions** (4): `if (a == b | c == d)`. Adding `|`
+  as a binary operator reaches 99.5% but deterministically reparses every
+  channel pipe `ch | map` as a `binary_expression` instead of
+  `pipe_expression` (2 corpus tests fail) — `binary_expression`'s static
+  precedence wins and `prec.dynamic` does not apply (no real GLR conflict).
+  Breaking the core channel-op node that lint rules read is not worth 4 files
+  whose source should use `||`.
+- **`stmt; /* comment */` then more statements** (3): even with the scanner
+  emitting a terminator at the explicit `;`, tree-sitter attaches the trailing
+  inline block comment as an extra *after* the prelude repeat reduces, ending
+  the script section early. Needs external-scanner control over the
+  comment/terminator boundary.
+- **exotic single-file syntax** (5): `stub :` with a space before the colon
+  (section markers are atomic tokens); `( cond ? """a""" : "" ) << """b"""` as
+  a process script body (a binary expression producing the script string);
+  IIFE `{ … }()`; `stdout emit: x` without a comma; `log.debug "msg"`
+  (dotted-receiver no-paren command — a dedicated fix regressed other files).
+
+**Resolved this round** (was in the prior 18/29): the whole
+`"""…""".stripIndent()` cluster (~7 files) via routing all `"""…"""` through
+one `interpolated_triple_quoted_string` rule + a dedicated `string_method_call`
+that requires a `.method(...)`; try/catch/finally; chained pipes;
+destructuring assignment; index on parenthesized/interpolated expressions;
+lenient escapes.
 
 Known structural (error-free, not counted as failures): with terminators in
 workflow sections, an LALR reduction can place a trailing `take:` identifier
