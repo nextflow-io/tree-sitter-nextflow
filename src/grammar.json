@@ -3644,13 +3644,45 @@
       ]
     },
     "closure_parameter": {
-      "type": "ALIAS",
-      "content": {
-        "type": "SYMBOL",
-        "name": "identifier"
-      },
-      "named": false,
-      "value": "parameter"
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          },
+          "named": false,
+          "value": "parameter"
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "identifier"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "dotted_identifier"
+                }
+              ]
+            },
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              },
+              "named": false,
+              "value": "parameter"
+            }
+          ]
+        }
+      ]
     },
     "closure_block": {
       "type": "ALIAS",
@@ -4616,6 +4648,10 @@
     [
       "destructuring_pattern",
       "simple_expression"
+    ],
+    [
+      "simple_expression",
+      "closure_parameter"
     ]
   ],
   "precedences": [],

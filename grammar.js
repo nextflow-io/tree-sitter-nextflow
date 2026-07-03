@@ -104,7 +104,8 @@ module.exports = grammar({
     [$.process_output],  // PROCESS.out.ch: channel name vs method navigation start
     [$.exit_statement, $.parenthesized_expression],  // exit (x): args vs grouped expr
     [$.script_content],  // script string optionally trailed by a template call
-    [$.destructuring_pattern, $.simple_expression]  // (a,b)=f() vs grouped expr
+    [$.destructuring_pattern, $.simple_expression],  // (a,b)=f() vs grouped expr
+    [$.simple_expression, $.closure_parameter]  // { Type name -> }: typed param vs expr
   ],
 
   rules: {
@@ -890,9 +891,11 @@ module.exports = grammar({
       '}'
     ),
 
-    // Closure parameters - simple identifiers
-    // Future enhancement: support typed parameters (String x, int y)
-    closure_parameter: $ => alias($.identifier, 'parameter'),
+    // Closure parameters: name, or typed (Path p, String x).
+    closure_parameter: $ => choice(
+      alias($.identifier, 'parameter'),
+      seq(choice($.identifier, $.dotted_identifier), alias($.identifier, 'parameter'))
+    ),
 
     // Block statements inside closure (no braces, closure provides them)
     closure_block: $ => alias(repeat1(seq(choice(
