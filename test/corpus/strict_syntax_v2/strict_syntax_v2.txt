@@ -792,3 +792,23 @@ x = [(key): v]
         (map_entry
           (parenthesized_expression (simple_expression (identifier)))
           (simple_expression (identifier)))))))
+
+==================
+Script string followed by a template call
+==================
+
+process P {
+  script:
+  """echo"""
+  template 'x.R'
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_content
+        (triple_quoted_string)
+        (template_declaration (string_literal))))))

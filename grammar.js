@@ -102,7 +102,8 @@ module.exports = grammar({
     [$.variable_declaration, $.function_definition],  // `def foo` prefix: (params) vs = init
     [$.method_call, $.dotted_identifier],  // a.b.c: property chain vs method receiver path
     [$.process_output],  // PROCESS.out.ch: channel name vs method navigation start
-    [$.exit_statement, $.parenthesized_expression]  // exit (x): args vs grouped expr
+    [$.exit_statement, $.parenthesized_expression],  // exit (x): args vs grouped expr
+    [$.script_content]  // script string optionally trailed by a template call
   ],
 
   rules: {
@@ -329,12 +330,19 @@ module.exports = grammar({
     // Script content enables language server integration
     // Language servers can inject Bash/shell highlighting into these nodes
     // Supports both single-line strings and multi-line heredoc syntax
+    // Either a template, or a script string optionally followed by a template
+    // (a handful of modules leave a dead """...""" before the template call).
     script_content: $ => choice(
       $.template_declaration,                // template 'main.R' (external script file)
-      $.string_literal,                      // Simple string: "echo hello"
-      $.triple_quoted_string,                // Heredoc: """complex bash script"""
-      $.interpolated_string,                 // "echo ${prefix}"
-      $.interpolated_triple_quoted_string    // Heredoc with ${...} interpolation
+      seq(
+        choice(
+          $.string_literal,                    // Simple string: "echo hello"
+          $.triple_quoted_string,              // Heredoc: """complex bash script"""
+          $.interpolated_string,               // "echo ${prefix}"
+          $.interpolated_triple_quoted_string  // Heredoc with ${...} interpolation
+        ),
+        optional(seq(optional($._terminator), $.template_declaration))
+      )
     ),
 
     // template 'file.sh' or template('file.sh') names an external script.
