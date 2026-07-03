@@ -571,3 +571,45 @@ process P {
                 (simple_expression (interpolated_string (string_content))))))))
       (script_content
         (interpolated_string (string_content))))))
+
+==================
+Bitwise operator and multiMap label statements
+==================
+
+workflow W {
+  main:
+  ch = a.multiMap { meta, db ->
+    db: [ meta, db ]
+  }
+  n = ix & 1
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (identifier)
+    (workflow_body
+      (workflow_main
+        (assignment
+          (identifier)
+          (simple_expression
+            (method_call
+              (identifier)
+              (identifier)
+              (closure
+                (closure_parameter)
+                (closure_parameter)
+                (closure_block
+                  (label_statement
+                    (identifier)
+                    (simple_expression
+                      (list
+                        (simple_expression (identifier))
+                        (simple_expression (identifier)))))))))))
+      (assignment
+        (identifier)
+        (simple_expression
+          (binary_expression
+            left: (identifier)
+            right: (integer_literal)))))))
