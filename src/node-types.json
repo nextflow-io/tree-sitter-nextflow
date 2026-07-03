@@ -1104,6 +1104,14 @@
           "named": true
         },
         {
+          "type": "constructor_call",
+          "named": true
+        },
+        {
+          "type": "function_call",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
@@ -1121,6 +1129,10 @@
         },
         {
           "type": "method_call",
+          "named": true
+        },
+        {
+          "type": "option_entry",
           "named": true
         },
         {
@@ -2133,6 +2145,10 @@
     "named": false
   },
   {
+    "type": "*.",
+    "named": false
+  },
+  {
     "type": "*=",
     "named": false
   },
@@ -2238,6 +2254,10 @@
   },
   {
     "type": "?",
+    "named": false
+  },
+  {
+    "type": "?.",
     "named": false
   },
   {
