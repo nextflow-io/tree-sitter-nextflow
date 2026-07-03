@@ -2617,7 +2617,7 @@
     "named": true
   },
   {
-    "type": "exec:",
+    "type": "exec",
     "named": false
   },
   {
@@ -2718,7 +2718,7 @@
     "named": false
   },
   {
-    "type": "script:",
+    "type": "script",
     "named": false
   },
   {
@@ -2726,7 +2726,7 @@
     "named": true
   },
   {
-    "type": "shell:",
+    "type": "shell",
     "named": false
   },
   {
@@ -2742,7 +2742,7 @@
     "named": true
   },
   {
-    "type": "stub:",
+    "type": "stub",
     "named": false
   },
   {
