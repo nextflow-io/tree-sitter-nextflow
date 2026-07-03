@@ -613,3 +613,28 @@ workflow W {
           (binary_expression
             left: (identifier)
             right: (integer_literal)))))))
+
+==================
+Method chain on process output channel
+==================
+
+workflow W {
+  main:
+  ch = A.out.db.join(B.out.x)
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (identifier)
+    (workflow_body
+      (workflow_main
+        (assignment
+          (identifier)
+          (simple_expression
+            (method_call
+              (process_output (identifier) (identifier))
+              (identifier)
+              (simple_expression
+                (process_output (identifier) (identifier))))))))))
