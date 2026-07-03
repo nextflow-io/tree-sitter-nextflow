@@ -911,6 +911,10 @@
         {
           "type": "SYMBOL",
           "name": "function_call"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "ternary_expression"
         }
       ]
     },

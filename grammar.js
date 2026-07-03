@@ -322,7 +322,8 @@ module.exports = grammar({
       $.return_statement,
       $.exit_statement,
       $.method_call,
-      $.function_call
+      $.function_call,
+      $.ternary_expression   // bare ternary for side effects: cond ? a.each{} : b
     ),
 
     // Script content enables language server integration

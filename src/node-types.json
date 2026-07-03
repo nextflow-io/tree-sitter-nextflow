@@ -1644,6 +1644,10 @@
           "named": true
         },
         {
+          "type": "ternary_expression",
+          "named": true
+        },
+        {
           "type": "variable_declaration",
           "named": true
         }
