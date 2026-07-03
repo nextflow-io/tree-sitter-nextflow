@@ -87,10 +87,13 @@ bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
     return false;
   }
 
-  // A line beginning with `else` continues the preceding `if` across the
-  // line break: `} \n else if (...)`. Match the keyword then a boundary.
-  if (lexer->lookahead == 'e') {
-    const char *kw = "else";
+  // A line beginning with `else`/`catch`/`finally` continues the preceding
+  // if/try across the line break (`} \n else ...`, `} \n catch (e) {`).
+  // Match a keyword then a non-word boundary. Characters consumed on a
+  // non-match are still covered by the terminator token whose end we marked.
+  int32_t first = lexer->lookahead;
+  if (first == 'e' || first == 'c' || first == 'f') {
+    const char *kw = first == 'e' ? "else" : (first == 'c' ? "catch" : "finally");
     int i = 0;
     while (kw[i] != '\0' && lexer->lookahead == (int32_t)kw[i]) {
       lexer->advance(lexer, false);
@@ -101,12 +104,9 @@ bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
       bool is_word = (after >= 'a' && after <= 'z') || (after >= 'A' && after <= 'Z') ||
                      (after >= '0' && after <= '9') || after == '_';
       if (!is_word) {
-        return false;  // `else` continues the statement
+        return false;  // keyword continues the statement
       }
     }
-    // Not the `else` keyword (e.g. an identifier starting with 'e'): the
-    // characters consumed above are still covered by the terminator token
-    // whose end we marked earlier, so fall through and emit it.
   }
 
   lexer->result_symbol = TERMINATOR;
