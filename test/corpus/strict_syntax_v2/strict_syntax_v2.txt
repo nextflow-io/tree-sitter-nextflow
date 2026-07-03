@@ -842,3 +842,29 @@ process P {
             (block
               (assignment (identifier) (simple_expression (integer_literal)))))))
       (script_content (triple_quoted_string)))))
+
+==================
+Chained pipe operations
+==================
+
+x = a | map { it } | combine(b) | view
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (simple_expression
+      (pipe_expression
+        (pipe_expression
+          (pipe_expression
+            (identifier)
+            (pipe_operation
+              (map_operation
+                (closure
+                  (closure_block
+                    (expression_statement
+                      (simple_expression (identifier))))))))
+          (pipe_operation
+            (function_call (identifier) (simple_expression (identifier)))))
+        (pipe_operation (identifier))))))
