@@ -232,9 +232,10 @@ module.exports = grammar({
 
     // Tuple inputs/outputs: tuple val(meta), path(bam)
     // Output form adds named options: tuple val(meta), path("*.bam"), emit: bam, optional: true
+    // Components: val(x)/path(y) calls, env('V'), bare stdout, named options.
     tuple_declaration: $ => prec.right(seq(
       'tuple',
-      commaSep1(choice($.option_entry, $.function_call))
+      commaSep1(choice($.option_entry, $.function_call, $.env_function, $.identifier))
     )),
 
     // Environment variable inputs for process isolation
@@ -332,10 +333,14 @@ module.exports = grammar({
       $.interpolated_triple_quoted_string    // Heredoc with ${...} interpolation
     ),
 
-    // template 'file.sh' names an external script instead of an inline body.
+    // template 'file.sh' or template('file.sh') names an external script.
     template_declaration: $ => seq(
       'template',
-      choice($.string_literal, $.interpolated_string)
+      choice(
+        $.string_literal,
+        $.interpolated_string,
+        seq('(', choice($.string_literal, $.interpolated_string), ')')
+      )
     ),
 
     // WORKFLOW DEFINITIONS - ORCHESTRATION LAYER
@@ -517,7 +522,8 @@ module.exports = grammar({
         $.variable_declaration,
         $.assignment,
         $.if_statement,
-        $.return_statement
+        $.return_statement,
+        $.assert_statement
       )),
       '}'
     ),
@@ -835,7 +841,8 @@ module.exports = grammar({
       $.variable_declaration,
       $.assignment,
       $.if_statement,
-      $.return_statement
+      $.return_statement,
+      $.assert_statement
     )), 'block'),
 
     // Command expressions for function calls (higher precedence)
