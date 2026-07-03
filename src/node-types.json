@@ -339,6 +339,29 @@
     "fields": {}
   },
   {
+    "type": "cast_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "dotted_identifier",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "simple_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "channel_expression",
     "named": true,
     "fields": {},
@@ -499,6 +522,33 @@
         },
         {
           "type": "string_literal",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "constructor_call",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "dotted_identifier",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "option_entry",
+          "named": true
+        },
+        {
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -1477,11 +1527,19 @@
           "named": true
         },
         {
+          "type": "cast_expression",
+          "named": true
+        },
+        {
           "type": "channel_expression",
           "named": true
         },
         {
           "type": "command_expression",
+          "named": true
+        },
+        {
+          "type": "constructor_call",
           "named": true
         },
         {
@@ -2205,6 +2263,10 @@
   },
   {
     "type": "map",
+    "named": false
+  },
+  {
+    "type": "new",
     "named": false
   },
   {
