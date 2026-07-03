@@ -3323,6 +3323,14 @@
               },
               {
                 "type": "SYMBOL",
+                "name": "function_call"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "constructor_call"
+              },
+              {
+                "type": "SYMBOL",
                 "name": "index_expression"
               },
               {
@@ -3337,8 +3345,21 @@
               "type": "SEQ",
               "members": [
                 {
-                  "type": "STRING",
-                  "value": "."
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "."
+                    },
+                    {
+                      "type": "STRING",
+                      "value": "?."
+                    },
+                    {
+                      "type": "STRING",
+                      "value": "*."
+                    }
+                  ]
                 },
                 {
                   "type": "SYMBOL",
@@ -3348,8 +3369,21 @@
             }
           },
           {
-            "type": "STRING",
-            "value": "."
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "."
+              },
+              {
+                "type": "STRING",
+                "value": "?."
+              },
+              {
+                "type": "STRING",
+                "value": "*."
+              }
+            ]
           },
           {
             "type": "SYMBOL",
@@ -3372,8 +3406,17 @@
                         "type": "SEQ",
                         "members": [
                           {
-                            "type": "SYMBOL",
-                            "name": "simple_expression"
+                            "type": "CHOICE",
+                            "members": [
+                              {
+                                "type": "SYMBOL",
+                                "name": "option_entry"
+                              },
+                              {
+                                "type": "SYMBOL",
+                                "name": "simple_expression"
+                              }
+                            ]
                           },
                           {
                             "type": "REPEAT",
@@ -3385,8 +3428,17 @@
                                   "value": ","
                                 },
                                 {
-                                  "type": "SYMBOL",
-                                  "name": "simple_expression"
+                                  "type": "CHOICE",
+                                  "members": [
+                                    {
+                                      "type": "SYMBOL",
+                                      "name": "option_entry"
+                                    },
+                                    {
+                                      "type": "SYMBOL",
+                                      "name": "simple_expression"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -3921,6 +3973,10 @@
     [
       "variable_declaration",
       "function_definition"
+    ],
+    [
+      "method_call",
+      "dotted_identifier"
     ]
   ],
   "precedences": [],
