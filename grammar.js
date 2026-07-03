@@ -193,7 +193,7 @@ module.exports = grammar({
     // container "...", publishDir "path", mode: 'copy', cpus 4, debug true
     directive: $ => prec.right(seq(
       $.identifier,
-      commaSep1(choice($.simple_expression, $.map_entry))
+      commaSep1(choice($.option_entry, $.simple_expression))
     )),
 
     // Input declarations specify process parameters and channels
@@ -211,7 +211,7 @@ module.exports = grammar({
     // Output form adds named options: tuple val(meta), path("*.bam"), emit: bam, optional: true
     tuple_declaration: $ => prec.right(seq(
       'tuple',
-      commaSep1(choice($.function_call, $.map_entry))
+      commaSep1(choice($.option_entry, $.function_call))
     )),
 
     // Environment variable inputs for process isolation
@@ -227,8 +227,43 @@ module.exports = grammar({
     //   output: stdout         - standard output
     output_declaration: $ => prec.right(seq('output:', repeat1(choice(
       $.tuple_declaration,
+      $.emit_declaration,
       $.simple_statement
     )))),
+
+    // Qualified output/input with named options:
+    //   path "versions.yml", emit: versions, topic: versions
+    //   val meta, emit: meta, optional: true
+    // Requires at least one option so bare 'path "x"' stays a simple_statement.
+    emit_declaration: $ => prec.right(seq(
+      choice($.command_expression, $.function_call, $.identifier),
+      repeat1(seq(',', $.option_entry))
+    )),
+
+    // Named option in a declaration: emit: bam, optional: true, mode: 'copy'.
+    // The value excludes command_expression so a bare-identifier value
+    // (emit: versions) does not greedily consume the next declaration line.
+    option_entry: $ => seq(
+      $.identifier,
+      ':',
+      $.option_value
+    ),
+
+    option_value: $ => choice(
+      $.closure,               // saveAs: { f -> ... }
+      $.ternary_expression,
+      $.boolean_literal,
+      $.string_literal,
+      $.interpolated_string,
+      $.integer_literal,
+      $.float_literal,
+      $.list,
+      $.map,
+      $.function_call,
+      $.method_call,
+      $.dotted_identifier,
+      $.identifier
+    ),
 
     // Conditional execution guard for processes
     // Example: when: params.run_analysis
@@ -255,6 +290,7 @@ module.exports = grammar({
       $.variable_declaration,
       $.assignment,
       $.if_statement,
+      $.assert_statement,
       $.method_call,
       $.function_call
     ),
@@ -394,20 +430,21 @@ module.exports = grammar({
     expression_statement: $ => $.simple_expression,
 
     // Control structures
-    assert_statement: $ => seq(
+    assert_statement: $ => prec.right(seq(
       'assert',
-      $.simple_expression
-    ),
+      $.simple_expression,
+      optional(seq(':', $.simple_expression))  // assert cond : message
+    )),
 
-    if_statement: $ => seq(
+    if_statement: $ => prec.right(seq(
       'if',
       '(',
       $.simple_expression,
       ')',
-      $.block,
+      choice($.block, $.expression_statement, $.assignment),  // braces or single statement
       repeat($.else_if_clause),
       optional($.else_clause)
-    ),
+    )),
 
     else_if_clause: $ => seq(
       'else',
@@ -465,6 +502,7 @@ module.exports = grammar({
       $.identifier,                           // Variables: varName
       $.string_literal,                       // Plain strings: "text"
       $.integer_literal,                      // Numbers: 42
+      $.float_literal,                        // Floats: 0.8
       $.boolean_literal,                      // Booleans: true, false
       $.dotted_identifier                     // Properties: obj.prop.field
     ),
@@ -493,14 +531,16 @@ module.exports = grammar({
         $.index_expression,
         $.method_call,
         $.function_call,
-        $.list
+        $.list,
+        $.map,
+        $.float_literal
       )),
       field('operator', choice(
         '+', '-', '*', '/', '%', '**',        // Arithmetic operators
         '==', '!=', '<', '>', '<=', '>=',     // Comparison operators
         '&&', '||',                           // Logical operators
         '..', '..<',                          // Range operators (Groovy)
-        '=~', '!~',                           // Pattern matching (regex)
+        '=~', '!~', '==~',                    // Pattern matching (regex)
         '?:',                                 // Elvis operator: x ?: default
         'in',                                 // Membership: x in [1, 2]
         'instanceof'                          // Type check: x instanceof List
@@ -518,7 +558,9 @@ module.exports = grammar({
         $.index_expression,
         $.method_call,
         $.function_call,
-        $.list
+        $.list,
+        $.map,
+        $.float_literal
       ))
     )),
 
@@ -537,7 +579,7 @@ module.exports = grammar({
 
     // Subscript access: list[0], map['key']
     index_expression: $ => prec(6, seq(
-      choice($.identifier, $.dotted_identifier, $.method_call, $.function_call, $.list),
+      choice($.identifier, $.dotted_identifier, $.method_call, $.function_call, $.list, $.index_expression),
       '[',
       $.simple_expression,
       ']'
@@ -564,7 +606,7 @@ module.exports = grammar({
     ),
 
     map_entry: $ => seq(
-      choice($.identifier, $.string_literal),
+      choice($.identifier, $.string_literal, $.interpolated_string),
       ':',
       $.simple_expression
     ),
@@ -784,7 +826,7 @@ module.exports = grammar({
     // Plain string literals (no interpolation) - SINGLE QUOTES ONLY
     // Note: In Groovy/Nextflow, double-quoted strings are always GStrings (interpolated_string)
     // Single quotes: 'literal text' (never interpolated)
-    string_literal: $ => seq("'", /[^']*/, "'"),
+    string_literal: $ => token(seq("'", repeat(choice(/[^'\\]/, /\\./)), "'")),
 
     // GSTRING INTERPOLATION - PRECEDENCE LEVEL 10 (HIGHEST)
     // =====================================================
@@ -826,7 +868,7 @@ module.exports = grammar({
     escape_sequence: $ => token(prec(1, seq(
       '\\',
       choice(
-        /[bfnrst\\'"\n.]/,       // Basic escape sequences + dot for regex
+        /[bfnrst\\'"\n.$\/]/,    // Basic escapes + dot, $ (shell \$(...)), / (regex)
         /u[0-9a-fA-F]{4}/        // Unicode escape sequences
       )
     ))),
@@ -868,6 +910,10 @@ module.exports = grammar({
     // Regex: \d+ matches one or more digits: 0, 42, 1234
     // Future enhancement: support hex (0xFF), octal (0777), binary (0b1010)
     integer_literal: $ => /\d+/,
+
+    // Float literals: 0.8, 1.5e3, 2.0f (longest-match beats integer_literal;
+    // does not match ranges like 1..10 since a digit must follow the dot)
+    float_literal: $ => /\d+\.\d+([eE][+-]?\d+)?[fFdD]?/,
 
     // Boolean literals - standard true/false keywords
     boolean_literal: $ => choice('true', 'false'),
