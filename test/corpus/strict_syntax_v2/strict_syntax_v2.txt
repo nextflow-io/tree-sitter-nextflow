@@ -508,3 +508,29 @@ def mergeMaps(meta, meta2) {
           (binary_expression
             left: (identifier)
             right: (identifier)))))))
+
+==================
+Method call named argument and safe navigation
+==================
+
+x = ch.combine(ch_map, by: 0)
+y = args?.contains('j')
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (simple_expression
+      (method_call
+        (identifier)
+        (identifier)
+        (simple_expression (identifier))
+        (option_entry (identifier) (option_value (integer_literal))))))
+  (assignment
+    (identifier)
+    (simple_expression
+      (method_call
+        (identifier)
+        (identifier)
+        (simple_expression (string_literal))))))

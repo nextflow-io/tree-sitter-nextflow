@@ -99,7 +99,8 @@ module.exports = grammar({
   // - Context-sensitive parsing (rejected - not supported by tree-sitter)
   conflicts: $ => [
     [$.list, $.map],  // Square bracket ambiguity: [expr, expr] vs [key: value]
-    [$.variable_declaration, $.function_definition]  // `def foo` prefix: (params) vs = init
+    [$.variable_declaration, $.function_definition],  // `def foo` prefix: (params) vs = init
+    [$.method_call, $.dotted_identifier]  // a.b.c: property chain vs method receiver path
   ],
 
   rules: {
@@ -870,14 +871,17 @@ module.exports = grammar({
         $.parenthesized_expression,  // Parenthesized expressions: (expr).method()
         $.channel_expression,        // Chained factories: Channel.fromPath(x).ifEmpty(y)
         $.method_call,               // Chained methods: x.a().b()
+        $.function_call,             // Call results: foo().bar()
+        $.constructor_call,          // new X().parseText(...)
         $.index_expression,          // Subscript receivers: list[0].name()
         $.property_expression        // Property receivers: (expr).name.endsWith(y)
       ),
-      repeat(seq('.', $.identifier)),  // Navigation path: task.ext.args.contains(...)
-      '.',
+      // Navigation path with optional safe-navigation (?.) and spread (*.)
+      repeat(seq(choice('.', '?.', '*.'), $.identifier)),
+      choice('.', '?.', '*.'),
       $.identifier,
       choice(
-        seq('(', commaSep($.simple_expression), ')'),
+        seq('(', commaSep(choice($.option_entry, $.simple_expression)), ')'),
         $.closure
       )
     )),
