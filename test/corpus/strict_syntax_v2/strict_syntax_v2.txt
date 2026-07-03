@@ -288,3 +288,36 @@ def cmd = """
             (identifier)))
         (escape_sequence)
         (triple_string_content)))))
+
+==================
+Regex match with slashy string operand
+==================
+
+def matcher = args =~ /-j\s+(\S+)/
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (binary_expression
+        left: (identifier)
+        right: (slashy_string)))))
+
+==================
+Double-slash inside a double-quoted string is content, not a comment
+==================
+
+def v = "sed 's/.\$//'"
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (interpolated_string
+        (string_content)
+        (escape_sequence)
+        (string_content)))))
