@@ -35,8 +35,10 @@ workflow {
   (workflow_definition
     (workflow_body
       (workflow_input
-        (identifier)
         (identifier))
+      (expression_statement
+        (simple_expression
+          (identifier)))
       (workflow_main
         (expression_statement
           (simple_expression
@@ -96,8 +98,10 @@ workflow {
   (workflow_definition
     (workflow_body
       (workflow_input
-        (identifier)
         (identifier))
+      (expression_statement
+        (simple_expression
+          (identifier)))
       (workflow_main
         (process_invocation
           (identifier)

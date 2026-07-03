@@ -363,7 +363,7 @@ module.exports = grammar({
 
     // Workflow body contains the main computational logic
     // Supports structured workflow sections (take:/main:/emit:) and traditional statements
-    workflow_body: $ => repeat1(choice(
+    workflow_body: $ => repeat1(seq(choice(
       $.workflow_input,       // take: param1 param2 (input parameters)
       $.workflow_main,        // main: workflow_logic (main execution block)
       $.workflow_emit,        // emit: output (output declarations)
@@ -371,33 +371,34 @@ module.exports = grammar({
       $.assignment,           // Variable assignments: x = PROCESS(y)
       $.variable_declaration, // Typed declarations: def String result = ...
       $.if_statement          // Conditional workflow logic
-    )),
+    ), optional($._terminator))),
 
     // Workflow input section: take: param1 param2 ... (space or newline separated)
     workflow_input: $ => prec.right(seq(
       'take:',
-      repeat1($.identifier)  // Multiple identifiers until next section
+      optional($._terminator),
+      repeat1(seq($.identifier, optional($._terminator)))
     )),
 
     // Workflow main section: main: statements...
     workflow_main: $ => prec.left(seq(
       'main:',
-      repeat1(choice(
+      repeat1(seq(choice(
         $.process_invocation,   // Process calls: PROCESS(input, output)
         $.expression_statement,
         $.assignment,
         $.variable_declaration,
         $.if_statement          // Conditional workflow logic
-      ))
+      ), optional($._terminator)))
     )),
 
     // Workflow emit section: emit: output_channel
     workflow_emit: $ => prec.left(seq(
       'emit:',
-      repeat1(choice(
+      repeat1(seq(choice(
         $.assignment,        // variants = PROCESS.out
         $.identifier         // Simple identifiers
-      ))
+      ), optional($._terminator)))
     )),
 
     // Process invocation in workflows: PROCESS(input1, input2)
