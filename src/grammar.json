@@ -1255,11 +1255,11 @@
                     "members": [
                       {
                         "type": "SYMBOL",
-                        "name": "identifier"
+                        "name": "option_entry"
                       },
                       {
                         "type": "SYMBOL",
-                        "name": "process_output"
+                        "name": "simple_expression"
                       }
                     ]
                   },
@@ -1277,11 +1277,11 @@
                           "members": [
                             {
                               "type": "SYMBOL",
-                              "name": "identifier"
+                              "name": "option_entry"
                             },
                             {
                               "type": "SYMBOL",
-                              "name": "process_output"
+                              "name": "simple_expression"
                             }
                           ]
                         }
@@ -3898,6 +3898,10 @@
               {
                 "type": "SYMBOL",
                 "name": "method_call"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "function_call"
               },
               {
                 "type": "SYMBOL",

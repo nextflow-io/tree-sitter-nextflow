@@ -404,14 +404,11 @@ module.exports = grammar({
       ), optional($._terminator)))
     )),
 
-    // Process invocation in workflows: PROCESS(input1, input2)
+    // Process invocation in workflows: PROCESS(ch, ch.map { }, [[], []], '')
     process_invocation: $ => prec(8, seq(
       $.identifier,        // Process name (uppercase by convention)
       '(',
-      commaSep(choice(
-        $.identifier,      // Simple channel/variable names
-        $.process_output   // Process output references: PROCESS.out
-      )),
+      commaSep(choice($.option_entry, $.simple_expression)),
       ')'
     )),
 
@@ -943,7 +940,7 @@ module.exports = grammar({
     // and memory-unit literals 7.GB / 280.MB (property on an integer literal;
     // float_literal needs a digit after '.', so 7.GB is unambiguous).
     property_expression: $ => prec(6, seq(
-      choice($.parenthesized_expression, $.index_expression, $.method_call, $.integer_literal),
+      choice($.parenthesized_expression, $.index_expression, $.method_call, $.function_call, $.integer_literal),
       '.',
       $.identifier
     )),
