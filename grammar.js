@@ -903,12 +903,16 @@ module.exports = grammar({
     interpolated_triple_quoted_string: $ => seq(
       '"""',
       repeat(choice(
-        $.string_content,
+        $.triple_string_content,
         $.escape_sequence,
         $.interpolation
       )),
       '"""'
     ),
+
+    // Content inside a triple-quoted GString: any run avoiding $ (interpolation),
+    // backslash (escape) and the closing """, but a lone or doubled " is fine.
+    triple_string_content: $ => token(prec(-1, /([^$"\\]|"[^"$\\]|""[^"$\\])+/)),
 
     // Plain triple-quoted strings (heredoc without interpolation)
     // Single quotes: '''literal text''' (never interpolated)
