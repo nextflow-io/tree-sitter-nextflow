@@ -829,6 +829,7 @@ module.exports = grammar({
     //   x + ch | map { it } is parsed as x + (ch | map { it })
     pipe_expression: $ => prec.left(2, seq(
       choice(
+        $.pipe_expression,          // chaining: a | map | combine | view
         $.channel_expression,       // Channel.of() | map
         $.parenthesized_expression, // (expr) | map
         $.list,                     // [1,2,3] | map

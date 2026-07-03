@@ -1475,6 +1475,10 @@
           "named": true
         },
         {
+          "type": "pipe_expression",
+          "named": true
+        },
+        {
           "type": "pipe_operation",
           "named": true
         },

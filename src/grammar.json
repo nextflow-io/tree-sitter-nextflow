@@ -3454,6 +3454,10 @@
             "members": [
               {
                 "type": "SYMBOL",
+                "name": "pipe_expression"
+              },
+              {
+                "type": "SYMBOL",
                 "name": "channel_expression"
               },
               {
