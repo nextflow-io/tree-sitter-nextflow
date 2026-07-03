@@ -2948,6 +2948,10 @@
             {
               "type": "SYMBOL",
               "name": "interpolated_string"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "parenthesized_expression"
             }
           ]
         },
@@ -3533,6 +3537,10 @@
               {
                 "type": "SYMBOL",
                 "name": "integer_literal"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "closure"
               }
             ]
           }

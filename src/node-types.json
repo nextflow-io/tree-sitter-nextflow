@@ -541,6 +541,10 @@
       "required": true,
       "types": [
         {
+          "type": "closure",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
@@ -1129,6 +1133,10 @@
         },
         {
           "type": "interpolated_string",
+          "named": true
+        },
+        {
+          "type": "parenthesized_expression",
           "named": true
         },
         {

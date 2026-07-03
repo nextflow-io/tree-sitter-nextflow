@@ -711,7 +711,8 @@ module.exports = grammar({
     ),
 
     map_entry: $ => seq(
-      choice($.identifier, $.string_literal, $.interpolated_string),
+      // (expr) is a computed/dynamic key: [(key): value]
+      choice($.identifier, $.string_literal, $.interpolated_string, $.parenthesized_expression),
       ':',
       $.simple_expression
     ),
@@ -873,14 +874,16 @@ module.exports = grammar({
       $.simple_expression
     )),
 
-    // Command expressions for function calls (higher precedence)
+    // Command expressions for no-paren function calls (higher precedence),
+    // incl. a trailing closure: multiMapCriteria { ... }, println "x".
     command_expression: $ => prec(1, seq(
       $.identifier,
       choice(
         $.interpolated_string,
         $.string_literal,
         $.identifier,
-        $.integer_literal
+        $.integer_literal,
+        $.closure
       )
     )),
 
