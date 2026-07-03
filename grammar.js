@@ -786,10 +786,12 @@ module.exports = grammar({
     )),
 
     // Function calls with parentheses (high precedence)
+    // Named args (key: value) appear in path(x, stageAs: 'y', arity: '1..*')
+    // and Groovy map-style calls, so args are option_entry or simple_expression.
     function_call: $ => prec(4, seq(
       $.identifier,
       '(',
-      commaSep($.simple_expression),
+      commaSep(choice($.option_entry, $.simple_expression)),
       ')'
     )),
 

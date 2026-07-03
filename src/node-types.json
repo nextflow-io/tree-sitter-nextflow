@@ -679,6 +679,10 @@
           "named": true
         },
         {
+          "type": "option_entry",
+          "named": true
+        },
+        {
           "type": "simple_expression",
           "named": true
         }
