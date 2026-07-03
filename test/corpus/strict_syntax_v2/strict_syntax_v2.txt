@@ -765,3 +765,30 @@ b = r.d as Float > 0
           (simple_expression (dotted_identifier (identifier) (identifier)))
           (identifier))
         right: (integer_literal)))))
+
+==================
+No-paren call with closure, map with computed key, pipe continuation
+==================
+
+def c = multiMapCriteria { m -> m }
+x = [(key): v]
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (command_expression
+        (identifier)
+        (closure
+          (closure_parameter)
+          (closure_block
+            (expression_statement (simple_expression (identifier))))))))
+  (assignment
+    (identifier)
+    (simple_expression
+      (map
+        (map_entry
+          (parenthesized_expression (simple_expression (identifier)))
+          (simple_expression (identifier)))))))
