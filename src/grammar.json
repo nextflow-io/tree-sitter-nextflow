@@ -926,20 +926,59 @@
           "name": "template_declaration"
         },
         {
-          "type": "SYMBOL",
-          "name": "string_literal"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "triple_quoted_string"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "interpolated_string"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "interpolated_triple_quoted_string"
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "string_literal"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "triple_quoted_string"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "interpolated_string"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "interpolated_triple_quoted_string"
+                }
+              ]
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "CHOICE",
+                      "members": [
+                        {
+                          "type": "SYMBOL",
+                          "name": "_terminator"
+                        },
+                        {
+                          "type": "BLANK"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "template_declaration"
+                    }
+                  ]
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -4379,6 +4418,9 @@
     [
       "exit_statement",
       "parenthesized_expression"
+    ],
+    [
+      "script_content"
     ]
   ],
   "precedences": [],
