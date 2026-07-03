@@ -1009,10 +1009,16 @@ module.exports = grammar({
       repeat(choice(
         $.triple_string_content,
         $.escape_sequence,
-        $.interpolation
+        $.interpolation,
+        // A lone/doubled " that triple_string_content can't absorb because it
+        // abuts an interpolation, e.g. "${task.process}": inside """...""".
+        // Maximal munch still prefers the 3-char """ closer.
+        $._triple_quote_char
       )),
       '"""'
     ),
+
+    _triple_quote_char: $ => token(prec(-2, /""?/)),
 
     // Content inside a triple-quoted GString: any run avoiding $ (interpolation),
     // backslash (escape) and the closing """, but a lone or doubled " is fine.
