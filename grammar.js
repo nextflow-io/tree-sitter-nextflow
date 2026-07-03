@@ -614,7 +614,8 @@ module.exports = grammar({
         $.list,
         $.map,
         $.float_literal,
-        $.cast_expression
+        $.cast_expression,
+        $.process_output
       )),
       field('operator', choice(
         '+', '-', '*', '/', '%', '**',        // Arithmetic operators
@@ -647,7 +648,8 @@ module.exports = grammar({
         $.map,
         $.float_literal,
         $.slashy_string,
-        $.cast_expression
+        $.cast_expression,
+        $.process_output
       ))
     )),
 
@@ -934,9 +936,10 @@ module.exports = grammar({
       ')'
     ),
 
+    // Property chains a.b.c, with optional safe navigation: task.ext?.args
     dotted_identifier: $ => prec(7, seq(
       $.identifier,
-      repeat1(seq('.', $.identifier))
+      repeat1(seq(choice('.', '?.'), $.identifier))
     )),
 
     // Property access on a non-identifier receiver: (expr).name, x[0].name,

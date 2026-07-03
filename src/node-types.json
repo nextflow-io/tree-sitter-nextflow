@@ -110,6 +110,10 @@
             "named": true
           },
           {
+            "type": "process_output",
+            "named": true
+          },
+          {
             "type": "property_expression",
             "named": true
           },
@@ -295,6 +299,10 @@
           },
           {
             "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "process_output",
             "named": true
           },
           {
