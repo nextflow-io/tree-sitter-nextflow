@@ -1013,6 +1013,10 @@
           "named": true
         },
         {
+          "type": "interpolated_string",
+          "named": true
+        },
+        {
           "type": "list",
           "named": true
         },
@@ -1300,6 +1304,25 @@
     "fields": {}
   },
   {
+    "type": "operator_closure",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "closure",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "option_entry",
     "named": true,
     "fields": {},
@@ -1519,6 +1542,10 @@
         },
         {
           "type": "map_operation",
+          "named": true
+        },
+        {
+          "type": "operator_closure",
           "named": true
         }
       ]
