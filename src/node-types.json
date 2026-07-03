@@ -857,7 +857,7 @@
           "named": true
         },
         {
-          "type": "string_content",
+          "type": "triple_string_content",
           "named": true
         }
       ]
@@ -2160,6 +2160,10 @@
   {
     "type": "take:",
     "named": false
+  },
+  {
+    "type": "triple_string_content",
+    "named": true
   },
   {
     "type": "true",

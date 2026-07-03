@@ -24,7 +24,8 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-02 | 0% (effectively)              | before directive/expression support        |
 | 2026-07-02 | 50.0% (1035/2070)             | after PR #22 (directives, ternary, …)      |
 | 2026-07-02 | 66.4% (1374/2070)             | Phase 1 lexer items (floats, escapes, …)   |
-| 2026-07-03 | **76.1% (1575/2070)**         | newline-terminator external scanner        |
+| 2026-07-03 | 76.1% (1575/2070)             | newline-terminator external scanner        |
+| 2026-07-03 | **77.2% (1598/2070)**         | " inside triple-quoted GStrings            |
 
 A file counts only if it has **zero** ERROR nodes — that is the bar
 nf-core/tools uses to trust structural matching over regex fallback
