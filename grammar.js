@@ -362,7 +362,8 @@ module.exports = grammar({
       $.workflow_emit,        // emit: output (output declarations)
       $.expression_statement, // Process calls, channel operations
       $.assignment,           // Variable assignments: x = PROCESS(y)
-      $.variable_declaration  // Typed declarations: def String result = ...
+      $.variable_declaration, // Typed declarations: def String result = ...
+      $.if_statement          // Conditional workflow logic
     )),
 
     // Workflow input section: take: param1 param2 ... (space or newline separated)
@@ -378,7 +379,8 @@ module.exports = grammar({
         $.process_invocation,   // Process calls: PROCESS(input, output)
         $.expression_statement,
         $.assignment,
-        $.variable_declaration
+        $.variable_declaration,
+        $.if_statement          // Conditional workflow logic
       ))
     )),
 
