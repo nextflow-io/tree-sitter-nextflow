@@ -666,3 +666,24 @@ process P {
             (assignment (identifier) (simple_expression (interpolated_string (string_content)))))))
       (script_content
         (interpolated_string (string_content))))))
+
+==================
+Quote abutting interpolation inside a triple-quoted GString
+==================
+
+x = """
+"${task.process}":
+    tool: 1.0
+"""
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (simple_expression
+      (interpolated_triple_quoted_string
+        (interpolation
+          (simple_expression
+            (dotted_identifier (identifier) (identifier))))
+        (triple_string_content)))))
