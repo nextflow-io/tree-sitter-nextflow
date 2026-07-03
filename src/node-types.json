@@ -23,6 +23,10 @@
       "required": true,
       "types": [
         {
+          "type": "destructuring_pattern",
+          "named": true
+        },
+        {
           "type": "dotted_identifier",
           "named": true
         },

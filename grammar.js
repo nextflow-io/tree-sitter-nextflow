@@ -103,7 +103,8 @@ module.exports = grammar({
     [$.method_call, $.dotted_identifier],  // a.b.c: property chain vs method receiver path
     [$.process_output],  // PROCESS.out.ch: channel name vs method navigation start
     [$.exit_statement, $.parenthesized_expression],  // exit (x): args vs grouped expr
-    [$.script_content]  // script string optionally trailed by a template call
+    [$.script_content],  // script string optionally trailed by a template call
+    [$.destructuring_pattern, $.simple_expression]  // (a,b)=f() vs grouped expr
   ],
 
   rules: {
@@ -486,7 +487,7 @@ module.exports = grammar({
     // Simple variable assignment (no declaration)
     // Example: result = processChannel.collect()
     assignment: $ => seq(
-      choice($.identifier, $.dotted_identifier, $.index_expression, $.property_expression),
+      choice($.identifier, $.dotted_identifier, $.index_expression, $.property_expression, $.destructuring_pattern),
       choice('=', '+=', '-=', '*=', '/=', '%=', '**=', '<<=', '>>=', '&=', '|=', '^=', '?='),
       $.simple_expression
     ),
