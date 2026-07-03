@@ -19,10 +19,11 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
   python scripts/parse_rate.py /tmp/nf-core-modules/modules /tmp/nf-core-modules/subworkflows
 ```
 
-| date       | parse rate (error-free files) | note                                   |
-| ---------- | ----------------------------- | -------------------------------------- |
-| 2026-07-02 | 0% (effectively)              | before directive/expression support    |
-| 2026-07-02 | **50.0% (1035/2070)**         | after PR #22 (directives, ternary, …)  |
+| date       | parse rate (error-free files) | note                                       |
+| ---------- | ----------------------------- | ------------------------------------------ |
+| 2026-07-02 | 0% (effectively)              | before directive/expression support        |
+| 2026-07-02 | 50.0% (1035/2070)             | after PR #22 (directives, ternary, …)      |
+| 2026-07-02 | **66.4% (1374/2070)**         | Phase 1 lexer items (floats, escapes, …)   |
 
 A file counts only if it has **zero** ERROR nodes — that is the bar
 nf-core/tools uses to trust structural matching over regex fallback
@@ -30,28 +31,48 @@ nf-core/tools uses to trust structural matching over regex fallback
 
 ## Phase 1 — burn down the measured failures (ordered by impact)
 
-Counts are error-signature occurrences from the 2026-07-02 baseline run:
+**Done (commit 300cfc6, 50.0% → 66.4%):** float literals; single/double-quoted
+string escapes incl. `\$` and `\'`; `assert cond : message` (incl. in script
+preludes); `==~`; interpolated map keys; braceless `if` bodies; chained
+subscripts; single-qualifier outputs with named options (`path "x", emit: y`);
+`option_entry`/`option_value` so option values don't include `command_expression`.
 
-1. **Float literals + numeric methods** (~110): `(task.memory.mega * 0.8).intValue()`
-   — no float literal rule; also confirm property/method chains on
-   parenthesized receivers cover this shape.
-2. **Bare qualifier outputs with options** (~130 aggregate):
-   `path "versions.yml", emit: versions, topic: versions` — the tuple form is
-   supported, the single-qualifier form with trailing named options is not.
-3. **String escapes** (~130 aggregate): `\$` in double-quoted/heredoc strings
-   (`echo \$(mktemp)`), `\'` inside single-quoted strings
-   (`eval('sed -n \'s/...\'')`). `escape_sequence` and `string_literal` need
-   the full strict-syntax escape set.
-4. **`assert cond : message`** (52): assert statement with message clause.
-5. **`==~` (exact-match regex) operator** (~35), plus slashy-string edge cases.
-6. **Interpolated map keys / emit blocks** (~50): `"${task.process}":` as a
-   map key; subworkflow `emit:` sections with named entries.
-7. **Braceless conditionals** (~40): `if (cond) error "msg"` single-statement
-   form (strict syntax allows expression statements without braces?
-   verify against the spec — if not, these become expected failures).
-8. **Map/expression polish** (~30): maps as binary operands
-   (`meta + [k: v]`), chained subscripts (`m[0][2]`), safe navigation `?.`,
-   spread `*.`.
+**Next — the highest-leverage remaining item:**
+
+0. **Newline-sensitive statement termination (external scanner).** This is the
+   single biggest remaining blocker. A newline-blind parser cannot disambiguate
+   consecutive declarations that abut across a line break — e.g.
+
+   ```
+   output:
+   tuple val(meta), path("*.tsv"), emit: embedding
+   path "versions.yml", emit: versions
+   ```
+
+   `emit: embedding` followed by `path` on the next line is genuinely ambiguous
+   without a statement terminator: the GLR parser greedily tries to extend the
+   value across the newline (`command_expression(embedding, path)`) and then
+   errors. The same greediness hits directive lists, `input:`/`output:` blocks,
+   workflow bodies, and script preludes.
+
+   Fix: add `externals: [$._terminator]` + a `src/scanner.c` that emits a token
+   at a newline (and `;`), suppressed inside `(...)`/`[...]`/`{...}` and inside
+   strings so line continuations still work. Then thread `$._terminator` as the
+   separator in the `repeat1` of declaration/statement/directive/prelude rules,
+   and drop the `prec.right` band-aids those rules currently carry. Validate
+   against `scripts/parse_rate.py` — this should clear the bulk of the remaining
+   ~700 failures. Do it as its own PR; it touches many rules and carries the
+   most regression risk.
+
+**After the scanner, remaining measured failures:**
+
+1. **Numeric method chains**: confirm `(task.memory.mega * 0.8).intValue()` and
+   property/method chains on parenthesized receivers all parse.
+2. **Slashy-string edge cases**: `==~ /.+\.fa|.../` alternation patterns.
+3. **Subworkflow `emit:` with named entries** (verify post-scanner).
+4. **Map/expression polish**: maps as binary operands (`meta + [k: v]` — done
+   for binary operands, verify in all positions), safe navigation `?.`, spread
+   `*.`.
 
 Re-run the harness after each item; the table above gets a new row per PR.
 
