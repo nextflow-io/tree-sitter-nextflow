@@ -105,8 +105,10 @@ workflow {
       (workflow_main
         (process_invocation
           (identifier)
-          (identifier)
-          (identifier)))
+          (simple_expression
+            (identifier))
+          (simple_expression
+            (identifier))))
       (expression_statement
         (simple_expression
           (function_call
