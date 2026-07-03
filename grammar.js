@@ -436,8 +436,8 @@ module.exports = grammar({
     // Simple variable assignment (no declaration)
     // Example: result = processChannel.collect()
     assignment: $ => seq(
-      $.identifier,
-      '=',
+      choice($.identifier, $.dotted_identifier, $.index_expression, $.property_expression),
+      choice('=', '+=', '-=', '*=', '/=', '%=', '**=', '<<=', '>>=', '&=', '|=', '^=', '?='),
       $.simple_expression
     ),
 
@@ -558,8 +558,10 @@ module.exports = grammar({
         '..', '..<',                          // Range operators (Groovy)
         '=~', '!~', '==~',                    // Pattern matching (regex)
         '?:',                                 // Elvis operator: x ?: default
-        'in',                                 // Membership: x in [1, 2]
-        'instanceof'                          // Type check: x instanceof List
+        '<=>',                                // Spaceship comparison
+        '<<',                                 // List append / left shift
+        'in', seq('!', 'in'),                 // Membership: x in [1,2], x !in [1,2]
+        'instanceof', seq('!', 'instanceof')  // Type check: x instanceof List
       )),
       field('right', choice(
         $.identifier,
@@ -592,7 +594,9 @@ module.exports = grammar({
     )),
 
     // Logical negation: !flag
-    unary_expression: $ => prec(5, seq('!', $.simple_expression)),
+    // Unary: !flag (logical not), ~/regex/ (Groovy bitwiseNegate → Pattern),
+    // -x / +x (numeric sign).
+    unary_expression: $ => prec(5, seq(choice('!', '~', '-', '+'), $.simple_expression)),
 
     // Subscript access: list[0], map['key']
     index_expression: $ => prec(6, seq(

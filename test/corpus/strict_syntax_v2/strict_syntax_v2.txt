@@ -351,3 +351,50 @@ process P {
     (script_declaration
       (script_content
         (interpolated_string (string_content))))))
+
+==================
+Compound assignment operator
+==================
+
+args += " --seed=42"
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (simple_expression
+      (interpolated_string (string_content)))))
+
+==================
+Negated membership operator
+==================
+
+x = a !in b
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (simple_expression
+      (binary_expression
+        left: (identifier)
+        right: (identifier)))))
+
+==================
+Bitwise-negate slashy pattern in subtraction
+==================
+
+def i = fasta - ~/\.gz$/
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (binary_expression
+        left: (identifier)
+        right: (unary_expression
+          (simple_expression (slashy_string)))))))
