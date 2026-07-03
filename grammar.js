@@ -516,16 +516,19 @@ module.exports = grammar({
       $.block
     ),
 
+    // Statements are terminator-separated so a bare RHS on one line does not
+    // absorb the next line's identifier as a command_expression
+    // (x = a \n y = b must not read as x = (a y) = b).
     block: $ => seq(
       '{',
-      repeat(choice(
+      repeat(seq(choice(
         $.expression_statement,
         $.variable_declaration,
         $.assignment,
         $.if_statement,
         $.return_statement,
         $.assert_statement
-      )),
+      ), optional($._terminator))),
       '}'
     ),
 
@@ -838,7 +841,7 @@ module.exports = grammar({
     closure_parameter: $ => alias($.identifier, 'parameter'),
 
     // Block statements inside closure (no braces, closure provides them)
-    closure_block: $ => alias(repeat1(choice(
+    closure_block: $ => alias(repeat1(seq(choice(
       $.expression_statement,
       $.variable_declaration,
       $.assignment,
@@ -846,7 +849,7 @@ module.exports = grammar({
       $.return_statement,
       $.assert_statement,
       $.label_statement
-    )), 'block'),
+    ), optional($._terminator))), 'block'),
 
     // Labeled statement: multiMap/branch emit labels — db: [meta, db]
     label_statement: $ => prec.dynamic(1, seq(

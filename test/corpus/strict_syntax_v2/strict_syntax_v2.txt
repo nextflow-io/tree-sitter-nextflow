@@ -638,3 +638,31 @@ workflow W {
               (identifier)
               (simple_expression
                 (process_output (identifier) (identifier))))))))))
+
+==================
+Consecutive bare assignments in a block are separate statements
+==================
+
+process P {
+  script:
+  if (x) {
+    a = b
+    c = "d"
+  }
+  "run"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_statement
+        (if_statement
+          (simple_expression (identifier))
+          (block
+            (assignment (identifier) (simple_expression (identifier)))
+            (assignment (identifier) (simple_expression (interpolated_string (string_content)))))))
+      (script_content
+        (interpolated_string (string_content))))))
