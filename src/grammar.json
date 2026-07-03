@@ -2010,10 +2010,6 @@
             "value": "exit"
           },
           {
-            "type": "SYMBOL",
-            "name": "simple_expression"
-          },
-          {
             "type": "CHOICE",
             "members": [
               {
@@ -2021,16 +2017,88 @@
                 "members": [
                   {
                     "type": "STRING",
-                    "value": ","
+                    "value": "("
                   },
                   {
-                    "type": "SYMBOL",
-                    "name": "simple_expression"
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "SYMBOL",
+                            "name": "simple_expression"
+                          },
+                          {
+                            "type": "REPEAT",
+                            "content": {
+                              "type": "SEQ",
+                              "members": [
+                                {
+                                  "type": "STRING",
+                                  "value": ","
+                                },
+                                {
+                                  "type": "SYMBOL",
+                                  "name": "simple_expression"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "CHOICE",
+                            "members": [
+                              {
+                                "type": "STRING",
+                                "value": ","
+                              },
+                              {
+                                "type": "BLANK"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "BLANK"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "STRING",
+                    "value": ")"
                   }
                 ]
               },
               {
-                "type": "BLANK"
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "simple_expression"
+                  },
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "STRING",
+                            "value": ","
+                          },
+                          {
+                            "type": "SYMBOL",
+                            "name": "simple_expression"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "BLANK"
+                      }
+                    ]
+                  }
+                ]
               }
             ]
           }
@@ -4254,6 +4322,10 @@
     ],
     [
       "process_output"
+    ],
+    [
+      "exit_statement",
+      "parenthesized_expression"
     ]
   ],
   "precedences": [],
