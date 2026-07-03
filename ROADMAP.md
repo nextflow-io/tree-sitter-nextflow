@@ -40,28 +40,34 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-03 | 97.1% (2011/2070)             | exit statement, env emit, bare ternary     |
 | 2026-07-03 | 97.8% (2024/2070)             | full-expression process-invocation args    |
 | 2026-07-03 | 98.1% (2030/2070)             | trailing closures, cast/process_output operands, ?. |
-| 2026-07-03 | **98.6% (2041/2070)**         | script string followed by a template call  |
+| 2026-07-03 | 98.6% (2041/2070)             | script string followed by a template call  |
+| 2026-07-03 | 98.7% (2044/2070)             | try/catch/finally, catch-on-newline, chained pipes |
+| 2026-07-03 | 98.9% (2047/2070)             | destructuring assignment, bare << statements |
+| 2026-07-03 | 99.1% (2052/2070)             | index on paren/interp, pipe-op closures, error """…""", typed closure params |
+| 2026-07-03 | **99.1% (2052/2070)**         | current                                    |
 
-## Remaining failures (29 files, 1.4%) — categorised
+## Remaining failures (18 files, 0.9%) — categorised
 
-The residual failures are hard lexer/LR ambiguities or non-strict syntax:
+The residual failures are architectural lexer/LR limits where a fix regresses
+more files than it repairs (each was attempted and reverted with the measured
+cost), or non-strict syntax:
 
-- **`|` as boolean-or in conditions** (~4): `if (a == b | c == d)`. The `|`
-  token is the channel pipe operator; disambiguating it from bitwise/logical
-  or by context is not expressible in the LR grammar. Arguably the source
-  should use `||`.
-- **`try`/`catch`** (~2): removed by the 26.04 strict syntax — out of scope;
-  the reference compiler rejects these too.
-- **`"""…""".stripIndent()`** (~3): a method call whose receiver is a triple
-  string. Adding triple strings as method receivers reintroduces ambiguity
-  that breaks every bare script body (measured −2 pts); needs a scoped fix.
-- **`stmt; /* comment */` then a bare script string** (~3): interaction of the
-  explicit `;` terminator, an inline block comment, and the prelude→content
-  transition. Needs external-scanner work.
-- **destructuring assignment `(a, b) = f()`** (~2): needs a broad
-  `[destructuring_pattern, simple_expression]` conflict; deferred as low-value.
-- **misc one-offs** (~15): typed closure params `{ Path p -> }`, IIFE
-  `{ … }()`, bare `<<` statements, `stdout emit: x` without a comma, etc.
+- **`"""…""".stripIndent()`** (~7): a method call whose receiver is a triple
+  string. Adding triple strings as method_call receivers makes every bare
+  interpolated script body ambiguous — measured **−72 files** (99.1% → 95.7%).
+  A correct fix needs an external scanner that lexes a complete triple string
+  as one atomic token while still exposing interpolations; substantial work.
+- **`|` as boolean-or in conditions** (~4): `if (a == b | c == d)`. Adding `|`
+  as a binary operator reaches 99.0% but reparses every channel pipe
+  `ch | map` as a `binary_expression` instead of `pipe_expression`, breaking
+  the core channel-op node that lint rules depend on. Not worth it; the source
+  arguably should use `||`.
+- **`stmt; /* comment */` then more statements** (~3): the explicit `;`
+  terminator followed by an inline block comment; tree-sitter attaches the
+  comment as an extra after the prelude reduces, ending the script section
+  early. Needs external-scanner control over comment/terminator ordering.
+- **misc one-offs** (~4): IIFE `{ … }()`, `log.debug "msg"` (dotted-receiver
+  command), `stdout emit: x` without a comma, one whole-file cascade.
 
 Known structural (error-free, not counted as failures): with terminators in
 workflow sections, an LALR reduction can place a trailing `take:` identifier
