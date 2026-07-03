@@ -61,6 +61,10 @@
 module.exports = grammar({
   name: "nextflow",
 
+  // External scanner (src/scanner.c) emits _terminator at newlines/';'
+  // where the parser state allows a statement to end.
+  externals: $ => [$._terminator],
+
   // KEYWORD EXTRACTION:
   // Ensures keyword tokens ('from', 'of', 'value', ...) only match complete
   // identifiers, so e.g. Channel.fromPath is not tokenized as 'from' + ERROR.
@@ -179,21 +183,31 @@ module.exports = grammar({
       'process',
       $.identifier, // Process name, must be unique in scope
       '{',
+      // Strict-syntax process structure in three ordered phases:
+      //   1. directives (tag, label, container, ...)
+      //   2. input:/output:/when: sections
+      //   3. script:/shell:/exec:/stub: sections
+      // Ordering removes two ambiguities the newline terminator exposes:
+      //   - a bare `env 'X'` / `path y` line after `input:` can only be
+      //     another input, never a directive
+      //   - a bare prelude assignment (prefix = ...) inside a script section
+      //     cannot be read as a directive
+      repeat($.directive),
       repeat(choice(
-        $.directive,
         $.input_declaration,
         $.output_declaration,
-        $.when_declaration,
-        $.script_declaration
+        $.when_declaration
       )),
+      repeat($.script_declaration),
       '}'
     ),
 
     // Process directives: tag "$meta.id", label 'process_medium',
     // container "...", publishDir "path", mode: 'copy', cpus 4, debug true
-    directive: $ => prec.right(seq(
+    directive: $ => prec.right(-1, seq(
       $.identifier,
-      commaSep1(choice($.option_entry, $.simple_expression))
+      commaSep1(choice($.option_entry, $.simple_expression)),
+      optional($._terminator)
     )),
 
     // Input declarations specify process parameters and channels
@@ -201,11 +215,11 @@ module.exports = grammar({
     //   input: val x           - simple value input
     //   input: path "*.txt"    - file path input
     //   input: env SAMPLE_ID   - environment variable
-    input_declaration: $ => prec.right(seq('input:', repeat1(choice(
+    input_declaration: $ => prec.right(seq('input:', optional($._terminator), repeat1(seq(choice(
       $.tuple_declaration,
       $.simple_statement,
       $.env_input
-    )))),
+    ), optional($._terminator))))),
 
     // Tuple inputs/outputs: tuple val(meta), path(bam)
     // Output form adds named options: tuple val(meta), path("*.bam"), emit: bam, optional: true
@@ -225,11 +239,11 @@ module.exports = grammar({
     // Examples:
     //   output: path "*.txt"   - file outputs
     //   output: stdout         - standard output
-    output_declaration: $ => prec.right(seq('output:', repeat1(choice(
+    output_declaration: $ => prec.right(seq('output:', optional($._terminator), repeat1(seq(choice(
       $.tuple_declaration,
       $.emit_declaration,
       $.simple_statement
-    )))),
+    ), optional($._terminator))))),
 
     // Qualified output/input with named options:
     //   path "versions.yml", emit: versions, topic: versions
@@ -267,7 +281,7 @@ module.exports = grammar({
 
     // Conditional execution guard for processes
     // Example: when: params.run_analysis
-    when_declaration: $ => seq('when:', $.simple_expression),
+    when_declaration: $ => prec.right(seq('when:', $.simple_expression, optional($._terminator))),
 
     // SCRIPT DECLARATIONS - CRITICAL FOR LANGUAGE INJECTION
     // =====================================================
@@ -279,8 +293,11 @@ module.exports = grammar({
     // - stub:   Mock/test script for development
     script_declaration: $ => prec.right(seq(
       choice('script:', 'shell:', 'exec:', 'stub:'),
-      repeat($.script_statement),  // Groovy prelude: def args = task.ext.args ?: ''
-      optional($.script_content)
+      optional($._terminator),
+      repeat(seq($.script_statement, $._terminator)),  // Groovy prelude, each terminated
+      // exec: sections are Groovy-only; script/shell/stub end in a string.
+      optional($.script_content),
+      optional($._terminator)
     )),
 
     // Groovy statements allowed before the script string.
