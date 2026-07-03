@@ -3974,6 +3974,10 @@
               {
                 "type": "SYMBOL",
                 "name": "interpolation"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "_triple_quote_char"
               }
             ]
           }
@@ -3983,6 +3987,17 @@
           "value": "\"\"\""
         }
       ]
+    },
+    "_triple_quote_char": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": -2,
+        "content": {
+          "type": "PATTERN",
+          "value": "\"\"?"
+        }
+      }
     },
     "triple_string_content": {
       "type": "TOKEN",
