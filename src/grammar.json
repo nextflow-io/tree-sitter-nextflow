@@ -2964,6 +2964,14 @@
               {
                 "type": "SYMBOL",
                 "name": "index_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "parenthesized_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "property_expression"
               }
             ]
           },

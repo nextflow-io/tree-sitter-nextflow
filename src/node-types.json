@@ -1021,6 +1021,14 @@
           "named": true
         },
         {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "property_expression",
+          "named": true
+        },
+        {
           "type": "simple_expression",
           "named": true
         }
