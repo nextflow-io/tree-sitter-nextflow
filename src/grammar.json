@@ -817,20 +817,56 @@
             "type": "CHOICE",
             "members": [
               {
-                "type": "STRING",
-                "value": "script:"
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "script"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": ":"
+                  }
+                ]
               },
               {
-                "type": "STRING",
-                "value": "shell:"
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "shell"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": ":"
+                  }
+                ]
               },
               {
-                "type": "STRING",
-                "value": "exec:"
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "exec"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": ":"
+                  }
+                ]
               },
               {
-                "type": "STRING",
-                "value": "stub:"
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "stub"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": ":"
+                  }
+                ]
               }
             ]
           },
