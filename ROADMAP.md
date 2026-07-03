@@ -25,7 +25,49 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-02 | 50.0% (1035/2070)             | after PR #22 (directives, ternary, …)      |
 | 2026-07-02 | 66.4% (1374/2070)             | Phase 1 lexer items (floats, escapes, …)   |
 | 2026-07-03 | 76.1% (1575/2070)             | newline-terminator external scanner        |
-| 2026-07-03 | **77.2% (1598/2070)**         | " inside triple-quoted GStrings            |
+| 2026-07-03 | 77.2% (1598/2070)             | " inside triple-quoted GStrings            |
+| 2026-07-03 | 78.5% (1625/2070)             | slashy-string regex operands (==~ /re/)    |
+| 2026-07-03 | 79.4% (1643/2070)             | // inside double-quoted strings            |
+| 2026-07-03 | 84.1% (1740/2070)             | named args in function calls (stageAs:)    |
+| 2026-07-03 | 86.5% (1791/2070)             | compound assign, !in, unary ~, <<          |
+| 2026-07-03 | 88.2% (1825/2070)             | directive closures, property access, cast, new |
+| 2026-07-03 | 90.2% (1868/2070)             | template directive, function defs, return  |
+| 2026-07-03 | 91.3% (1890/2070)             | method named args, ?./*., call receivers   |
+| 2026-07-03 | 92.4% (1913/2070)             | assert in closures, bare tuple parts, & ^, labels |
+| 2026-07-03 | 93.8% (1942/2070)             | terminator-separated block statements      |
+| 2026-07-03 | 96.1% (1990/2070)             | terminator-separated workflow statements   |
+| 2026-07-03 | 96.5% (1998/2070)             | quote abutting interpolation in """        |
+| 2026-07-03 | 97.1% (2011/2070)             | exit statement, env emit, bare ternary     |
+| 2026-07-03 | 97.8% (2024/2070)             | full-expression process-invocation args    |
+| 2026-07-03 | 98.1% (2030/2070)             | trailing closures, cast/process_output operands, ?. |
+| 2026-07-03 | **98.6% (2041/2070)**         | script string followed by a template call  |
+
+## Remaining failures (29 files, 1.4%) — categorised
+
+The residual failures are hard lexer/LR ambiguities or non-strict syntax:
+
+- **`|` as boolean-or in conditions** (~4): `if (a == b | c == d)`. The `|`
+  token is the channel pipe operator; disambiguating it from bitwise/logical
+  or by context is not expressible in the LR grammar. Arguably the source
+  should use `||`.
+- **`try`/`catch`** (~2): removed by the 26.04 strict syntax — out of scope;
+  the reference compiler rejects these too.
+- **`"""…""".stripIndent()`** (~3): a method call whose receiver is a triple
+  string. Adding triple strings as method receivers reintroduces ambiguity
+  that breaks every bare script body (measured −2 pts); needs a scoped fix.
+- **`stmt; /* comment */` then a bare script string** (~3): interaction of the
+  explicit `;` terminator, an inline block comment, and the prelude→content
+  transition. Needs external-scanner work.
+- **destructuring assignment `(a, b) = f()`** (~2): needs a broad
+  `[destructuring_pattern, simple_expression]` conflict; deferred as low-value.
+- **misc one-offs** (~15): typed closure params `{ Path p -> }`, IIFE
+  `{ … }()`, bare `<<` statements, `stdout emit: x` without a comma, etc.
+
+Known structural (error-free, not counted as failures): with terminators in
+workflow sections, an LALR reduction can place a trailing `take:` identifier
+or a second `main:` statement at `workflow_body` level rather than nested in
+the section. All leaf nodes are present; a section-greedy restructure would
+fix the nesting.
 
 A file counts only if it has **zero** ERROR nodes — that is the bar
 nf-core/tools uses to trust structural matching over regex fallback
