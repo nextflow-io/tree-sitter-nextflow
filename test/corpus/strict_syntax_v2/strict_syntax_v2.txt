@@ -868,3 +868,24 @@ x = a | map { it } | combine(b) | view
           (pipe_operation
             (function_call (identifier) (simple_expression (identifier)))))
         (pipe_operation (identifier))))))
+
+==================
+Destructuring assignment
+==================
+
+workflow W {
+  main:
+  (a, b) = f(x)
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (identifier)
+    (workflow_body
+      (workflow_main
+        (assignment
+          (destructuring_pattern (identifier) (identifier))
+          (simple_expression
+            (function_call (identifier) (simple_expression (identifier)))))))))

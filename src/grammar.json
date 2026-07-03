@@ -1744,6 +1744,10 @@
             {
               "type": "SYMBOL",
               "name": "property_expression"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "destructuring_pattern"
             }
           ]
         },
@@ -4567,6 +4571,10 @@
     ],
     [
       "script_content"
+    ],
+    [
+      "destructuring_pattern",
+      "simple_expression"
     ]
   ],
   "precedences": [],
