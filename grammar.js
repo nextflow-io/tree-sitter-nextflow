@@ -322,6 +322,7 @@ module.exports = grammar({
       $.assert_statement,
       $.return_statement,
       $.exit_statement,
+      $.try_statement,
       $.method_call,
       $.function_call,
       $.ternary_expression   // bare ternary for side effects: cond ? a.each{} : b
@@ -501,6 +502,26 @@ module.exports = grammar({
       optional(seq(':', $.simple_expression))  // assert cond : message
     )),
 
+    // try/catch/finally — present in current modules (pre-26.04 lib code).
+    try_statement: $ => prec.right(seq(
+      'try',
+      $.block,
+      repeat($.catch_clause),
+      optional($.finally_clause)
+    )),
+
+    catch_clause: $ => seq(
+      'catch',
+      '(',
+      // catch (Exception e) or catch (e); optional multi-type A | B e
+      optional(seq(choice($.identifier, $.dotted_identifier), repeat(seq('|', choice($.identifier, $.dotted_identifier))))),
+      alias($.identifier, 'parameter'),
+      ')',
+      $.block
+    ),
+
+    finally_clause: $ => seq('finally', $.block),
+
     if_statement: $ => prec.right(seq(
       'if',
       '(',
@@ -537,7 +558,8 @@ module.exports = grammar({
         $.if_statement,
         $.return_statement,
         $.assert_statement,
-        $.exit_statement
+        $.exit_statement,
+        $.try_statement
       ), optional($._terminator))),
       '}'
     ),
@@ -874,7 +896,8 @@ module.exports = grammar({
       $.return_statement,
       $.assert_statement,
       $.label_statement,
-      $.exit_statement
+      $.exit_statement,
+      $.try_statement
     ), optional($._terminator))), 'block'),
 
     // Labeled statement: multiMap/branch emit labels — db: [meta, db]

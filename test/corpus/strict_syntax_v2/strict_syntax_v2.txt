@@ -812,3 +812,33 @@ process P {
       (script_content
         (triple_quoted_string)
         (template_declaration (string_literal))))))
+
+==================
+Try catch statement
+==================
+
+process P {
+  script:
+  try {
+    x = 1
+  } catch (Exception e) {
+    y = 2
+  }
+  """cmd"""
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_statement
+        (try_statement
+          (block
+            (assignment (identifier) (simple_expression (integer_literal))))
+          (catch_clause
+            (identifier)
+            (block
+              (assignment (identifier) (simple_expression (integer_literal)))))))
+      (script_content (triple_quoted_string)))))
