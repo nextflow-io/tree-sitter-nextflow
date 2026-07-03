@@ -2699,8 +2699,17 @@
                 "type": "SEQ",
                 "members": [
                   {
-                    "type": "SYMBOL",
-                    "name": "simple_expression"
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SYMBOL",
+                        "name": "option_entry"
+                      },
+                      {
+                        "type": "SYMBOL",
+                        "name": "simple_expression"
+                      }
+                    ]
                   },
                   {
                     "type": "REPEAT",
@@ -2712,8 +2721,17 @@
                           "value": ","
                         },
                         {
-                          "type": "SYMBOL",
-                          "name": "simple_expression"
+                          "type": "CHOICE",
+                          "members": [
+                            {
+                              "type": "SYMBOL",
+                              "name": "option_entry"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "simple_expression"
+                            }
+                          ]
                         }
                       ]
                     }

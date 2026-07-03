@@ -321,3 +321,33 @@ def v = "sed 's/.\$//'"
         (string_content)
         (escape_sequence)
         (string_content)))))
+
+==================
+Named arguments in path() call (stageAs, arity)
+==================
+
+process P {
+  input:
+  tuple val(meta), path(reads, arity: '1..*', stageAs: 'input/*')
+  script:
+  "echo hi"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_declaration
+      (tuple_declaration
+        (function_call
+          (identifier)
+          (simple_expression (identifier)))
+        (function_call
+          (identifier)
+          (simple_expression (identifier))
+          (option_entry (identifier) (option_value (string_literal)))
+          (option_entry (identifier) (option_value (string_literal))))))
+    (script_declaration
+      (script_content
+        (interpolated_string (string_content))))))
