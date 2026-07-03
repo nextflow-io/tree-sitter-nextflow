@@ -514,6 +514,8 @@ module.exports = grammar({
       $.function_call,                        // Function calls: fn(args)
       $.method_call,                          // Object methods: obj.method()
       $.property_expression,                  // (expr).name, 7.GB
+      $.cast_expression,                      // Coercion: x as int
+      $.constructor_call,                     // new Type(args)
       $.env_function,                         // Environment: env('VAR')
       $.list,                                 // Lists: [1, 2, 3]
       $.map,                                  // Maps: [key: value]
@@ -590,6 +592,22 @@ module.exports = grammar({
         $.float_literal,
         $.slashy_string
       ))
+    )),
+
+    // Groovy coercion: (task.cpus * 0.9) as int, x as List
+    cast_expression: $ => prec.left(2, seq(
+      $.simple_expression,
+      'as',
+      choice($.identifier, $.dotted_identifier)
+    )),
+
+    // Constructor call: new groovy.yaml.YamlBuilder(), new File(path)
+    constructor_call: $ => prec(8, seq(
+      'new',
+      choice($.identifier, $.dotted_identifier),
+      '(',
+      commaSep(choice($.option_entry, $.simple_expression)),
+      ')'
     )),
 
     // Conditional (ternary) expression: cond ? a : b

@@ -432,3 +432,39 @@ process P {
     (script_declaration
       (script_content
         (interpolated_string (string_content))))))
+
+==================
+Cast expression with as
+==================
+
+def n = (task.cpus * 0.9) as int
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (cast_expression
+        (simple_expression
+          (parenthesized_expression
+            (simple_expression
+              (binary_expression
+                left: (dotted_identifier (identifier) (identifier))
+                right: (float_literal)))))
+        (identifier)))))
+
+==================
+Constructor call with new
+==================
+
+def y = new groovy.yaml.YamlBuilder()
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (constructor_call
+        (dotted_identifier (identifier) (identifier) (identifier))))))
