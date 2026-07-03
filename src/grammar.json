@@ -2183,6 +2183,14 @@
                 },
                 {
                   "type": "STRING",
+                  "value": "&"
+                },
+                {
+                  "type": "STRING",
+                  "value": "^"
+                },
+                {
+                  "type": "STRING",
                   "value": "in"
                 },
                 {
@@ -3213,12 +3221,37 @@
             {
               "type": "SYMBOL",
               "name": "assert_statement"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "label_statement"
             }
           ]
         }
       },
       "named": false,
       "value": "block"
+    },
+    "label_statement": {
+      "type": "PREC_DYNAMIC",
+      "value": 1,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "identifier"
+          },
+          {
+            "type": "STRING",
+            "value": ":"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "simple_expression"
+          }
+        ]
+      }
     },
     "command_expression": {
       "type": "PREC",

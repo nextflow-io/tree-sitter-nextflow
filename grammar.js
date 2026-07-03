@@ -608,6 +608,7 @@ module.exports = grammar({
         '?:',                                 // Elvis operator: x ?: default
         '<=>',                                // Spaceship comparison
         '<<',                                 // List append / left shift
+        '&', '^',                             // Bitwise and/xor (not | — pipe op)
         'in', seq('!', 'in'),                 // Membership: x in [1,2], x !in [1,2]
         'instanceof', seq('!', 'instanceof')  // Type check: x instanceof List
       )),
@@ -842,8 +843,16 @@ module.exports = grammar({
       $.assignment,
       $.if_statement,
       $.return_statement,
-      $.assert_statement
+      $.assert_statement,
+      $.label_statement
     )), 'block'),
+
+    // Labeled statement: multiMap/branch emit labels — db: [meta, db]
+    label_statement: $ => prec.dynamic(1, seq(
+      $.identifier,
+      ':',
+      $.simple_expression
+    )),
 
     // Command expressions for function calls (higher precedence)
     command_expression: $ => prec(1, seq(
