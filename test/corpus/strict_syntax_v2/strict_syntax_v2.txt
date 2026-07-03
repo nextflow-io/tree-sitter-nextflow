@@ -719,3 +719,19 @@ process P {
               (simple_expression (interpolated_string (string_content)))))))
       (script_content
         (interpolated_string (string_content))))))
+
+==================
+Exit with parenthesised args
+==================
+
+if (x) { exit(1, "no") }
+
+---
+
+(source_file
+  (if_statement
+    (simple_expression (identifier))
+    (block
+      (exit_statement
+        (simple_expression (integer_literal))
+        (simple_expression (interpolated_string (string_content)))))))
