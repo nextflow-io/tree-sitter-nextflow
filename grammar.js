@@ -600,6 +600,7 @@ module.exports = grammar({
       $.command_expression,                   // No-paren calls: println "hello"
       $.function_call,                        // Function calls: fn(args)
       $.method_call,                          // Object methods: obj.method()
+      $.string_method_call,                   // """...""".stripIndent()
       $.property_expression,                  // (expr).name, 7.GB
       $.cast_expression,                      // Coercion: x as int
       $.constructor_call,                     // new Type(args)
@@ -971,6 +972,22 @@ module.exports = grammar({
       )
     )),
 
+    // Method call whose receiver is a triple-quoted string:
+    //   """...""".stripIndent(), """...""".stripIndent(true).trim()
+    // A dedicated rule requiring at least one `.method` so a *bare* triple
+    // string (a process script body) never matches this and stays
+    // script_content / interpolated_triple_quoted_string.
+    string_method_call: $ => prec(7, seq(
+      choice($.triple_quoted_string, $.interpolated_triple_quoted_string),
+      repeat1(seq(
+        choice('.', '?.'),
+        $.identifier,
+        // Call required (like method_call) so an empty () binds here instead
+        // of being read as a separate parenthesized_expression.
+        '(', commaSep(choice($.option_entry, $.simple_expression)), ')'
+      ))
+    )),
+
     // Environment function (strict syntax)
     env_function: $ => seq(
       'env',
@@ -1088,14 +1105,12 @@ module.exports = grammar({
     // backslash (escape) and the closing """, but a lone or doubled " is fine.
     triple_string_content: $ => token(prec(-1, /([^$"\\]|"[^"$\\]|""[^"$\\])+/)),
 
-    // Plain triple-quoted strings (heredoc without interpolation)
-    // Single quotes: '''literal text''' (never interpolated)
-    // Double quotes: """literal text""" (only if no $ present)
-    // Regex explanation: ([^"]|"[^"]|""[^"])* matches any sequence avoiding """
-    triple_quoted_string: $ => choice(
-      seq("'''", /([^']|'[^']|''[^'])*/, "'''"),
-      seq('"""', /([^"]|"[^"]|""[^"])*/, '"""')
-    ),
+    // Plain triple-single-quoted strings (never interpolated): '''literal'''.
+    // Triple-DOUBLE-quoted """...""" always route through
+    // interpolated_triple_quoted_string (which handles no-interpolation
+    // content too) so there is exactly one rule for """ — removing the
+    // overlap that made """...""".stripIndent() ambiguous.
+    triple_quoted_string: $ => seq("'''", /([^']|'[^']|''[^'])*/, "'''"),
 
     // PRIMITIVE LITERALS & TOKENS
     // ===========================

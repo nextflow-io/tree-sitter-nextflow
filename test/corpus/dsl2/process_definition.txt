@@ -59,7 +59,10 @@ process FASTQC {
     (identifier)
     (script_declaration
       (script_content
-        (triple_quoted_string)))))
+        (interpolated_triple_quoted_string
+          (triple_string_content)
+          (interpolation
+            (identifier)))))))
 
 ==================
 Complete process definition
@@ -96,4 +99,7 @@ process FASTQC {
               (string_content))))))
     (script_declaration
       (script_content
-        (triple_quoted_string)))))
+        (interpolated_triple_quoted_string
+          (triple_string_content)
+          (interpolation
+            (identifier)))))))

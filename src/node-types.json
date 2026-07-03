@@ -1906,6 +1906,10 @@
           "named": true
         },
         {
+          "type": "string_method_call",
+          "named": true
+        },
+        {
           "type": "ternary_expression",
           "named": true
         },
@@ -2003,6 +2007,37 @@
     "type": "string",
     "named": true,
     "fields": {}
+  },
+  {
+    "type": "string_method_call",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "interpolated_triple_quoted_string",
+          "named": true
+        },
+        {
+          "type": "option_entry",
+          "named": true
+        },
+        {
+          "type": "simple_expression",
+          "named": true
+        },
+        {
+          "type": "triple_quoted_string",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "template_declaration",
