@@ -2310,6 +2310,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "cast_expression"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "process_output"
                 }
               ]
             }
@@ -2530,6 +2534,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "cast_expression"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "process_output"
                 }
               ]
             }
@@ -3873,8 +3881,17 @@
               "type": "SEQ",
               "members": [
                 {
-                  "type": "STRING",
-                  "value": "."
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "."
+                    },
+                    {
+                      "type": "STRING",
+                      "value": "?."
+                    }
+                  ]
                 },
                 {
                   "type": "SYMBOL",
