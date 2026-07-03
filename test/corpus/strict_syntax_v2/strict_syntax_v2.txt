@@ -468,3 +468,43 @@ def y = new groovy.yaml.YamlBuilder()
     (simple_expression
       (constructor_call
         (dotted_identifier (identifier) (identifier) (identifier))))))
+
+==================
+Template directive as script body
+==================
+
+process P {
+  script:
+  template 'main.R'
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_content
+        (template_declaration (string_literal))))))
+
+==================
+Top-level function definition with return
+==================
+
+def mergeMaps(meta, meta2) {
+  return meta + meta2
+}
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (identifier)
+    (identifier)
+    (block
+      (return_statement
+        (simple_expression
+          (binary_expression
+            left: (identifier)
+            right: (identifier)))))))

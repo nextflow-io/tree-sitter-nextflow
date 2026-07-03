@@ -98,7 +98,8 @@ module.exports = grammar({
   // - Lookahead tokens (rejected - complex and fragile)
   // - Context-sensitive parsing (rejected - not supported by tree-sitter)
   conflicts: $ => [
-    [$.list, $.map]  // Square bracket ambiguity: [expr, expr] vs [key: value]
+    [$.list, $.map],  // Square bracket ambiguity: [expr, expr] vs [key: value]
+    [$.variable_declaration, $.function_definition]  // `def foo` prefix: (params) vs = init
   ],
 
   rules: {
@@ -110,6 +111,7 @@ module.exports = grammar({
       $.parameter,
       $.process_definition,
       $.workflow_definition,
+      $.function_definition,
       $.variable_declaration,
       $.assignment,
       $.if_statement,
@@ -313,6 +315,7 @@ module.exports = grammar({
       $.assignment,
       $.if_statement,
       $.assert_statement,
+      $.return_statement,
       $.method_call,
       $.function_call
     ),
@@ -321,10 +324,17 @@ module.exports = grammar({
     // Language servers can inject Bash/shell highlighting into these nodes
     // Supports both single-line strings and multi-line heredoc syntax
     script_content: $ => choice(
+      $.template_declaration,                // template 'main.R' (external script file)
       $.string_literal,                      // Simple string: "echo hello"
       $.triple_quoted_string,                // Heredoc: """complex bash script"""
       $.interpolated_string,                 // "echo ${prefix}"
       $.interpolated_triple_quoted_string    // Heredoc with ${...} interpolation
+    ),
+
+    // template 'file.sh' names an external script instead of an inline body.
+    template_declaration: $ => seq(
+      'template',
+      choice($.string_literal, $.interpolated_string)
     ),
 
     // WORKFLOW DEFINITIONS - ORCHESTRATION LAYER
@@ -418,6 +428,21 @@ module.exports = grammar({
       optional(seq('=', $.simple_expression))
     ),
 
+    // Top-level function: def name(params) { ... }, optional -> return type.
+    // Params may be typed (String x) and/or have defaults (y = 5).
+    function_definition: $ => seq(
+      'def',
+      $.identifier,
+      '(',
+      commaSep(seq(
+        choice($.typed_identifier, $.identifier),
+        optional(seq('=', $.simple_expression))
+      )),
+      ')',
+      optional(seq('->', choice($.identifier, $.dotted_identifier))),
+      $.block
+    ),
+
     // Type annotations for strict syntax and better IDE support
     // Examples: : String, : List<Integer>, : Path
     type_annotation: $ => seq(':', $.identifier),
@@ -488,10 +513,14 @@ module.exports = grammar({
         $.expression_statement,
         $.variable_declaration,
         $.assignment,
-        $.if_statement
+        $.if_statement,
+        $.return_statement
       )),
       '}'
     ),
+
+    // return, return expr — valid in functions and closures.
+    return_statement: $ => prec.right(seq('return', optional($.simple_expression))),
 
     simple_statement: $ => choice(
       $.simple_expression,
@@ -802,7 +831,8 @@ module.exports = grammar({
       $.expression_statement,
       $.variable_declaration,
       $.assignment,
-      $.if_statement
+      $.if_statement,
+      $.return_statement
     )), 'block'),
 
     // Command expressions for function calls (higher precedence)
