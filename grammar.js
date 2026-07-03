@@ -1060,8 +1060,8 @@ module.exports = grammar({
     escape_sequence: $ => token(prec(1, seq(
       '\\',
       choice(
-        /[bfnrst\\'"\n.$\/]/,    // Basic escapes + dot, $ (shell \$(...)), / (regex)
-        /u[0-9a-fA-F]{4}/        // Unicode escape sequences
+        /u[0-9a-fA-F]{4}/,       // Unicode escape sequences
+        /[\s\S]/                 // Any other single char (lenient, Groovy-style)
       )
     ))),
 
