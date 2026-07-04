@@ -72,6 +72,29 @@ if (a == b | c == d) {
         (simple_expression
           (integer_literal))))))
 
+==================
+Condition with bare-identifier pipe as boolean-or (KNOWN LIMITATION, see nextflow-io/tree-sitter-nextflow#29)
+:skip
+==================
+
+if (a | b) {
+    x = 1
+}
+
+---
+
+(source_file
+  (if_statement
+    (simple_expression
+      (binary_expression
+        (identifier)
+        (identifier)))
+    (block
+      (assignment
+        (identifier)
+        (simple_expression
+          (integer_literal))))))
+
 =================
 Function call assignment
 =================
