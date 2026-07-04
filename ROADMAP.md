@@ -48,8 +48,9 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-03 | 99.4% (2058/2070)             | lenient string escapes (\\ + any char)     |
 | 2026-07-03 | 99.5% (2059/2070)             | whitespace in section markers (stub :)      |
 | 2026-07-03 | **99.6% (2062/2070)**         | ; terminates before } / after comment; typed function defs (String f(String a){}) |
+| 2026-07-04 | **99.7% (2070/2077)**         | stdout emit option without comma (`stdout emit: log`) |
 
-## Remaining failures (8 files, 0.4%) — categorised
+## Remaining failures (7 files, 0.3%) — categorised
 
 Each was attempted and reverted with the measured cost; these are genuine
 LR/lexer limits or non-idiomatic source:
@@ -61,17 +62,16 @@ LR/lexer limits or non-idiomatic source:
   precedence wins and `prec.dynamic` does not apply (no real GLR conflict).
   Breaking the core channel-op node that lint rules read is not worth 4 files
   whose source should use `||`.
-- **exotic / conflict-prone single-file syntax** (4):
+- **exotic / conflict-prone single-file syntax** (3):
   - `( cond ? """a""" : "" ) << """b"""` as a process script body — a binary
     expression *producing* the script string (rungx).
   - IIFE `{ … }()` — adding a closure-call rule introduces an unresolved
     grammar conflict for one file (scan).
-  - `stdout emit: x` without a comma — comma-optional `emit_declaration`
-    conflicts with `input_declaration` (download).
   - `log.debug "msg"` — a dotted-receiver no-paren command; a dedicated rule
     regressed other files (subsample).
 
-**Resolved since the prior 12/18**: `"""…""".stripIndent()` cluster (~7 files,
+**Resolved since the prior 12/18**: `stdout emit: x` without a comma (via an
+output-only no-comma emit form); `"""…""".stripIndent()` cluster (~7 files,
 via one `"""` rule + `string_method_call`); try/catch/finally; chained pipes;
 destructuring assignment; index on parenthesized/interpolated expressions;
 lenient escapes; `;` terminating before `}` and after an inline comment; typed

@@ -101,3 +101,38 @@ process FASTQC {
           (triple_string_content)
           (interpolation
             (identifier)))))))
+
+==================
+Process stdout output with emit option
+==================
+
+process F {
+  output:
+  stdout emit: log
+  stdout, emit: log2
+  script:
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (output_declaration
+      (bare_emit_declaration
+        (identifier)
+        (option_entry
+          (identifier)
+          (option_value
+            (identifier))))
+      (emit_declaration
+        (identifier)
+        (option_entry
+          (identifier)
+          (option_value
+            (identifier)))))
+    (script_declaration
+      (script_content
+        (interpolated_string
+          (string_content))))))

@@ -255,6 +255,7 @@ module.exports = grammar({
     //   output: stdout         - standard output
     output_declaration: $ => prec.right(seq('output:', optional($._terminator), repeat1(seq(choice(
       $.tuple_declaration,
+      $.bare_emit_declaration,
       $.emit_declaration,
       $.simple_statement
     ), optional($._terminator))))),
@@ -266,6 +267,14 @@ module.exports = grammar({
     emit_declaration: $ => prec.right(seq(
       choice($.command_expression, $.function_call, $.env_input, $.identifier),
       repeat1(seq(',', $.option_entry))
+    )),
+
+    // Nextflow modules commonly write "stdout emit: log" without the comma.
+    // Keep this no-comma form scoped to output declarations so input
+    // declarations still require the shared emit_declaration comma form.
+    bare_emit_declaration: $ => prec.right(2, seq(
+      $.identifier,
+      $.option_entry
     )),
 
     // Named option in a declaration: emit: bam, optional: true, mode: 'copy'.

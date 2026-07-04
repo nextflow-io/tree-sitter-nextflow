@@ -50,6 +50,25 @@
     }
   },
   {
+    "type": "bare_emit_declaration",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "option_entry",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "binary_expression",
     "named": true,
     "fields": {
@@ -1449,6 +1468,10 @@
       "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "bare_emit_declaration",
+          "named": true
+        },
         {
           "type": "emit_declaration",
           "named": true

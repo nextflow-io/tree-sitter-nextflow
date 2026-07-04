@@ -632,6 +632,10 @@
                     },
                     {
                       "type": "SYMBOL",
+                      "name": "bare_emit_declaration"
+                    },
+                    {
+                      "type": "SYMBOL",
                       "name": "emit_declaration"
                     },
                     {
@@ -700,6 +704,23 @@
                 }
               ]
             }
+          }
+        ]
+      }
+    },
+    "bare_emit_declaration": {
+      "type": "PREC_RIGHT",
+      "value": 2,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "identifier"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "option_entry"
           }
         ]
       }
