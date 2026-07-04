@@ -1,4 +1,25 @@
 ==================
+Immediately-invoked closure (IIFE)
+==================
+
+def is_head = { command == 'head' }()
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (simple_expression
+      (closure_call
+        (closure
+          (closure_block
+            (expression_statement
+              (simple_expression
+                (binary_expression
+                  left: (identifier)
+                  right: (string_literal))))))))))
+
+==================
 Single parameter closure
 :skip
 ==================

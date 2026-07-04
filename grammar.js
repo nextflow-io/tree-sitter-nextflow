@@ -106,6 +106,9 @@ module.exports = grammar({
     [$.destructuring_pattern, $.simple_expression],  // (a,b)=f() vs grouped expr
     [$.simple_expression, $.closure_parameter],  // { Type name -> }: typed param vs expr
     [$.command_expression, $.dotted_identifier],  // log.debug "x" vs plain property chain
+    [$.pipe_operation, $.operator_closure],  // ch | foo { }: operator_closure vs bare pipe_operation + closure_call
+    [$.method_call],  // obj.m() { }: trailing closure vs complete call then a { }() closure_call
+    [$.block, $.closure_block],  // statement then { }() closure_call: which repeat owns the brace
   ],
 
   rules: {
@@ -611,6 +614,7 @@ module.exports = grammar({
       $.index_expression,                     // Subscript: list[0]
       $.parenthesized_expression,             // Grouping: (expr)
       $.pipe_expression,                      // Channel ops: ch | map { }
+      $.closure_call,                         // IIFE: { ... }()
       $.command_expression,                   // No-paren calls: println "hello"
       $.function_call,                        // Function calls: fn(args)
       $.method_call,                          // Object methods: obj.method()
@@ -909,6 +913,15 @@ module.exports = grammar({
       $.closure_block,            // Always use block structure
       '}'
     ),
+
+    // Immediately-invoked closure (IIFE): { ... }(args)
+    // e.g. def is_head = { command == 'head' }()
+    closure_call: $ => prec(9, seq(
+      $.closure,
+      '(',
+      commaSep(choice($.option_entry, $.simple_expression)),
+      ')'
+    )),
 
     // Closure parameters: name, or typed (Path p, String x).
     closure_parameter: $ => choice(

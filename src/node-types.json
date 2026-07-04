@@ -602,6 +602,29 @@
     "fields": {}
   },
   {
+    "type": "closure_call",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "closure",
+          "named": true
+        },
+        {
+          "type": "option_entry",
+          "named": true
+        },
+        {
+          "type": "simple_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "closure_parameter",
     "named": true,
     "fields": {},
@@ -1885,6 +1908,10 @@
         },
         {
           "type": "channel_expression",
+          "named": true
+        },
+        {
+          "type": "closure_call",
           "named": true
         },
         {

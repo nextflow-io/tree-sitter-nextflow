@@ -51,8 +51,9 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-04 | **99.7% (2070/2077)**         | stdout emit option without comma (`stdout emit: log`) |
 | 2026-07-04 | **99.7% (2071/2077)**         | expression-producing script body (`(cond ? """a""" : "") << """b"""`) |
 | 2026-07-04 | **99.8% (2072/2077)**         | dotted no-paren log command (`log.debug "msg"`) |
+| 2026-07-04 | **99.8% (2073/2077)**         | immediately-invoked closure (`def x = { … }()`) |
 
-## Remaining failures (5 files, 0.2%) — categorised
+## Remaining failures (4 files, 0.2%) — categorised
 
 Each was attempted and reverted with the measured cost; these are genuine
 LR/lexer limits or non-idiomatic source:
@@ -64,11 +65,14 @@ LR/lexer limits or non-idiomatic source:
   precedence wins and `prec.dynamic` does not apply (no real GLR conflict).
   Breaking the core channel-op node that lint rules read is not worth 4 files
   whose source should use `||`.
-- **exotic / conflict-prone single-file syntax** (1):
-  - IIFE `{ … }()` — adding a closure-call rule introduces an unresolved
-    grammar conflict for one file (scan).
 
-**Resolved since the prior 12/18**: expression-producing script bodies like
+**Resolved since the prior 12/18**: immediately-invoked closures like
+`def is_head = { command == 'head' }()` (via a `closure_call` rule reachable
+from `simple_expression`, declaring the exact GLR conflict pairs tree-sitter
+named — `[pipe_operation, operator_closure]`, `[method_call]`,
+`[block, closure_block]` — so the parser forks on `(` / `{` after `}` and the
+existing trailing-closure and pipe shapes stay byte-identical);
+expression-producing script bodies like
 `( cond ? """a""" : "" ) << """b"""`; `stdout emit: x` without a comma (via an
 output-only no-comma emit form); dotted no-paren log commands like
 `log.debug "msg"`; `"""…""".stripIndent()` cluster (~7 files, via one `"""`
