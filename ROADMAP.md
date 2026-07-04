@@ -52,19 +52,33 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-04 | **99.7% (2071/2077)**         | expression-producing script body (`(cond ? """a""" : "") << """b"""`) |
 | 2026-07-04 | **99.8% (2072/2077)**         | dotted no-paren log command (`log.debug "msg"`) |
 | 2026-07-04 | **99.8% (2073/2077)**         | immediately-invoked closure (`def x = { … }()`) |
+| 2026-07-04 | **100.0% (2077/2077)**       | `|` as boolean/bitwise-or in conditions (`if (a == b | c == d)`) |
 
-## Remaining failures (4 files, 0.2%) — categorised
+## Remaining failures (0 files, 0.0%)
 
-Each was attempted and reverted with the measured cost; these are genuine
-LR/lexer limits or non-idiomatic source:
+All 8 previously-failing files in the pinned nf-core/modules corpus
+(`af65387`, denominator 2077) now parse error-free.
 
-- **`|` as boolean-or in conditions** (4): `if (a == b | c == d)`. Adding `|`
-  as a binary operator reaches 99.7% but deterministically reparses every
-  channel pipe `ch | map` as a `binary_expression` instead of
-  `pipe_expression` (2 corpus tests fail) — `binary_expression`'s static
-  precedence wins and `prec.dynamic` does not apply (no real GLR conflict).
-  Breaking the core channel-op node that lint rules read is not worth 4 files
-  whose source should use `||`.
+The `|`-as-boolean-or case (#24) — `if (a == b | c == d)` across bamcmp,
+glimpse2/phase, gstama/polyacleanup, hicexplorer/hicpca — was the hard one.
+The naive fix (adding `|` to `binary_expression`) reaches ~99.7% but
+deterministically reparses every channel pipe `ch | map` as a
+`binary_expression` because `binary_expression`'s static precedence (3) beats
+`pipe_expression` (2), so no GLR fork occurs and `prec.dynamic` never fires
+(2 corpus pipe tests regress). The landed fix introduces a `_bitor_expression`
+rule at the SAME static precedence as `pipe_expression` (`prec.left(2)`, aliased
+into `binary_expression`), raises the bare `identifier`/`function_call`
+`pipe_operation` branches to `prec.left(2)` so the reduce-reduce decision
+actually forks, declares the conflict pairs
+(`[pipe_expression, _bitor_expression]`,
+`[_bitor_expression, pipe_operation]`,
+`[simple_expression, _bitor_expression, pipe_operation]`,
+`[_bitor_expression, pipe_operation, operator_closure, command_expression]`),
+and uses `prec.dynamic` on `pipe_expression` (with `operator_closure` bumped to
+`prec.left(3)` so `multiMap { }` still shifts its closure). Net result: `ch |
+map {}` stays a `pipe_expression` (busco_plot canary unchanged at 21
+`pipe_expression` nodes, node shape byte-identical) while `x == 'b' | y == 'c'`
+— whose RHS does not match `pipe_operation` — parses as a `binary_expression`.
 
 **Resolved since the prior 12/18**: immediately-invoked closures like
 `def is_head = { command == 'head' }()` (via a `closure_call` rule reachable

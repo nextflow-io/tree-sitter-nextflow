@@ -46,6 +46,32 @@ if (x > 5) {
               (interpolated_string
                 (string_content)))))))))
 
+==================
+Condition with pipe as boolean-or
+==================
+
+if (a == b | c == d) {
+    x = 1
+}
+
+---
+
+(source_file
+  (if_statement
+    (simple_expression
+      (binary_expression
+        (binary_expression
+          (identifier)
+          (identifier))
+        (binary_expression
+          (identifier)
+          (identifier))))
+    (block
+      (assignment
+        (identifier)
+        (simple_expression
+          (integer_literal))))))
+
 =================
 Function call assignment
 =================

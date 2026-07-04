@@ -190,3 +190,26 @@ ch | view
         (identifier)
         (pipe_operation
           (identifier))))))
+
+==================
+Pipe canary stays pipe_expression not binary-or
+==================
+
+ch | map { it * 2 }
+
+---
+
+(source_file
+  (expression_statement
+    (simple_expression
+      (pipe_expression
+        (identifier)
+        (pipe_operation
+          (map_operation
+            (closure
+              (closure_block
+                (expression_statement
+                  (simple_expression
+                    (binary_expression
+                      (identifier)
+                      (integer_literal))))))))))))

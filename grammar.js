@@ -109,6 +109,10 @@ module.exports = grammar({
     [$.pipe_operation, $.operator_closure],  // ch | foo { }: operator_closure vs bare pipe_operation + closure_call
     [$.method_call],  // obj.m() { }: trailing closure vs complete call then a { }() closure_call
     [$.block, $.closure_block],  // statement then { }() closure_call: which repeat owns the brace
+    [$.pipe_expression, $._bitor_expression],  // ch | map {} (pipe) vs a==b | c==d (#24): same static prec, GLR forks, prec.dynamic favours pipe
+    [$._bitor_expression, $.pipe_operation],   // `x | ident`/`x | fn()`: bit-or RHS vs pipe_operation — fork so prec.dynamic can favour the pipe reading (#24)
+    [$.simple_expression, $._bitor_expression, $.pipe_operation],  // `x | ident as T`: bit-or RHS vs pipe_operation vs cast-able simple_expression (#24)
+    [$._bitor_expression, $.pipe_operation, $.operator_closure, $.command_expression],  // `x | ident {`: bit-or reduce vs pipe operator_closure shift — fork so prec.dynamic favours the pipe reading (#24)
   ],
 
   rules: {
@@ -614,6 +618,7 @@ module.exports = grammar({
       $.index_expression,                     // Subscript: list[0]
       $.parenthesized_expression,             // Grouping: (expr)
       $.pipe_expression,                      // Channel ops: ch | map { }
+      alias($._bitor_expression, $.binary_expression), // `|` as boolean/bitwise-or: a == b | c == d (#24)
       $.closure_call,                         // IIFE: { ... }()
       $.command_expression,                   // No-paren calls: println "hello"
       $.function_call,                        // Function calls: fn(args)
@@ -708,6 +713,65 @@ module.exports = grammar({
         $.process_output
       ))
     )),
+
+    // BITWISE / BOOLEAN OR via `|` (issue #24)
+    // =========================================
+    // Nextflow/Groovy allow `|` as a bitwise/boolean-or operator inside
+    // conditions, e.g. `if (a == b | c == d)`. This collides with the channel
+    // `pipe_expression` (`ch | map { }`). To avoid the naive fix — where
+    // binary_expression's static prec (3) deterministically beats
+    // pipe_expression (2) and reparses every channel pipe — this rule sits at
+    // the SAME static precedence as pipe_expression (prec.left 2) so neither
+    // statically wins. The conflict pair [pipe_expression, _bitor_expression]
+    // is declared, and pipe_expression carries prec.dynamic so the pipe reading
+    // is preferred whenever both are valid (RHS matches pipe_operation). A
+    // comparison RHS like `c == d` does NOT match pipe_operation, so the bit-or
+    // branch survives for conditions. Aliased to binary_expression to keep the
+    // AST node shape identical to other binary operators.
+    _bitor_expression: $ => prec.dynamic(-1, prec.left(2, seq(
+      field('left', choice(
+        $.identifier,
+        $.string_literal,
+        $.integer_literal,
+        $.boolean_literal,
+        $.dotted_identifier,
+        $.interpolated_string,
+        $.parenthesized_expression,
+        $.binary_expression,
+        $._bitor_expression,
+        $.unary_expression,
+        $.index_expression,
+        $.method_call,
+        $.property_expression,
+        $.function_call,
+        $.list,
+        $.map,
+        $.float_literal,
+        $.cast_expression,
+        $.process_output
+      )),
+      field('operator', '|'),
+      field('right', choice(
+        $.identifier,
+        $.string_literal,
+        $.integer_literal,
+        $.boolean_literal,
+        $.dotted_identifier,
+        $.interpolated_string,
+        $.parenthesized_expression,
+        $.binary_expression,
+        $.unary_expression,
+        $.index_expression,
+        $.method_call,
+        $.property_expression,
+        $.function_call,
+        $.list,
+        $.map,
+        $.float_literal,
+        $.cast_expression,
+        $.process_output
+      ))
+    ))),
 
     // Groovy coercion: (task.cpus * 0.9) as int, x as List
     cast_expression: $ => prec.left(2, seq(
@@ -853,7 +917,7 @@ module.exports = grammar({
     //
     // CRITICAL: Precedence level 2 ensures pipes bind tighter than arithmetic:
     //   x + ch | map { it } is parsed as x + (ch | map { it })
-    pipe_expression: $ => prec.left(2, seq(
+    pipe_expression: $ => prec.dynamic(1, prec.left(2, seq(
       choice(
         $.pipe_expression,          // chaining: a | map | combine | view
         $.channel_expression,       // Channel.of() | map
@@ -868,18 +932,29 @@ module.exports = grammar({
       ),
       '|',                         // Pipe operator
       $.pipe_operation
-    )),
+    ))),
 
     // Pipe operations - extensible for new Nextflow operators
+    // The bare `identifier` and `function_call` branches carry prec.left(2) to
+    // match _bitor_expression's static precedence, so the reduce-reduce decision
+    // (pipe_operation RHS vs bit-or right operand) on `ch | view` / `ch |
+    // ifEmpty(null)` FORKS the GLR parser instead of resolving statically to
+    // binary. prec.dynamic on pipe_expression then wins the fork, preserving the
+    // pipe reading (#24). map_operation / operator_closure stay at natural
+    // precedence so the `{`-shift that builds them is not stolen by an early
+    // bare-identifier reduce (keeps `ch | multiMap { }` an operator_closure).
     pipe_operation: $ => choice(
-      $.map_operation,       // map { transformation }
-      $.operator_closure,    // multiMap { }, branch { }, filter { }
-      $.function_call,       // ch | ifEmpty(null), ch | groupTuple(by: 0)
-      $.identifier           // ch | view, ch | flatten
+      $.map_operation,                 // map { transformation }
+      $.operator_closure,              // multiMap { }, branch { }, filter { }
+      prec.left(2, $.function_call),   // ch | ifEmpty(null), ch | groupTuple(by: 0)
+      prec.left(2, $.identifier)       // ch | view, ch | flatten
     ),
 
     // A channel operator taking a closure with no parens: multiMap { ... }.
-    operator_closure: $ => seq($.identifier, $.closure),
+    // prec.left(3) > the prec.left(2) on the bare `identifier` pipe branch so
+    // that `multiMap { ... }` SHIFTS the `{` into an operator_closure instead of
+    // reducing `multiMap` as a bare-identifier pipe_operation (#24 guard).
+    operator_closure: $ => prec.left(3, seq($.identifier, $.closure)),
 
     // Map operation: transforms each channel item
     // Examples:
