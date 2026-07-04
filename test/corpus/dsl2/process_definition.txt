@@ -187,3 +187,40 @@ process F {
             (triple_string_content)
             (interpolation
               (identifier))))))))
+
+==================
+Process script dotted log command
+==================
+
+process F {
+  script:
+  def n = 1
+  log.debug "found ${n} files"
+  "echo done"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_statement
+        (variable_declaration
+          (identifier)
+          (simple_expression
+            (integer_literal))))
+      (script_statement
+        (command_expression
+          (dotted_identifier
+            (identifier)
+            (identifier))
+          (interpolated_string
+            (string_content)
+            (interpolation
+              (simple_expression
+                (identifier)))
+            (string_content))))
+      (script_content
+        (interpolated_string
+          (string_content))))))

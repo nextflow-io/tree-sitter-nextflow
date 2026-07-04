@@ -987,6 +987,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "command_expression"
+        },
+        {
+          "type": "SYMBOL",
           "name": "binary_expression"
         },
         {
@@ -3931,50 +3935,85 @@
       }
     },
     "command_expression": {
-      "type": "PREC",
-      "value": 1,
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "SYMBOL",
-            "name": "identifier"
-          },
-          {
-            "type": "CHOICE",
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "PREC",
+          "value": 1,
+          "content": {
+            "type": "SEQ",
             "members": [
-              {
-                "type": "SYMBOL",
-                "name": "interpolated_string"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "string_literal"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "triple_quoted_string"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "interpolated_triple_quoted_string"
-              },
               {
                 "type": "SYMBOL",
                 "name": "identifier"
               },
               {
-                "type": "SYMBOL",
-                "name": "integer_literal"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "closure"
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "interpolated_string"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "string_literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "triple_quoted_string"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "interpolated_triple_quoted_string"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "identifier"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "integer_literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "closure"
+                  }
+                ]
               }
             ]
           }
-        ]
-      }
+        },
+        {
+          "type": "PREC_DYNAMIC",
+          "value": 1,
+          "content": {
+            "type": "PREC",
+            "value": 8,
+            "content": {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "dotted_identifier"
+                },
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "SYMBOL",
+                      "name": "interpolated_string"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "string_literal"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
     },
     "function_call": {
       "type": "PREC",
@@ -4903,6 +4942,10 @@
     [
       "simple_expression",
       "closure_parameter"
+    ],
+    [
+      "command_expression",
+      "dotted_identifier"
     ]
   ],
   "precedences": [],

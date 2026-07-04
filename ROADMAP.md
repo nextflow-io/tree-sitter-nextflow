@@ -50,8 +50,9 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-03 | **99.6% (2062/2070)**         | ; terminates before } / after comment; typed function defs (String f(String a){}) |
 | 2026-07-04 | **99.7% (2070/2077)**         | stdout emit option without comma (`stdout emit: log`) |
 | 2026-07-04 | **99.7% (2071/2077)**         | expression-producing script body (`(cond ? """a""" : "") << """b"""`) |
+| 2026-07-04 | **99.8% (2072/2077)**         | dotted no-paren log command (`log.debug "msg"`) |
 
-## Remaining failures (6 files, 0.3%) — categorised
+## Remaining failures (5 files, 0.2%) — categorised
 
 Each was attempted and reverted with the measured cost; these are genuine
 LR/lexer limits or non-idiomatic source:
@@ -63,19 +64,18 @@ LR/lexer limits or non-idiomatic source:
   precedence wins and `prec.dynamic` does not apply (no real GLR conflict).
   Breaking the core channel-op node that lint rules read is not worth 4 files
   whose source should use `||`.
-- **exotic / conflict-prone single-file syntax** (2):
+- **exotic / conflict-prone single-file syntax** (1):
   - IIFE `{ … }()` — adding a closure-call rule introduces an unresolved
     grammar conflict for one file (scan).
-  - `log.debug "msg"` — a dotted-receiver no-paren command; a dedicated rule
-    regressed other files (subsample).
 
 **Resolved since the prior 12/18**: expression-producing script bodies like
 `( cond ? """a""" : "" ) << """b"""`; `stdout emit: x` without a comma (via an
-output-only no-comma emit form); `"""…""".stripIndent()` cluster (~7 files,
-via one `"""` rule + `string_method_call`); try/catch/finally; chained pipes;
-destructuring assignment; index on parenthesized/interpolated expressions;
-lenient escapes; `;` terminating before `}` and after an inline comment; typed
-function definitions (`String f(String a){}`); `stub :` whitespace.
+output-only no-comma emit form); dotted no-paren log commands like
+`log.debug "msg"`; `"""…""".stripIndent()` cluster (~7 files, via one `"""`
+rule + `string_method_call`); try/catch/finally; chained pipes; destructuring
+assignment; index on parenthesized/interpolated expressions; lenient escapes;
+`;` terminating before `}` and after an inline comment; typed function
+definitions (`String f(String a){}`); `stub :` whitespace.
 
 Known structural (error-free, not counted as failures): with terminators in
 workflow sections, an LALR reduction can place a trailing `take:` identifier

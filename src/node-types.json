@@ -633,6 +633,10 @@
           "named": true
         },
         {
+          "type": "dotted_identifier",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
@@ -1818,6 +1822,10 @@
         },
         {
           "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "command_expression",
           "named": true
         },
         {

@@ -105,6 +105,7 @@ module.exports = grammar({
     [$.script_content],  // script string optionally trailed by a template call
     [$.destructuring_pattern, $.simple_expression],  // (a,b)=f() vs grouped expr
     [$.simple_expression, $.closure_parameter],  // { Type name -> }: typed param vs expr
+    [$.command_expression, $.dotted_identifier],  // log.debug "x" vs plain property chain
   ],
 
   rules: {
@@ -337,6 +338,7 @@ module.exports = grammar({
       $.try_statement,
       $.method_call,
       $.function_call,
+      $.command_expression,
       $.binary_expression,   // bare side-effecting op: outputs << "x"
       $.ternary_expression   // bare ternary for side effects: cond ? a.each{} : b
     ),
@@ -936,18 +938,26 @@ module.exports = grammar({
 
     // Command expressions for no-paren function calls (higher precedence),
     // incl. a trailing closure: multiMapCriteria { ... }, println "x".
-    command_expression: $ => prec(1, seq(
-      $.identifier,
-      choice(
-        $.interpolated_string,
-        $.string_literal,
-        $.triple_quoted_string,              // error """..."""
-        $.interpolated_triple_quoted_string, // error """...${x}"""
+    command_expression: $ => choice(
+      prec(1, seq(
         $.identifier,
-        $.integer_literal,
-        $.closure
-      )
-    )),
+        choice(
+          $.interpolated_string,
+          $.string_literal,
+          $.triple_quoted_string,              // error """..."""
+          $.interpolated_triple_quoted_string, // error """...${x}"""
+          $.identifier,
+          $.integer_literal,
+          $.closure
+        )
+      )),
+      // Dotted-receiver no-paren calls are intentionally string-only. Allowing
+      // identifiers or closures here steals `log.info fn(...)` from method calls.
+      prec.dynamic(1, prec(8, seq(
+        $.dotted_identifier,
+        choice($.interpolated_string, $.string_literal)
+      )))
+    ),
 
     // Function calls with parentheses (high precedence)
     // Named args (key: value) appear in path(x, stageAs: 'y', arity: '1..*')
