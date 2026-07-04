@@ -113,6 +113,8 @@ module.exports = grammar({
     [$._bitor_expression, $.pipe_operation],   // `x | ident`/`x | fn()`: bit-or RHS vs pipe_operation — fork so prec.dynamic can favour the pipe reading (#24)
     [$.simple_expression, $._bitor_expression, $.pipe_operation],  // `x | ident as T`: bit-or RHS vs pipe_operation vs cast-able simple_expression (#24)
     [$._bitor_expression, $.pipe_operation, $.operator_closure, $.command_expression],  // `x | ident {`: bit-or reduce vs pipe operator_closure shift — fork so prec.dynamic favours the pipe reading (#24)
+    [$._bitor_expression, $._condition_bitor_expression],  // if (a | b): condition-scoped bit-or (prec.dynamic 2) forks vs general bit-or so it beats pipe_expression (#29)
+    [$._bitor_expression, $._condition_bitor_expression, $.pipe_operation],  // if (a | b): condition bit-or vs general bit-or vs pipe_operation RHS — fork so condition-scoped prec.dynamic(2) wins (#29)
   ],
 
   rules: {
@@ -549,7 +551,7 @@ module.exports = grammar({
     if_statement: $ => prec.right(seq(
       'if',
       '(',
-      $.simple_expression,
+      $._condition,
       ')',
       choice($.block, $.expression_statement, $.assignment),  // braces or single statement
       repeat($.else_if_clause),
@@ -560,7 +562,7 @@ module.exports = grammar({
       'else',
       'if',
       '(',
-      $.simple_expression,
+      $._condition,
       ')',
       $.block
     ),
@@ -772,6 +774,79 @@ module.exports = grammar({
         $.process_output
       ))
     ))),
+
+    // CONDITION-SCOPED BIT-OR (issue #29)
+    // ===================================
+    // Inside an `if` / `else if` condition, a bare `|` between two BARE
+    // identifiers (`if (a | b)`) is a boolean/bitwise-or, NOT a channel pipe.
+    // In statement position `a | b` is genuinely a `pipe_expression`, so this
+    // must be scoped to the condition slot only. `_bitor_expression`
+    // (prec.dynamic -1) loses the GLR fork to `pipe_expression`
+    // (prec.dynamic 1) when the RHS is a bare identifier that also matches
+    // `pipe_operation`. This rule mirrors `_bitor_expression` but carries a
+    // HIGHER prec.dynamic (2) so, only within a condition, the bit-or reading
+    // wins the fork. It is aliased to binary_expression to keep the AST node
+    // shape identical to #24's condition-or. Workflow-body pipes are untouched
+    // because this rule is only reachable from `_condition`.
+    _condition_bitor_expression: $ => prec.dynamic(2, prec.left(2, seq(
+      field('left', choice(
+        $.identifier,
+        $.string_literal,
+        $.integer_literal,
+        $.boolean_literal,
+        $.dotted_identifier,
+        $.interpolated_string,
+        $.parenthesized_expression,
+        $.binary_expression,
+        $._bitor_expression,
+        $._condition_bitor_expression,
+        $.unary_expression,
+        $.index_expression,
+        $.method_call,
+        $.property_expression,
+        $.function_call,
+        $.list,
+        $.map,
+        $.float_literal,
+        $.cast_expression,
+        $.process_output
+      )),
+      field('operator', '|'),
+      field('right', choice(
+        $.identifier,
+        $.string_literal,
+        $.integer_literal,
+        $.boolean_literal,
+        $.dotted_identifier,
+        $.interpolated_string,
+        $.parenthesized_expression,
+        $.binary_expression,
+        $.unary_expression,
+        $.index_expression,
+        $.method_call,
+        $.property_expression,
+        $.function_call,
+        $.list,
+        $.map,
+        $.float_literal,
+        $.cast_expression,
+        $.process_output
+      ))
+    ))),
+
+    // The `if`/`else if` condition slot. Adds the condition-scoped bit-or
+    // (#29) alongside the general simple_expression so that `bare | bare`
+    // reduces to a boolean-or binary_expression inside a condition without
+    // changing how pipes parse elsewhere. The bit-or branch is wrapped so the
+    // AST shape stays `(simple_expression (binary_expression ...))`, identical
+    // to #24's condition-or. Hidden rule: simple_expression still appears
+    // directly under if_statement for all other conditions.
+    _condition: $ => choice(
+      $.simple_expression,
+      alias($._condition_or, $.simple_expression)
+    ),
+
+    _condition_or: $ => alias($._condition_bitor_expression, $.binary_expression),
 
     // Groovy coercion: (task.cpus * 0.9) as int, x as List
     cast_expression: $ => prec.left(2, seq(

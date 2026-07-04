@@ -73,8 +73,7 @@ if (a == b | c == d) {
           (integer_literal))))))
 
 ==================
-Condition with bare-identifier pipe as boolean-or (KNOWN LIMITATION, see nextflow-io/tree-sitter-nextflow#29)
-:skip
+Condition with bare-identifier pipe as boolean-or (see nextflow-io/tree-sitter-nextflow#29)
 ==================
 
 if (a | b) {

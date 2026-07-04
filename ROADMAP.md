@@ -53,6 +53,7 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-04 | **99.8% (2072/2077)**         | dotted no-paren log command (`log.debug "msg"`) |
 | 2026-07-04 | **99.8% (2073/2077)**         | immediately-invoked closure (`def x = { … }()`) |
 | 2026-07-04 | **100.0% (2077/2077)**       | `|` as boolean/bitwise-or in conditions (`if (a == b | c == d)`) |
+| 2026-07-04 | **100.0% (2077/2077)**       | bare-identifier `|` as boolean-or in conditions (`if (a | b)`, #29) — no rate change; condition-scoped fix, pipes preserved |
 
 ## Remaining failures (0 files, 0.0%)
 
@@ -79,6 +80,22 @@ and uses `prec.dynamic` on `pipe_expression` (with `operator_closure` bumped to
 map {}` stays a `pipe_expression` (busco_plot canary unchanged at 21
 `pipe_expression` nodes, node shape byte-identical) while `x == 'b' | y == 'c'`
 — whose RHS does not match `pipe_operation` — parses as a `binary_expression`.
+
+The `#24` fix left one known limitation: a bare `|` between two BARE
+identifiers inside a condition (`if (a | b)`) still read as a
+`pipe_expression`, because that RHS *does* match `pipe_operation` so
+`pipe_expression`'s `prec.dynamic(1)` beat `_bitor_expression`'s
+`prec.dynamic(-1)` in the GLR fork. **#29** closes this by CONTEXT: the
+`if`/`else if` condition slot is now a hidden `_condition` rule that offers a
+condition-scoped `_condition_bitor_expression` (same `prec.left(2)` shape,
+aliased to `binary_expression`, wrapped in `simple_expression`) carrying a
+HIGHER `prec.dynamic(2)`. Only inside a condition does that reading win the
+fork, so `if (a | b)` becomes a `binary_expression` while workflow-body pipes
+(`ch | map {}`, statement-position `a | b`) are untouched. Declared the exact
+named conflict pairs `[_bitor_expression, _condition_bitor_expression]` and
+`[_bitor_expression, _condition_bitor_expression, pipe_operation]`. Parse rate
+unchanged at 2077/2077, busco_plot canary still 21 `pipe_expression` nodes,
+pipe node shape byte-identical, corpus 96 pass / 0 fail / 35 skip.
 
 **Resolved since the prior 12/18**: immediately-invoked closures like
 `def is_head = { command == 'head' }()` (via a `closure_call` rule reachable

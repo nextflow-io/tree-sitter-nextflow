@@ -2149,7 +2149,7 @@
           },
           {
             "type": "SYMBOL",
-            "name": "simple_expression"
+            "name": "_condition"
           },
           {
             "type": "STRING",
@@ -2211,7 +2211,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "simple_expression"
+          "name": "_condition"
         },
         {
           "type": "STRING",
@@ -3092,6 +3092,224 @@
           ]
         }
       }
+    },
+    "_condition_bitor_expression": {
+      "type": "PREC_DYNAMIC",
+      "value": 2,
+      "content": {
+        "type": "PREC_LEFT",
+        "value": 2,
+        "content": {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "left",
+              "content": {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "identifier"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "string_literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "integer_literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "boolean_literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "dotted_identifier"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "interpolated_string"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "parenthesized_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "binary_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "_bitor_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "_condition_bitor_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "unary_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "index_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "method_call"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "property_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "function_call"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "list"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "map"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "float_literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "cast_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "process_output"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "operator",
+              "content": {
+                "type": "STRING",
+                "value": "|"
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "right",
+              "content": {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "identifier"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "string_literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "integer_literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "boolean_literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "dotted_identifier"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "interpolated_string"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "parenthesized_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "binary_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "unary_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "index_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "method_call"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "property_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "function_call"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "list"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "map"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "float_literal"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "cast_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "process_output"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "_condition": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "simple_expression"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_condition_or"
+          },
+          "named": true,
+          "value": "simple_expression"
+        }
+      ]
+    },
+    "_condition_or": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "_condition_bitor_expression"
+      },
+      "named": true,
+      "value": "binary_expression"
     },
     "cast_expression": {
       "type": "PREC_LEFT",
@@ -5276,6 +5494,15 @@
       "pipe_operation",
       "operator_closure",
       "command_expression"
+    ],
+    [
+      "_bitor_expression",
+      "_condition_bitor_expression"
+    ],
+    [
+      "_bitor_expression",
+      "_condition_bitor_expression",
+      "pipe_operation"
     ]
   ],
   "precedences": [],
