@@ -924,6 +924,18 @@
             "members": [
               {
                 "type": "SYMBOL",
+                "name": "script_statement"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
                 "name": "script_content"
               },
               {
@@ -2585,6 +2597,14 @@
                 },
                 {
                   "type": "SYMBOL",
+                  "name": "interpolated_triple_quoted_string"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "triple_quoted_string"
+                },
+                {
+                  "type": "SYMBOL",
                   "name": "parenthesized_expression"
                 },
                 {
@@ -2802,6 +2822,14 @@
                 {
                   "type": "SYMBOL",
                   "name": "interpolated_string"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "interpolated_triple_quoted_string"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "triple_quoted_string"
                 },
                 {
                   "type": "SYMBOL",

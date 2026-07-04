@@ -136,3 +136,54 @@ process F {
       (script_content
         (interpolated_string
           (string_content))))))
+
+==================
+Process script expression with heredoc append
+==================
+
+process F {
+  script:
+  def prefix = params.prefix ?: ""
+  ( params.with_header ?
+  """
+  echo header
+  """ : "" )
+  <<
+  """
+  echo $prefix
+  """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_declaration
+      (script_statement
+        (variable_declaration
+          (identifier)
+          (simple_expression
+            (binary_expression
+              left: (dotted_identifier
+                (identifier)
+                (identifier))
+              right: (interpolated_string)))))
+      (script_statement
+        (binary_expression
+          left: (parenthesized_expression
+            (simple_expression
+              (ternary_expression
+                condition: (simple_expression
+                  (dotted_identifier
+                    (identifier)
+                    (identifier)))
+                consequence: (simple_expression
+                  (interpolated_triple_quoted_string
+                    (triple_string_content)))
+                alternative: (simple_expression
+                  (interpolated_string)))))
+          right: (interpolated_triple_quoted_string
+            (triple_string_content)
+            (interpolation
+              (identifier))))))))

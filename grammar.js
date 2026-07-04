@@ -319,6 +319,7 @@ module.exports = grammar({
       choice(seq('script', ':'), seq('shell', ':'), seq('exec', ':'), seq('stub', ':')),
       optional($._terminator),
       repeat(seq($.script_statement, $._terminator)),  // Groovy prelude, each terminated
+      optional($.script_statement),                     // final expression before `}` (scanner suppresses terminator)
       // exec: sections are Groovy-only; script/shell/stub end in a string.
       optional($.script_content)
     )),
@@ -649,6 +650,8 @@ module.exports = grammar({
         $.boolean_literal,
         $.dotted_identifier,
         $.interpolated_string,
+        $.interpolated_triple_quoted_string,
+        $.triple_quoted_string,
         $.parenthesized_expression,
         $.binary_expression,
         $.unary_expression,
@@ -682,6 +685,8 @@ module.exports = grammar({
         $.boolean_literal,
         $.dotted_identifier,
         $.interpolated_string,
+        $.interpolated_triple_quoted_string,
+        $.triple_quoted_string,
         $.parenthesized_expression,
         $.binary_expression,
         $.unary_expression,
