@@ -1,0 +1,9 @@
+test/injection/fixture.nf
+  pattern: 0
+    capture: injection.content, start: (5, 7), end: (7, 11)
+  pattern: 1
+    capture: 0 - injection.content, start: (13, 5), end: (13, 10), text: `echo `
+  pattern: 2
+    capture: 0 - injection.content, start: (18, 4), end: (18, 16), text: `'echo hello'`
+  pattern: 3
+    capture: injection.content, start: (23, 4), end: (25, 7)
