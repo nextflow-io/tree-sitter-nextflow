@@ -1,33 +1,26 @@
-;; Language injection queries for Nextflow
-;; These queries tell tree-sitter to re-parse script content as bash/shell
+;; Bash injection into process script/shell/stub bodies.
+;; Interpolated strings: capture only the content chunks so quote
+;; delimiters and ${...} interpolations stay Nextflow.
+;; injection.combined merges the chunks around interpolations into
+;; one bash document.
+(script_content
+  (interpolated_triple_quoted_string
+    (triple_string_content) @injection.content)
+  (#set! injection.language "bash")
+  (#set! injection.combined))
 
-;; Inject bash syntax into script_content nodes (new grammar structure)
-((script_content) @injection.content
- (#set! injection.language "bash"))
+(script_content
+  (interpolated_string
+    (string_content) @injection.content)
+  (#set! injection.language "bash")
+  (#set! injection.combined))
 
-;; Inject bash into string literals within script declarations
-((script_declaration
-   (script_content
-     (string_literal) @injection.content))
- (#set! injection.language "bash"))
+;; string_literal / triple_quoted_string are single tokens with no
+;; content child, so the injection includes the quote delimiters.
+(script_content
+  (string_literal) @injection.content
+  (#set! injection.language "bash"))
 
-;; Inject bash into triple-quoted strings within script declarations
-((script_declaration
-   (script_content
-     (triple_quoted_string) @injection.content))
- (#set! injection.language "bash"))
-
-;; Handle shebang lines specifically as bash
-((script_content) @injection.content
- (#match? @injection.content "^\\s*#!/.*bash")
- (#set! injection.language "bash"))
-
-;; Handle shell scripts with shell shebang
-((script_content) @injection.content
- (#match? @injection.content "^\\s*#!/.*sh")
- (#set! injection.language "bash"))
-
-;; Fallback patterns for common shell constructs
-((script_content) @injection.content
- (#match? @injection.content "echo\\s")
- (#set! injection.language "bash"))
+(script_content
+  (triple_quoted_string) @injection.content
+  (#set! injection.language "bash"))
