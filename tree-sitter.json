@@ -8,7 +8,10 @@
         "nf",
         "config"
       ],
-      "injection-regex": "^nextflow$"
+      "injection-regex": "^nextflow$",
+      "highlights": "queries/highlights.scm",
+      "injections": "queries/injections.scm",
+      "tags": "queries/tags.scm"
     }
   ],
   "metadata": {
