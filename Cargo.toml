@@ -4,13 +4,13 @@ description = "Nextflow grammar for tree-sitter"
 version = "0.1.0"
 authors = [
   "Edmund Miller <edmund@nf-co.re>",
-  "Ben Sherman <bentshermann@gmail.com",
+  "Ben Sherman <bentshermann@gmail.com>",
 ]
 license = "MIT"
 readme = "README.md"
 keywords = ["incremental", "parsing", "tree-sitter", "nextflow"]
 categories = ["parsing", "text-editors"]
-repository = "https://github.com/edmundmiller/tree-sitter-nextflow"
+repository = "https://github.com/nextflow-io/tree-sitter-nextflow"
 edition = "2021"
 autoexamples = false
 

@@ -6,23 +6,59 @@ Nextflow grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter).
 >
 > This grammar is designed to support Nextflow's [strict syntax mode](https://nextflow.io/docs/latest/strict-syntax.html), focusing on the cleaner, more consistent v2 parser syntax patterns.
 
+## Status
+
+- **Parse rate:** 100% error-free over the pinned nf-core/modules corpus
+  (2077/2077 files), measured by `scripts/parse_rate.py`.
+- **Corpus tests:** 96 passing (`tree-sitter test`).
+- **Bindings:** Node.js, Rust, C, and Python.
+
+See [`ROADMAP.md`](ROADMAP.md) for the parity roadmap and remaining work, and
+[`CHANGELOG.md`](CHANGELOG.md) for release history.
+
 ## Features
 
-- **Core Nextflow Syntax**: Process definitions, workflows, variable declarations
-- **Language Injection**: Bash/shell syntax highlighting in script blocks
-- **Expressions**: Binary operators, lists, maps, function calls
-- **Control Flow**: If/else statements, blocks
-- **Channel Operations**: `Channel.from()`, `Channel.value()`, `Channel.of()` with pipe operations
+- **Core Nextflow syntax:** process, workflow, and function definitions,
+  variable declarations, includes, and parameters.
+- **DSL2:** channel factories and operators, chained/piped channel operations,
+  `take:`/`main:`/`emit:` workflow sections.
+- **Process bodies:** directives, `input:`/`output:`/`when:` sections, and
+  `script:`/`shell:`/`exec:`/`stub:` blocks.
+- **Expressions:** binary/unary operators, casts, ranges, lists, maps, closures
+  (including typed parameters), safe navigation (`?.`), and spread (`*.`).
+- **Strings:** single/double/triple-quoted strings, GString interpolation, and
+  slashy-string regexes.
+- **Control flow:** `if`/`else`, `for`-in loops, `try`/`catch`/`finally`,
+  `assert`, and `workflow.onComplete`/`onError` event handlers.
+- **Language injection:** Bash/shell highlighting inside script blocks.
 
-## Development Status
+> **Scope:** the grammar targets the Nextflow strict syntax only. Non-strict
+> constructs (`while`, `switch`, classes) are intentionally out of scope.
 
-**Current Test Coverage**: 28/80 tests passing (35%)
+## Installation
 
-- ✅ **Core Features**: Variable declarations, process definitions, script injection
-- ✅ **Expressions**: Binary operations, lists, maps, channel operations
-- ✅ **Control Flow**: If/else statements, function calls
-- 🚧 **In Progress**: String interpolation, advanced workflows, closures
-- ⏳ **Future**: Configuration files, error handling, advanced channel operators
+### Python
+
+Published to PyPI on each tagged release:
+
+```bash
+pip install tree-sitter-nextflow
+```
+
+### From source (Node.js, Rust, C)
+
+The Node, Rust, and C bindings are built from source:
+
+```bash
+git clone https://github.com/nextflow-io/tree-sitter-nextflow.git
+cd tree-sitter-nextflow
+tree-sitter generate
+tree-sitter test
+```
+
+- **Node.js:** `npm install` (builds via `node-gyp-build`).
+- **Rust:** add a path/git dependency on this repo in `Cargo.toml`.
+- **C:** `make` builds the shared library.
 
 ## AST-grep Integration
 
@@ -173,3 +209,14 @@ See [ast-grep rule documentation](https://ast-grep.github.io/guide/rule-config.h
 - [Nextflow ANTLR grammar](https://github.com/nextflow-io/nextflow/tree/master/modules/nf-lang/src/main/antlr)
 - [Nextflow TextMate grammar](https://github.com/nextflow-io/vscode-language-nextflow/tree/main/syntaxes)
 - [AST-grep Custom Languages](https://ast-grep.github.io/advanced/custom-language.html)
+
+## Contributing
+
+Contributions are welcome. Grammar changes go in `grammar.js`; run
+`tree-sitter generate && tree-sitter test` before opening a PR, and add corpus
+tests under `test/corpus/`. See [`ROADMAP.md`](ROADMAP.md) for priorities and
+[`CLAUDE.md`](CLAUDE.md) for the development workflow.
+
+## License
+
+[MIT](LICENSE) © Edmund Miller

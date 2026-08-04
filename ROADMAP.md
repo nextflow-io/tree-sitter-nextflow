@@ -4,10 +4,11 @@ Goal: tree-sitter-nextflow parses everything the official Nextflow compiler's
 strict syntax accepts, so downstream tooling (ast-grep lint rules in
 nf-core/tools, editors, outlines) can rely on the AST instead of regex.
 
-**Scope guard:** strict syntax only. `for`/`while` loops, `try`/`catch`,
-`switch`, classes, and top-level arbitrary statements are *not* goals — the
-strict syntax removes them. Corpus/highlight tests exercising those should be
-deleted, not fixed.
+**Scope guard:** strict syntax only. `while` loops, `switch`, classes, and
+top-level arbitrary statements are *not* goals — the strict syntax removes them.
+Exceptions parsed because real-world nf-core code still ships them:
+`try`/`catch`/`finally` and `for`-in loops (both deprecated by the 26.04 strict
+syntax, but present in the corpus).
 
 ## The metric
 
@@ -152,9 +153,9 @@ and the nf-core lint checks that need them:
   nf-core/modules SHA; fail the build if the rate regresses; badge in README.
 - **Publish the Python wheel to PyPI** (cibuildwheel workflow exists in a
   branch) so nf-core/tools can depend on it properly.
-- **Highlight/tags cleanup**: rewrite `test/highlight/*.nf` for strict syntax
-  only (drop `for`/`try` cases), add field-based queries once Phase 2 lands
-  fields.
+- **Highlight/tags cleanup**: done — all `test/highlight/*.nf` and
+  `test/tags/*.nf` assertions pass. Remaining: add field-based queries once
+  Phase 2 lands fields.
 
 ## Consumer pipeline (nf-core/tools lint rules waiting on grammar)
 

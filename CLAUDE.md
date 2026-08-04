@@ -78,18 +78,25 @@ The grammar covers these major Nextflow features:
 
 ## Testing Strategy
 
-Test files in `test/corpus/` are organized by feature and complexity level in subdirectories:
+The grammar parses the pinned nf-core/modules corpus at a 100% error-free rate
+(2077/2077), measured by `scripts/parse_rate.py`. `tree-sitter test` runs the
+corpus in `test/corpus/` (96 passing). The "priority focus" ordering below is
+historical — the burn-down is complete; use it as a map of where features live,
+not a to-do list. Remaining work is tracked in `ROADMAP.md`.
 
-### `basic/` - Core Language Features (High Priority)
+Test files in `test/corpus/` are organized by feature and complexity level in
+subdirectories:
+
+### `basic/` - Core Language Features
 - `basic_declarations.txt` - Core language constructs
 - `variable_declarations.txt` - Variable syntax and assignments
-- `control_structures.txt` - if/else, loops
+- `control_structures.txt` - if/else
 - `binary_expressions.txt` - Operators and expressions
 - `comments.txt` - Comment syntax
 - `data_structures.txt` - Lists, maps, basic data types
 
-### `strict_syntax_v2/` - Modern Nextflow Features (Priority Focus)
-- `strict_syntax_v2.txt` - Complete modern syntax test suite (9 tests, 100% passing)
+### `strict_syntax_v2/` - Modern Nextflow Features
+- `strict_syntax_v2.txt` - Modern syntax test suite
   - Variable type annotations: `def x: Integer = 1`
   - String interpolation with escape sequences: `"${id}\\.f(?:ast)?q"`
   - Collection iteration: `['a','b'].each { item -> ... }`
