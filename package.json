@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-nextflow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Nextflow grammar for tree-sitter",
   "repository": "https://github.com/nextflow-io/tree-sitter-nextflow",
   "license": "MIT",

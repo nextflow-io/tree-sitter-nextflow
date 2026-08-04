@@ -1,7 +1,7 @@
 [package]
 name = "tree-sitter-nextflow"
 description = "Nextflow grammar for tree-sitter"
-version = "0.1.0"
+version = "0.2.0"
 authors = [
   "Edmund Miller <edmund@nf-co.re>",
   "Ben Sherman <bentshermann@gmail.com>",

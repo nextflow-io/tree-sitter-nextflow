@@ -1,3 +1,11 @@
+---
+purpose: Record user-visible changes by tree-sitter-nextflow release
+applies_to: released grammar, query, binding, and tooling changes
+entrypoint: Unreleased for pending work; latest version for release notes
+verification: version links and metadata match the release version
+update_when: user-visible behavior changes or a release is prepared
+---
+
 # Changelog
 
 All notable changes to this project are documented in this file.
@@ -6,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.2.0] - 2026-08-04
 
 ### Added
 
@@ -81,5 +91,6 @@ pinned nf-core/modules corpus (2077/2077 files), measured by
 - Bumped `tree-sitter-cli` to `^0.26.10` (#23).
 - Restructured the repository layout (#15).
 
-[Unreleased]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/nextflow-io/tree-sitter-nextflow/releases/tag/v0.1.0
