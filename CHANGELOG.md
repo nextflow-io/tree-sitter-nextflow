@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-04
+
+### Added
+
+- Standard Tree-sitter Bash injection queries for process script bodies,
+  including content-only captures around Nextflow interpolations.
+- A golden injection-query test covering all four supported string forms, plus
+  testing-layer guides for parser, highlight, tag, injection, and editor tests.
+
 ## [0.2.0] - 2026-08-04
 
 ### Added
@@ -91,6 +100,7 @@ pinned nf-core/modules corpus (2077/2077 files), measured by
 - Bumped `tree-sitter-cli` to `^0.26.10` (#23).
 - Restructured the repository layout (#15).
 
-[Unreleased]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/nextflow-io/tree-sitter-nextflow/releases/tag/v0.1.0
