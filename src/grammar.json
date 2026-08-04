@@ -22,6 +22,10 @@
           },
           {
             "type": "SYMBOL",
+            "name": "workflow_event_handler"
+          },
+          {
+            "type": "SYMBOL",
             "name": "parameter"
           },
           {
@@ -47,6 +51,10 @@
           {
             "type": "SYMBOL",
             "name": "if_statement"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "for_statement"
           },
           {
             "type": "SYMBOL",
@@ -1107,6 +1115,53 @@
         }
       ]
     },
+    "workflow_event_handler": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "workflow"
+        },
+        {
+          "type": "STRING",
+          "value": "."
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "onComplete"
+              },
+              {
+                "type": "STRING",
+                "value": "onError"
+              }
+            ]
+          },
+          "named": true,
+          "value": "identifier"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "="
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "SYMBOL",
+          "name": "closure"
+        }
+      ]
+    },
     "workflow_body": {
       "type": "REPEAT1",
       "content": {
@@ -1142,6 +1197,10 @@
               {
                 "type": "SYMBOL",
                 "name": "if_statement"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "for_statement"
               }
             ]
           },
@@ -1246,6 +1305,10 @@
                     {
                       "type": "SYMBOL",
                       "name": "if_statement"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "for_statement"
                     }
                   ]
                 },
@@ -1288,6 +1351,10 @@
                     {
                       "type": "SYMBOL",
                       "name": "assignment"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "process_output"
                     },
                     {
                       "type": "SYMBOL",
@@ -2157,6 +2224,39 @@
         ]
       }
     },
+    "for_statement": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "for"
+        },
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "STRING",
+          "value": "in"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "simple_expression"
+        },
+        {
+          "type": "STRING",
+          "value": ")"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "block"
+        }
+      ]
+    },
     "else_if_clause": {
       "type": "SEQ",
       "members": [
@@ -2229,6 +2329,10 @@
                   {
                     "type": "SYMBOL",
                     "name": "if_statement"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "for_statement"
                   },
                   {
                     "type": "SYMBOL",
@@ -2495,6 +2599,10 @@
         {
           "type": "SYMBOL",
           "name": "slashy_string"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "triple_quoted_string"
         },
         {
           "type": "SYMBOL",
@@ -3822,6 +3930,10 @@
                 },
                 {
                   "type": "SYMBOL",
+                  "name": "for_statement"
+                },
+                {
+                  "type": "SYMBOL",
                   "name": "return_statement"
                 },
                 {
@@ -4672,7 +4784,7 @@
       "type": "TOKEN",
       "content": {
         "type": "PREC",
-        "value": -1,
+        "value": 1,
         "content": {
           "type": "PATTERN",
           "value": "([^$\"\\\\]|\"[^\"$\\\\]|\"\"[^\"$\\\\])+"

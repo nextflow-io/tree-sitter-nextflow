@@ -1,19 +1,19 @@
 // Test file for Nextflow operator highlighting
 
 x = 5
-// <- operator.assignment
+//^ operator.assignment
 
 y += 10
-//  ^ operator.assignment
+// ^ operator.assignment
 
 result == expected
 //     ^ operator
 
 a != b
-//  ^ operator
+// ^ operator
 
 x > y && z < w
-//  ^ operator
+//^ operator
 //     ^ operator
 //         ^ operator
 
@@ -24,12 +24,12 @@ text =~ /pattern/
 channel | process
 //      ^ operator.channel
 
-output -> input
-//     ^ operator.channel
+mapped = items.collect { item -> item }
+//                            ^ operator.channel
 
 x + y * z / w - v % 2
-//  ^ operator
-//      ^ operator
-//          ^ operator
-//              ^ operator
-//                  ^ operator
+//^ operator
+//    ^ operator
+//        ^ operator
+//            ^ operator
+//                ^ operator

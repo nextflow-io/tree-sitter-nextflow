@@ -354,6 +354,10 @@
           "named": true
         },
         {
+          "type": "for_statement",
+          "named": true
+        },
+        {
           "type": "if_statement",
           "named": true
         },
@@ -882,6 +886,29 @@
       "types": [
         {
           "type": "block",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "for_statement",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "block",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "simple_expression",
           "named": true
         }
       ]
@@ -1929,6 +1956,10 @@
           "named": true
         },
         {
+          "type": "triple_quoted_string",
+          "named": true
+        },
+        {
           "type": "unary_expression",
           "named": true
         }
@@ -1980,6 +2011,10 @@
           "named": true
         },
         {
+          "type": "for_statement",
+          "named": true
+        },
+        {
           "type": "function_definition",
           "named": true
         },
@@ -2013,6 +2048,10 @@
         },
         {
           "type": "workflow_definition",
+          "named": true
+        },
+        {
+          "type": "workflow_event_handler",
           "named": true
         }
       ]
@@ -2272,6 +2311,10 @@
           "named": true
         },
         {
+          "type": "for_statement",
+          "named": true
+        },
+        {
           "type": "if_statement",
           "named": true
         },
@@ -2328,6 +2371,29 @@
         {
           "type": "identifier",
           "named": true
+        },
+        {
+          "type": "process_output",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "workflow_event_handler",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "closure",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
         }
       ]
     }
@@ -2361,6 +2427,10 @@
         },
         {
           "type": "expression_statement",
+          "named": true
+        },
+        {
+          "type": "for_statement",
           "named": true
         },
         {
@@ -2650,6 +2720,10 @@
   {
     "type": "float_literal",
     "named": true
+  },
+  {
+    "type": "for",
+    "named": false
   },
   {
     "type": "from",

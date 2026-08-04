@@ -14,6 +14,10 @@
 (workflow_definition
   (identifier) @name) @definition.function
 
+;; Function definitions: def helper(x, y) { ... }
+(function_definition
+  (identifier) @name) @definition.function
+
 ;; Parameter declarations (workflow inputs)
 (parameter
   (identifier) @name) @definition.variable
@@ -30,3 +34,26 @@
 ;; Function calls
 (function_call
   (identifier) @name) @reference.call
+
+;; Process invocations: EXAMPLE(ch)
+(process_invocation
+  (identifier) @name) @reference.call
+
+;; Process output references: EXAMPLE.out
+(process_output
+  (identifier) @name) @reference.call
+
+;; Method calls: the identifier directly before the arg list / trailing
+;; closure (method_call is flat; earlier `.name` segments are navigation).
+(method_call
+  (identifier) @name . "(") @reference.call
+(method_call
+  (identifier) @name . (closure)) @reference.call
+
+;; Channel factory calls: Channel.fromPath(...)
+(channel_factory
+  (identifier) @name) @reference.call
+
+;; Module includes: include { PROCESS } from './modules/process.nf'
+(include
+  (string) @name) @reference.implementation

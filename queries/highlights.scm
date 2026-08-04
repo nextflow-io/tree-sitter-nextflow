@@ -2,6 +2,11 @@
 ;; These patterns define how syntax highlighting should be applied in editors
 ;; Note: the grammar defines no named fields yet, so queries match by position.
 
+;; Fallback: any identifier is a variable. This MUST come first — the
+;; tree-sitter CLI gives later patterns precedence, so specific captures
+;; below (functions, keywords, parameters) override this one.
+(identifier) @variable
+
 ;; ========================================
 ;; KEYWORDS AND DECLARATIONS
 ;; ========================================
@@ -24,6 +29,7 @@
 ;; Control flow keywords
 [
   "if"
+  "for"
   "else"
   "assert"
   "return"
@@ -77,6 +83,12 @@
 (workflow_definition
   (identifier) @function)
 
+
+;; Function parameters: every identifier defaults to a parameter; the
+;; definition-name captures below override the first one (last pattern
+;; wins in the tree-sitter CLI).
+(function_definition
+  (identifier) @variable.parameter)
 ;; Function definitions
 ;; `def name(...)': no return_type field, the name is the first identifier.
 (function_definition
@@ -103,18 +115,55 @@
   (identifier) @function.call)
 
 (command_expression
-  (identifier) @function.call)
+  . (identifier) @function.call)
+
+;; Input/output qualifiers: `val x`, `path f` — first identifier in the
+;; command_expression inside an input declaration is the qualifier keyword.
+(input_declaration
+  (simple_statement
+    (simple_expression
+      (command_expression
+        . (identifier) @type.builtin))))
+
+;; Bare output qualifiers, e.g. `stdout`
+(output_declaration
+  (simple_statement
+    (simple_expression
+      (identifier) @type.builtin)))
+
+;; workflow.onComplete / workflow.onError handlers
+(workflow_event_handler
+  (identifier) @function.method)
 
 ;; Process output access: PROCESS.out
 (process_output
   "out" @variable.builtin)
 
-;; Parameters
+;; params.NAME accesses (params.input = ...)
 (parameter
-  (identifier) @variable.parameter)
+  (identifier) @property)
 
-;; Regular identifiers
-(identifier) @variable
+;; Feature flags: nextflow.enable.dsl = 2
+(feature_flag
+  (identifier) @property)
+
+;; method_call is flat: receiver and every `.name` segment are siblings.
+;; Intermediate segments are properties; the final identifier (the one
+;; directly before the argument list or trailing closure) is the method.
+(method_call
+  "." . (identifier) @property)
+(method_call
+  (identifier) @function.method . "(")
+(method_call
+  (identifier) @function.method . (closure))
+
+;; Channel factory methods: Channel.fromPath(...), Channel.splitCsv(...)
+(channel_factory
+  (identifier) @function.method)
+
+;; Property access chains: params.test, task.cpus
+(dotted_identifier
+  "." . (identifier) @property)
 
 ;; ========================================
 ;; OPERATORS AND PUNCTUATION
@@ -207,6 +256,12 @@
 ;; String interpolation
 (interpolated_string) @string
 (interpolated_triple_quoted_string) @string
+;; The CLI does not extend a parent capture over anonymous children, so
+;; capture the quote delimiters and text content explicitly.
+(interpolated_string "\"" @string)
+(interpolated_triple_quoted_string "\"\"\"" @string)
+(string_content) @string
+(triple_string_content) @string
 (interpolation) @embedded
 (escape_sequence) @string.escape
 

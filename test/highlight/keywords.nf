@@ -4,12 +4,12 @@ nextflow.enable.dsl = 2
 // <- keyword
 //       ^ property
 //              ^ property
-//                    ^ operator
+//                  ^ operator.assignment
 
 params.input = "data.txt"
 // <- keyword
 //     ^ property
-//             ^ operator
+//           ^ operator.assignment
 //               ^ string
 
 process EXAMPLE {
@@ -57,14 +57,14 @@ workflow MAIN {
 
 if (params.test) {
 // <- keyword.control
-//  ^ punctuation.bracket
+// ^ punctuation.bracket
 //         ^ property
     println "Testing mode"
 }
 
 for (item in items) {
 // <- keyword.control
-//   ^ punctuation.bracket
-//        ^ keyword.control
+//  ^ punctuation.bracket
+//        ^ keyword.operator
     println item
 }

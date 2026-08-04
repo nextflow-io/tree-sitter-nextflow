@@ -10,7 +10,7 @@ regex = /pattern/
 //      ^ string.regex
 
 interpolated = "Value: ${x}"
-//             ^ string
+//              ^ string
 //                     ^ embedded
 //                       ^ variable
 

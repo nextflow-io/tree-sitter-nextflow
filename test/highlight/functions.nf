@@ -14,7 +14,7 @@ Channel.fromPath('*.txt')
 
 ch.map { it -> it.toString() }
 // ^ function.method
-//              ^ function.method
+//                ^ function.method
 
 process EXAMPLE {
 // <- keyword
@@ -32,7 +32,7 @@ process EXAMPLE {
 }
 
 EXAMPLE(input_ch)
-// <- function
+// <- function.call
 //      ^ variable
 
 workflow.onComplete {

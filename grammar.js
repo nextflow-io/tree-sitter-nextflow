@@ -113,6 +113,7 @@ module.exports = grammar({
       $.shebang,
       $.feature_flag,
       $.include,
+      $.workflow_event_handler,
       $.parameter,
       $.process_definition,
       $.workflow_definition,
@@ -120,6 +121,7 @@ module.exports = grammar({
       $.variable_declaration,
       $.assignment,
       $.if_statement,
+      $.for_statement,
       $.assert_statement,
       $.expression_statement,
       $.line_comment,
@@ -376,6 +378,16 @@ module.exports = grammar({
       '}'
     ),
 
+    // Workflow event handlers, both forms:
+    //   workflow.onComplete { ... }   and   workflow.onComplete = { ... }
+    workflow_event_handler: $ => seq(
+      'workflow',
+      '.',
+      alias(choice('onComplete', 'onError'), $.identifier),
+      optional('='),
+      $.closure
+    ),
+
     // Workflow body contains the main computational logic
     // Supports structured workflow sections (take:/main:/emit:) and traditional statements
     workflow_body: $ => repeat1(seq(choice(
@@ -385,7 +397,8 @@ module.exports = grammar({
       $.expression_statement, // Process calls, channel operations
       $.assignment,           // Variable assignments: x = PROCESS(y)
       $.variable_declaration, // Typed declarations: def String result = ...
-      $.if_statement          // Conditional workflow logic
+      $.if_statement,         // Conditional workflow logic
+      $.for_statement         // Loops directly in workflow body
     ), optional($._terminator))),
 
     // Workflow input section: take: param1 param2 ... (space or newline separated)
@@ -403,7 +416,8 @@ module.exports = grammar({
         $.expression_statement,
         $.assignment,
         $.variable_declaration,
-        $.if_statement          // Conditional workflow logic
+        $.if_statement,         // Conditional workflow logic
+        $.for_statement         // Loops in main section
       ), optional($._terminator)))
     )),
 
@@ -412,6 +426,7 @@ module.exports = grammar({
       'emit:',
       repeat1(seq(choice(
         $.assignment,        // variants = PROCESS.out
+        $.process_output,    // PROCESS.out
         $.identifier         // Simple identifiers
       ), optional($._terminator)))
     )),
@@ -537,6 +552,18 @@ module.exports = grammar({
       optional($.else_clause)
     )),
 
+    // C-style / Groovy for-in loops:
+    //   for (item in items) { ... }
+    for_statement: $ => seq(
+      'for',
+      '(',
+      $.identifier,
+      'in',
+      $.simple_expression,
+      ')',
+      $.block
+    ),
+
     else_if_clause: $ => seq(
       'else',
       'if',
@@ -561,6 +588,7 @@ module.exports = grammar({
         $.variable_declaration,
         $.assignment,
         $.if_statement,
+        $.for_statement,
         $.return_statement,
         $.assert_statement,
         $.exit_statement,
@@ -613,6 +641,7 @@ module.exports = grammar({
       $.interpolated_string,                  // GStrings: "Hello $name"
       $.interpolated_triple_quoted_string,    // Multi-line GStrings
       $.slashy_string,                        // Regex: /pattern/
+      $.triple_quoted_string,                 // Literal multi-line: '''...'''
       $.process_output,                       // Process outputs: PROCESS.out
       $.identifier,                           // Variables: varName
       $.string_literal,                       // Plain strings: "text"
@@ -906,6 +935,7 @@ module.exports = grammar({
       $.variable_declaration,
       $.assignment,
       $.if_statement,
+      $.for_statement,
       $.return_statement,
       $.assert_statement,
       $.label_statement,
@@ -1103,9 +1133,11 @@ module.exports = grammar({
 
     _triple_quote_char: $ => token(prec(-2, /""?/)),
 
-    // Content inside a triple-quoted GString: any run avoiding $ (interpolation),
+    // Content chunks inside """...""": anything except interpolation ($),
     // backslash (escape) and the closing """, but a lone or doubled " is fine.
-    triple_string_content: $ => token(prec(-1, /([^$"\\]|"[^"$\\]|""[^"$\\])+/)),
+    // prec(1) so `//` inside the string beats the line_comment extra (the
+    // regex cannot absorb the 3-quote closer, so this is safe).
+    triple_string_content: $ => token(prec(1, /([^$"\\]|"[^"$\\]|""[^"$\\])+/)),
 
     // Plain triple-single-quoted strings (never interpolated): '''literal'''.
     // Triple-DOUBLE-quoted """...""" always route through

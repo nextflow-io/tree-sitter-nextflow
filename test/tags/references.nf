@@ -22,11 +22,10 @@ workflow MAIN {
     //    ^ reference.call
 }
 
-Channel.fromPath('*.txt')
+Channel.fromPath('*.txt').map { it -> it.toString() }
 //      ^ reference.call
-    .map { it -> it.toString() }
-    // ^ reference.call
-    //              ^ reference.call
+//                         ^ reference.call
+//                                       ^ reference.call
 
 include { PROCESS } from './modules/process.nf'
 //                       ^ reference.implementation

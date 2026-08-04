@@ -289,11 +289,13 @@ def cmd = """
         (interpolation
           (simple_expression
             (identifier)))
+        (triple_string_content)
         (escape_sequence)
         (triple_string_content)
         (interpolation
           (simple_expression
             (identifier)))
+        (triple_string_content)
         (escape_sequence)
         (triple_string_content)))))
 
@@ -1019,5 +1021,6 @@ def m = """hi""".stripIndent()
     (identifier)
     (simple_expression
       (string_method_call
-        (interpolated_triple_quoted_string (triple_string_content))
+        (interpolated_triple_quoted_string
+          (triple_string_content))
         (identifier)))))
