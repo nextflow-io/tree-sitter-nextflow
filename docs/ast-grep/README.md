@@ -15,7 +15,7 @@ This grammar ships a ready-to-use [ast-grep](https://ast-grep.github.io/) distri
 | `lib/<platform>/libnextflow.*` | Parser library, downloaded by the installer                  |
 | `rules/`                     | Starter `scan` rules (linting / deprecations)                  |
 | `outline/nextflow.yml`       | `ast-grep outline` extractor rules                             |
-| `scripts/install-ast-grep.sh` | Installer that wires the above into your project or `~/.config` |
+| `scripts/install-ast-grep.sh` | Installer that copies the above into your project or `~/.config/ast-grep` |
 
 Each GitHub release has prebuilt parser libraries for macOS (arm64, x64) and Linux (x64, arm64), built and verified by `.github/workflows/ast-grep-distribution.yml`.
 
@@ -39,7 +39,7 @@ npm install -g @ast-grep/cli  # cross-platform
 # into the current project
 curl -fsSL https://raw.githubusercontent.com/nextflow-io/tree-sitter-nextflow/main/scripts/install-ast-grep.sh | bash
 
-# or system-wide (~/.config/ast-grep/)
+# or into ~/.config/ast-grep/, used with `ast-grep -c ~/.config/ast-grep/sgconfig.yml`
 curl -fsSL https://raw.githubusercontent.com/nextflow-io/tree-sitter-nextflow/main/scripts/install-ast-grep.sh | bash -s -- --global
 ```
 
@@ -48,18 +48,20 @@ curl -fsSL https://raw.githubusercontent.com/nextflow-io/tree-sitter-nextflow/ma
 ```bash
 git clone https://github.com/nextflow-io/tree-sitter-nextflow.git
 cd tree-sitter-nextflow
-./scripts/install-ast-grep.sh            # local
-./scripts/install-ast-grep.sh --global   # ~/.config/ast-grep/
+cd path/to/your/project
+path/to/tree-sitter-nextflow/scripts/install-ast-grep.sh            # current directory
+path/to/tree-sitter-nextflow/scripts/install-ast-grep.sh --global   # ~/.config/ast-grep/
 ```
 
-The installer detects your platform, downloads the matching parser library from the GitHub release for the checked-out version into `lib/`, and copies `sgconfig.yml` into place. If no prebuilt library exists, it builds one with the pinned tree-sitter CLI (needs Node.js and a C compiler).
+The installer copies `sgconfig.yml`, `rules/`, and `outline/` into the target directory, and puts the parser library for your platform in `lib/<platform>/` next to them. ast-grep resolves the paths in `sgconfig.yml` relative to the file, so they have to sit side by side. Piped from curl, it installs the latest release. From a clone, it installs the checked-out version and downloads that version's library, or builds it with the pinned tree-sitter CLI if there's no prebuilt one (needs Node.js and a C compiler).
+
+ast-grep only finds `sgconfig.yml` in the project directory or its parents, so a `--global` install needs `-c ~/.config/ast-grep/sgconfig.yml` on each command.
 
 **Manual:**
 
 ```bash
-cp path/to/tree-sitter-nextflow/sgconfig.yml .
-# Download libnextflow-<platform>.<ext> from the GitHub release into lib/<platform>/.
-# For a global install, edit sgconfig.yml so libraryPath uses absolute paths.
+cp -r path/to/tree-sitter-nextflow/{sgconfig.yml,rules,outline} .
+# Download libnextflow-<platform>.<ext> from the GitHub release to lib/<platform>/libnextflow.<ext>.
 ```
 
 ### 3. Other platforms
@@ -71,7 +73,7 @@ npm ci
 npx tree-sitter build --output libnextflow.so   # or .dylib on macOS
 ```
 
-Then point `sgconfig.yml`'s `libraryPath` at the result.
+Then add your platform's target triple to `libraryPath` in `sgconfig.yml`, pointing at the result.
 
 ## Quick start
 

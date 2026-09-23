@@ -1,236 +1,197 @@
 #!/usr/bin/env bash
 # install-ast-grep.sh - Installation helper for ast-grep Nextflow support
 #
-# This script sets up ast-grep to work with Nextflow files by:
-# 1. Detecting your platform
-# 2. Downloading the parser library from the matching GitHub release
-#    (or building it locally if no prebuilt library exists)
-# 3. Installing sgconfig.yml to your project or global config
+# Installs sgconfig.yml, the bundled rules and outline rules, and the parser
+# library for your platform into the current directory (or ~/.config/ast-grep
+# with --global). ast-grep resolves the paths in sgconfig.yml relative to the
+# file, so everything is installed side by side.
 #
-# Usage:
-#   ./scripts/install-ast-grep.sh [OPTIONS]
-#
-# Options:
-#   --global    Install to ~/.config/ast-grep/ for system-wide use
-#   --local     Install to current directory (default)
-#   --help      Show this help message
+# Run it from a clone, or pipe it to bash to install from the latest release:
+#   curl -fsSL https://raw.githubusercontent.com/nextflow-io/tree-sitter-nextflow/main/scripts/install-ast-grep.sh | bash
 
 set -euo pipefail
 
-# Colors for output
+REPO="nextflow-io/tree-sitter-nextflow"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Script directory and project root
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+usage() {
+    cat <<'EOF'
+Usage: install-ast-grep.sh [--local | --global]
 
-# Default installation mode
+  --local     Install into the current directory (default)
+  --global    Install into ~/.config/ast-grep/ (use with ast-grep -c)
+  --help      Show this help message
+EOF
+}
+
 INSTALL_MODE="local"
-
-# Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --global)
-            INSTALL_MODE="global"
-            shift
-            ;;
-        --local)
-            INSTALL_MODE="local"
-            shift
-            ;;
-        --help|-h)
-            sed -n '2,/^$/p' "$0" | sed 's/^# //' | sed 's/^#//'
-            exit 0
-            ;;
+        --global) INSTALL_MODE="global"; shift ;;
+        --local)  INSTALL_MODE="local"; shift ;;
+        --help|-h) usage; exit 0 ;;
         *)
-            echo -e "${RED}Error: Unknown option: $1${NC}"
-            echo "Use --help for usage information"
+            echo -e "${RED}Error: Unknown option: $1${NC}" >&2
+            usage >&2
             exit 1
             ;;
     esac
 done
 
-# Detect platform
+if [[ "$INSTALL_MODE" == "global" ]]; then
+    TARGET="$HOME/.config/ast-grep"
+else
+    TARGET="$(pwd)"
+fi
+
+# BASH_SOURCE is unset when the script is piped to bash.
+SCRIPT_PATH="${BASH_SOURCE[0]:-}"
+CLONE_ROOT=""
+if [[ -n "$SCRIPT_PATH" && -f "$(dirname "$SCRIPT_PATH")/../sgconfig.yml" ]]; then
+    CLONE_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+fi
+
 detect_platform() {
-    local os arch platform_triple
-
-    os="$(uname -s)"
-    arch="$(uname -m)"
-
-    case "$os" in
-        Darwin)
-            case "$arch" in
-                arm64|aarch64)
-                    platform_triple="aarch64-apple-darwin"
-                    ;;
-                x86_64)
-                    platform_triple="x86_64-apple-darwin"
-                    ;;
-                *)
-                    echo -e "${RED}Error: Unsupported macOS architecture: $arch${NC}"
-                    return 1
-                    ;;
-            esac
-            ;;
-        Linux)
-            case "$arch" in
-                x86_64)
-                    platform_triple="x86_64-unknown-linux-gnu"
-                    ;;
-                aarch64|arm64)
-                    platform_triple="aarch64-unknown-linux-gnu"
-                    ;;
-                *)
-                    echo -e "${RED}Error: Unsupported Linux architecture: $arch${NC}"
-                    return 1
-                    ;;
-            esac
-            ;;
+    case "$(uname -s)/$(uname -m)" in
+        Darwin/arm64|Darwin/aarch64) echo "macos-arm64 dylib" ;;
+        Darwin/x86_64)               echo "macos-x64 dylib" ;;
+        Linux/x86_64)                echo "linux-x64 so" ;;
+        Linux/aarch64|Linux/arm64)   echo "linux-arm64 so" ;;
         *)
-            echo -e "${RED}Error: Unsupported operating system: $os${NC}"
+            echo -e "${RED}Error: Unsupported platform: $(uname -s) $(uname -m)${NC}" >&2
             return 1
             ;;
     esac
-
-    echo "$platform_triple"
 }
 
-# Print the library path for a platform, downloading or building it if missing.
-# Progress messages go to stderr so callers can capture the path from stdout.
-ensure_library() {
-    local platform="$1"
-    local dir ext
-
-    case "$platform" in
-        aarch64-apple-darwin)      dir="macos-arm64"; ext="dylib" ;;
-        x86_64-apple-darwin)       dir="macos-x64";   ext="dylib" ;;
-        x86_64-unknown-linux-gnu)  dir="linux-x64";   ext="so" ;;
-        aarch64-unknown-linux-gnu) dir="linux-arm64"; ext="so" ;;
-        *)
-            echo -e "${RED}Error: Unknown platform: $platform${NC}" >&2
-            return 1
-            ;;
-    esac
-
-    local lib_path="$PROJECT_ROOT/lib/$dir/libnextflow.$ext"
-    if [[ -f "$lib_path" ]]; then
-        echo "$lib_path"
+# Sets SRC to a source tree and VERSION to its release version: the clone
+# this script lives in, or the latest release's source archive.
+resolve_source() {
+    if [[ -n "$CLONE_ROOT" ]]; then
+        SRC="$CLONE_ROOT"
+        VERSION=$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "$SRC/tree-sitter.json" | head -1)
         return 0
     fi
 
-    local version url
-    version=$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "$PROJECT_ROOT/tree-sitter.json" | head -1)
-    url="https://github.com/nextflow-io/tree-sitter-nextflow/releases/download/v$version/libnextflow-$dir.$ext"
-    mkdir -p "$(dirname "$lib_path")"
+    # /releases/latest redirects to /releases/tag/v<version>.
+    VERSION=$(curl -fsSL -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest" \
+        | sed -n 's|.*/tag/v||p')
+    if [[ -z "$VERSION" ]]; then
+        echo -e "${RED}Error: Could not find the latest release of $REPO${NC}" >&2
+        return 1
+    fi
 
-    echo "   Downloading $url" >&2
-    if curl -fsL -o "$lib_path" "$url"; then
-        echo "$lib_path"
+    SRC=$(mktemp -d)
+    trap 'rm -rf "$SRC"' EXIT
+    curl -fsSL "https://github.com/$REPO/archive/refs/tags/v$VERSION.tar.gz" \
+        | tar -xz -C "$SRC" --strip-components=1
+}
+
+# Installs the parser library for this platform at $TARGET/lib/<dir>/, from the
+# source tree, the GitHub release, or a local build, in that order.
+install_library() {
+    local dir="$1" ext="$2"
+    local rel="lib/$dir/libnextflow.$ext"
+    local dest="$TARGET/$rel"
+
+    mkdir -p "$(dirname "$dest")"
+    if [[ -f "$dest" ]]; then
+        echo "   Using existing $dest"
         return 0
     fi
-    rm -f "$lib_path"
+    if [[ -f "$SRC/$rel" ]]; then
+        cp "$SRC/$rel" "$dest"
+        return 0
+    fi
 
-    echo -e "   ${YELLOW}No prebuilt library for v$version, building locally${NC}" >&2
-    if (cd "$PROJECT_ROOT" && npm ci --silent && npx tree-sitter build --output "$lib_path") >&2; then
-        echo "$lib_path"
+    local url="https://github.com/$REPO/releases/download/v$VERSION/libnextflow-$dir.$ext"
+    echo "   Downloading $url"
+    if curl -fsL -o "$dest" "$url"; then
+        return 0
+    fi
+    rm -f "$dest"
+
+    echo -e "   ${YELLOW}No prebuilt library for v$VERSION, building locally${NC}"
+    if (cd "$SRC" && npm ci --silent && npx tree-sitter build --output "$dest"); then
         return 0
     fi
 
     echo -e "${RED}Error: Could not download or build the parser library${NC}" >&2
     echo "Building needs Node.js and a C compiler. Report platform issues at:" >&2
-    echo "  https://github.com/nextflow-io/tree-sitter-nextflow/issues" >&2
+    echo "  https://github.com/$REPO/issues" >&2
     return 1
 }
 
-# Install configuration
 install_config() {
-    local target_dir target_file
-
-    if [[ "$INSTALL_MODE" == "global" ]]; then
-        target_dir="$HOME/.config/ast-grep"
-        target_file="$target_dir/sgconfig.yml"
-
-        echo -e "${BLUE}Installing ast-grep config globally...${NC}"
-
-        # Create directory if needed
-        mkdir -p "$target_dir"
-
-        # Copy config
-        cp "$PROJECT_ROOT/sgconfig.yml" "$target_file"
-
-        echo -e "${GREEN}✓ Installed to: $target_file${NC}"
-        echo ""
-        echo -e "${YELLOW}Note: Global config requires absolute paths to work from any directory.${NC}"
-        echo "You may need to update libraryPath in $target_file with absolute paths."
-
-    else
-        target_dir="$(pwd)"
-        target_file="$target_dir/sgconfig.yml"
-
-        echo -e "${BLUE}Installing ast-grep config to current directory...${NC}"
-
-        # Check if config already exists
-        if [[ -f "$target_file" ]]; then
-            echo -e "${YELLOW}Warning: sgconfig.yml already exists${NC}"
-            read -p "Overwrite? [y/N] " -n 1 -r < /dev/tty || REPLY="n"
-            echo
-            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                echo "Installation cancelled"
-                return 1
-            fi
-        fi
-
-        # Copy config
-        cp "$PROJECT_ROOT/sgconfig.yml" "$target_file"
-
-        echo -e "${GREEN}✓ Installed to: $target_file${NC}"
+    if [[ "$SRC" -ef "$TARGET" ]]; then
+        echo "   Installing into the clone itself; config and rules already in place"
+        return 0
     fi
+
+    if [[ -f "$TARGET/sgconfig.yml" ]]; then
+        echo -e "${YELLOW}Warning: $TARGET/sgconfig.yml already exists${NC}"
+        read -p "Overwrite? [y/N] " -n 1 -r < /dev/tty || REPLY="n"
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Installation cancelled"
+            return 1
+        fi
+    fi
+
+    mkdir -p "$TARGET/rules" "$TARGET/outline"
+    cp "$SRC/sgconfig.yml" "$TARGET/"
+    cp "$SRC"/rules/*.yml "$TARGET/rules/"
+    cp "$SRC"/outline/*.yml "$TARGET/outline/"
+    echo -e "   ${GREEN}✓ Installed sgconfig.yml, rules/, and outline/ to $TARGET${NC}"
 }
 
-# Main installation flow
 main() {
     echo -e "${BLUE}=== ast-grep Nextflow Installation ===${NC}"
     echo ""
 
-    # Detect platform
     echo -e "${BLUE}1. Detecting platform...${NC}"
-    PLATFORM=$(detect_platform)
-    echo -e "   Platform: ${GREEN}$PLATFORM${NC}"
+    local platform dir ext
+    platform=$(detect_platform)
+    read -r dir ext <<< "$platform"
+    echo -e "   Platform: ${GREEN}$dir${NC}"
     echo ""
 
-    # Verify library
-    echo -e "${BLUE}2. Fetching parser library...${NC}"
-    LIB_PATH=$(ensure_library "$PLATFORM")
-    echo -e "   Library: ${GREEN}$LIB_PATH${NC}"
-    echo -e "   Size: $(du -h "$LIB_PATH" | cut -f1)"
+    echo -e "${BLUE}2. Fetching sources...${NC}"
+    resolve_source
+    echo -e "   Version: ${GREEN}$VERSION${NC}"
     echo ""
 
-    # Install config
     echo -e "${BLUE}3. Installing configuration...${NC}"
     install_config
     echo ""
 
-    # Success message
+    echo -e "${BLUE}4. Installing parser library...${NC}"
+    install_library "$dir" "$ext"
+    echo ""
+
+    local config_flag=""
+    if [[ "$INSTALL_MODE" == "global" ]]; then
+        config_flag=" -c $TARGET/sgconfig.yml"
+    fi
+
     echo -e "${GREEN}=== Installation Complete ===${NC}"
     echo ""
     echo "You can now use ast-grep with Nextflow files:"
     echo ""
-    echo -e "  ${BLUE}# Search for process definitions${NC}"
-    echo "  ast-grep -l nextflow -p 'process _NAME { ___ }' ."
+    echo "  ast-grep run$config_flag -l nextflow -p 'process \$NAME { \$\$\$ }' ."
+    echo "  ast-grep scan$config_flag"
     echo ""
-    echo -e "  ${BLUE}# Run linting rules${NC}"
-    echo "  ast-grep scan"
-    echo ""
-    echo -e "  ${BLUE}# Find deprecated patterns${NC}"
-    echo "  ast-grep -l nextflow -p 'Channel.from(\$\$\$)' ."
-    echo ""
-    echo "For more patterns and examples, see:"
-    echo "  $PROJECT_ROOT/docs/ast-grep/patterns.md"
+    if [[ "$INSTALL_MODE" == "global" ]]; then
+        echo "ast-grep only reads sgconfig.yml from the project directory or its parents,"
+        echo "so pass -c to use the global install."
+        echo ""
+    fi
+    echo "Docs: https://github.com/$REPO/tree/main/docs/ast-grep"
 }
 
-# Run main function
 main
