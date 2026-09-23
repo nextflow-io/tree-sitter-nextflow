@@ -15,8 +15,7 @@ process TEST {
 }
 ```
 
-**Impact**: ast-grep may not match incomplete or simple process definitions.
-**Workaround**: Use full process structure with input/output/script blocks.
+**Impact**: ast-grep may not match incomplete or simple process definitions. **Workaround**: Use full process structure with input/output/script blocks.
 
 ### 2. String Interpolation Patterns
 
@@ -34,10 +33,7 @@ Write metavariables with the standard `$NAME` / `$$$` syntax:
 ast-grep -l nextflow -p 'process $NAME { $$$ }'
 ```
 
-`sgconfig.yml` sets `expandoChar: _` only so the parser can tokenize patterns
-(Nextflow uses `$` for string interpolation); ast-grep maps `$`↔`_` internally,
-so you do **not** write `_NAME`. Earlier docs advised `_NAME`/`___` — that was a
-misreading of expandoChar. Verified against ast-grep 0.43+/0.44; releases
+`sgconfig.yml` sets `expandoChar: _` only so the parser can tokenize patterns (Nextflow uses `$` for string interpolation); ast-grep maps `$`↔`_` internally, so you do **not** write `_NAME`. Earlier docs advised `_NAME`/`___` — that was a misreading of expandoChar. Verified against ast-grep 0.43+/0.44; releases
 <= 0.40.x mishandled some block patterns.
 
 ### 4. Auto-fix Metavariable Capture
@@ -48,8 +44,7 @@ Pattern replacement may not reliably capture multi-argument lists:
 ast-grep -l nextflow -p 'Channel.from($$$ARGS)' -r 'Channel.of($$$ARGS)'
 ```
 
-**Workaround**: Use ast-grep to identify patterns, then refactor manually if a
-rewrite drops arguments.
+**Workaround**: Use ast-grep to identify patterns, then refactor manually if a rewrite drops arguments.
 
 **Workaround**: Use ast-grep to identify patterns, then refactor manually.
 

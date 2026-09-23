@@ -7,14 +7,11 @@ update_when: test layers, query files, or check scripts change
 ---
 # tree-sitter-nextflow — agent guide
 
-Tree-sitter grammar for Nextflow (`.nf`, `.config`). Detailed development
-workflow lives in `CLAUDE.md`; this file maps the **testing layers** and where
-each is documented and verified.
+Tree-sitter grammar for Nextflow (`.nf`, `.config`). Detailed development workflow lives in `CLAUDE.md`; this file maps the **testing layers** and where each is documented and verified.
 
 ## Testing layers
 
-Tree-sitter features are tested at different layers with different tools.
-Know which layer you are changing before picking a test.
+Tree-sitter features are tested at different layers with different tools. Know which layer you are changing before picking a test.
 
 | Layer | What it verifies | Where | Docs |
 |---|---|---|---|
@@ -24,13 +21,7 @@ Know which layer you are changing before picking a test.
 | Injection | `queries/injections.scm` capture ranges | `scripts/check_injections.sh` golden test | [Syntax Highlighting — Language Injection](https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#language-injection) |
 | End-to-end fontification | bash actually highlighted inside script bodies | consumer editors; ERT tests in the `nextflow-mode` repo | — |
 
-**Why injection has its own layer:** `tree-sitter test` highlight assertions
-check the host-language layer only — the test subcommand loads just this
-grammar, so `#set! injection.language "bash"` never resolves and injected
-captures are invisible to assertions. Do NOT add `test/highlight` cases
-asserting bash captures inside script bodies; they can only pass by accident.
-Use `scripts/check_injections.sh` (capture ranges) plus a consumer editor
-test (real fontification) instead.
+**Why injection has its own layer:** `tree-sitter test` highlight assertions check the host-language layer only — the test subcommand loads just this grammar, so `#set! injection.language "bash"` never resolves and injected captures are invisible to assertions. Do NOT add `test/highlight` cases asserting bash captures inside script bodies; they can only pass by accident. Use `scripts/check_injections.sh` (capture ranges) plus a consumer editor test (real fontification) instead.
 
 ## Quick commands
 
@@ -43,16 +34,10 @@ npx tree-sitter-cli parse file.nf            # inspect a syntax tree
 npx tree-sitter-cli query queries/injections.scm file.nf  # inspect captures
 ```
 
-`tree-sitter highlight file.nf` resolves injections for manual inspection,
-but only when a `tree-sitter-bash` checkout is discoverable via the
-`parser-directories` in `~/.config/tree-sitter/config.json`
-(check with `tree-sitter dump-languages`).
+`tree-sitter highlight file.nf` resolves injections for manual inspection, but only when a `tree-sitter-bash` checkout is discoverable via the `parser-directories` in `~/.config/tree-sitter/config.json` (check with `tree-sitter dump-languages`).
 
 ## Invariants
 
-- `src/parser.c` and friends are generated — never hand-edit; run
-  `tree-sitter generate` after touching `grammar.js`.
-- Query files reference node names from `grammar.js`; verify with
-  `tree-sitter parse` before writing captures, don't guess.
-- After grammar changes: `tree-sitter test` must keep 96/96 parses and
-  `scripts/check_injections.sh` must pass (or be intentionally re-pinned).
+- `src/parser.c` and friends are generated — never hand-edit; run `tree-sitter generate` after touching `grammar.js`.
+- Query files reference node names from `grammar.js`; verify with `tree-sitter parse` before writing captures, don't guess.
+- After grammar changes: `tree-sitter test` must keep 96/96 parses and `scripts/check_injections.sh` must pass (or be intentionally re-pinned).

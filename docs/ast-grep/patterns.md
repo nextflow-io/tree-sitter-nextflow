@@ -39,15 +39,9 @@ ast-grep -l nextflow -p 'OLD_PATTERN' -r 'NEW_PATTERN' FILE
 | `$_`     | Single node (any)  | `$_.into { $$$ }`       |
 | `$$$`    | Zero or more nodes | `Channel.from($$$)`     |
 
-**Metavariables use the standard `$NAME` / `$$$` syntax**, the same as every
-other ast-grep language. `sgconfig.yml` sets `expandoChar: _` only so the parser
-can tokenize patterns (Nextflow uses `$` for string interpolation); ast-grep
-maps `$`↔`_` internally, so you write `$NAME`, not `_NAME`. In
-`constraints`/`fix`/`name`, reference a captured metavariable by its bare name
-(`$NAME` → key `NAME`).
+**Metavariables use the standard `$NAME` / `$$$` syntax**, the same as every other ast-grep language. `sgconfig.yml` sets `expandoChar: _` only so the parser can tokenize patterns (Nextflow uses `$` for string interpolation); ast-grep maps `$`↔`_` internally, so you write `$NAME`, not `_NAME`. In `constraints`/`fix`/`name`, reference a captured metavariable by its bare name (`$NAME` → key `NAME`).
 
-> Verified against ast-grep 0.43+/0.44. Older releases (<= 0.40.x) failed to
-> parse some Nextflow block patterns.
+> Verified against ast-grep 0.43+/0.44. Older releases (<= 0.40.x) failed to parse some Nextflow block patterns.
 
 ## Pattern Syntax
 
@@ -309,13 +303,9 @@ Write metavariables with the standard `$NAME` / `$$$` syntax:
 ast-grep -l nextflow -p 'process $NAME { $$$ }'
 ```
 
-`sgconfig.yml` sets `expandoChar: _` so the parser can tokenize patterns
-(Nextflow uses `$` for string interpolation), but ast-grep maps `$`↔`_`
-internally — you should **not** write `_NAME`. In `constraints`, `fix`, and
-`name`, reference a captured metavariable by its bare name (`$NAME` → `NAME`).
+`sgconfig.yml` sets `expandoChar: _` so the parser can tokenize patterns (Nextflow uses `$` for string interpolation), but ast-grep maps `$`↔`_` internally — you should **not** write `_NAME`. In `constraints`, `fix`, and `name`, reference a captured metavariable by its bare name (`$NAME` → `NAME`).
 
-If a pattern fails to parse, upgrade ast-grep: releases <= 0.40.x mishandled
-some Nextflow block patterns. These examples are verified against 0.43+/0.44.
+If a pattern fails to parse, upgrade ast-grep: releases <= 0.40.x mishandled some Nextflow block patterns. These examples are verified against 0.43+/0.44.
 
 #### 3. String Interpolation
 

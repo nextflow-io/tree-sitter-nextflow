@@ -1,8 +1,6 @@
 # ast-grep for Nextflow
 
-This grammar ships a ready-to-use [ast-grep](https://ast-grep.github.io/)
-distribution so you can search, lint, refactor, and outline Nextflow code
-structurally (by AST, not text).
+This grammar ships a ready-to-use [ast-grep](https://ast-grep.github.io/) distribution so you can search, lint, refactor, and outline Nextflow code structurally (by AST, not text).
 
 - [Setup](#setup) — install ast-grep and the Nextflow distribution
 - [patterns.md](patterns.md) — pattern syntax and a Nextflow pattern library
@@ -19,9 +17,7 @@ structurally (by AST, not text).
 | `outline/nextflow.yml`       | `ast-grep outline` extractor rules                             |
 | `scripts/install-ast-grep.sh` | Installer that wires the above into your project or `~/.config` |
 
-Each GitHub release has prebuilt parser libraries for macOS (arm64, x64) and
-Linux (x64, arm64), built and verified by
-`.github/workflows/ast-grep-distribution.yml`.
+Each GitHub release has prebuilt parser libraries for macOS (arm64, x64) and Linux (x64, arm64), built and verified by `.github/workflows/ast-grep-distribution.yml`.
 
 ## Setup
 
@@ -33,8 +29,7 @@ cargo install ast-grep --locked
 npm install -g @ast-grep/cli  # cross-platform
 ```
 
-`ast-grep outline` requires **ast-grep >= 0.44.0**; `scan` and pattern search
-work on older releases. Check with `ast-grep --version`.
+`ast-grep outline` requires **ast-grep >= 0.44.0**; `scan` and pattern search work on older releases. Check with `ast-grep --version`.
 
 ### 2. Install the Nextflow distribution
 
@@ -57,10 +52,7 @@ cd tree-sitter-nextflow
 ./scripts/install-ast-grep.sh --global   # ~/.config/ast-grep/
 ```
 
-The installer detects your platform, downloads the matching parser library
-from the GitHub release for the checked-out version into `lib/`, and copies
-`sgconfig.yml` into place. If no prebuilt library exists, it builds one with the
-pinned tree-sitter CLI (needs Node.js and a C compiler).
+The installer detects your platform, downloads the matching parser library from the GitHub release for the checked-out version into `lib/`, and copies `sgconfig.yml` into place. If no prebuilt library exists, it builds one with the pinned tree-sitter CLI (needs Node.js and a C compiler).
 
 **Manual:**
 
@@ -83,8 +75,7 @@ Then point `sgconfig.yml`'s `libraryPath` at the result.
 
 ## Quick start
 
-Run from a directory where `sgconfig.yml` is discoverable (the project root, or
-anywhere if installed `--global`):
+Run from a directory where `sgconfig.yml` is discoverable (the project root, or anywhere if installed `--global`):
 
 ```bash
 # Search by pattern (see patterns.md for syntax)
@@ -99,8 +90,4 @@ ast-grep outline --lang nextflow \
   --outline-rules outline/nextflow.yml --no-default-outline-rules main.nf
 ```
 
-> Metavariables are written `$NAME` / `$$$`, the same as any ast-grep language.
-> `sgconfig.yml` sets `expandoChar: _` so the parser can tokenize patterns
-> (Nextflow uses `$` for string interpolation); ast-grep maps `$`↔`_`
-> internally, so you do **not** write `_NAME` yourself. See
-> [patterns.md](patterns.md).
+> Metavariables are written `$NAME` / `$$$`, the same as any ast-grep language. `sgconfig.yml` sets `expandoChar: _` so the parser can tokenize patterns (Nextflow uses `$` for string interpolation); ast-grep maps `$`↔`_` internally, so you do **not** write `_NAME` yourself. See [patterns.md](patterns.md).

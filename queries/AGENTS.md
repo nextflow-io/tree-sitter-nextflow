@@ -15,13 +15,6 @@ update_when: query files are added or their test coverage moves
 
 Rules of thumb:
 
-- Node names must exist in `grammar.js` / `src/node-types.json`; verify with
-  `npx tree-sitter-cli parse` on a snippet before writing a pattern.
-- `injections.scm` captures *content* nodes (`string_content`,
-  `triple_string_content`) for interpolated strings so quote delimiters and
-  `${...}` interpolations stay Nextflow. `string_literal` /
-  `triple_quoted_string` are single tokens (no content child), so those
-  injections include the quotes — a known, accepted tradeoff.
-- `tree-sitter test` cannot verify injections (host-layer assertions only);
-  use the golden script, and the nextflow-mode ERT suite for end-to-end
-  fontification.
+- Node names must exist in `grammar.js` / `src/node-types.json`; verify with `npx tree-sitter-cli parse` on a snippet before writing a pattern.
+- `injections.scm` captures *content* nodes (`string_content`, `triple_string_content`) for interpolated strings so quote delimiters and `${...}` interpolations stay Nextflow. `string_literal` / `triple_quoted_string` are single tokens (no content child), so those injections include the quotes — a known, accepted tradeoff.
+- `tree-sitter test` cannot verify injections (host-layer assertions only); use the golden script, and the nextflow-mode ERT suite for end-to-end fontification.

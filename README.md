@@ -8,32 +8,23 @@ Nextflow grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter).
 
 ## Status
 
-- **Parse rate:** 100% error-free over the pinned nf-core/modules corpus
-  (2077/2077 files), measured by `scripts/parse_rate.py`.
+- **Parse rate:** 100% error-free over the pinned nf-core/modules corpus (2077/2077 files), measured by `scripts/parse_rate.py`.
 - **Corpus tests:** 96 passing (`tree-sitter test`).
 - **Bindings:** Node.js, Rust, C, and Python.
 
-See [`ROADMAP.md`](ROADMAP.md) for the parity roadmap and remaining work, and
-[`CHANGELOG.md`](CHANGELOG.md) for release history.
+See [`ROADMAP.md`](ROADMAP.md) for the parity roadmap and remaining work, and [`CHANGELOG.md`](CHANGELOG.md) for release history.
 
 ## Features
 
-- **Core Nextflow syntax:** process, workflow, and function definitions,
-  variable declarations, includes, and parameters.
-- **DSL2:** channel factories and operators, chained/piped channel operations,
-  `take:`/`main:`/`emit:` workflow sections.
-- **Process bodies:** directives, `input:`/`output:`/`when:` sections, and
-  `script:`/`shell:`/`exec:`/`stub:` blocks.
-- **Expressions:** binary/unary operators, casts, ranges, lists, maps, closures
-  (including typed parameters), safe navigation (`?.`), and spread (`*.`).
-- **Strings:** single/double/triple-quoted strings, GString interpolation, and
-  slashy-string regexes.
-- **Control flow:** `if`/`else`, `for`-in loops, `try`/`catch`/`finally`,
-  `assert`, and `workflow.onComplete`/`onError` event handlers.
+- **Core Nextflow syntax:** process, workflow, and function definitions, variable declarations, includes, and parameters.
+- **DSL2:** channel factories and operators, chained/piped channel operations, `take:`/`main:`/`emit:` workflow sections.
+- **Process bodies:** directives, `input:`/`output:`/`when:` sections, and `script:`/`shell:`/`exec:`/`stub:` blocks.
+- **Expressions:** binary/unary operators, casts, ranges, lists, maps, closures (including typed parameters), safe navigation (`?.`), and spread (`*.`).
+- **Strings:** single/double/triple-quoted strings, GString interpolation, and slashy-string regexes.
+- **Control flow:** `if`/`else`, `for`-in loops, `try`/`catch`/`finally`, `assert`, and `workflow.onComplete`/`onError` event handlers.
 - **Language injection:** Bash/shell highlighting inside script blocks.
 
-> **Scope:** the grammar targets the Nextflow strict syntax only. Non-strict
-> constructs (`while`, `switch`, classes) are intentionally out of scope.
+> **Scope:** the grammar targets the Nextflow strict syntax only. Non-strict constructs (`while`, `switch`, classes) are intentionally out of scope.
 
 ## Installation
 
@@ -99,8 +90,7 @@ cd tree-sitter-nextflow
 The script will:
 
 - Detect your platform (macOS, Linux)
-- Download the parser library from the matching GitHub release into `lib/`,
-  or build it locally if there is no prebuilt one
+- Download the parser library from the matching GitHub release into `lib/`, or build it locally if there is no prebuilt one
 - Copy `sgconfig.yml` to your project or `~/.config/ast-grep/`
 
 #### Option 2: Manual Installation
@@ -117,8 +107,7 @@ cp path/to/tree-sitter-nextflow/sgconfig.yml .
 
 #### Platform Support
 
-Each GitHub release has prebuilt parser libraries for macOS (arm64, x64) and
-Linux (x64, arm64). For other platforms, build the library yourself:
+Each GitHub release has prebuilt parser libraries for macOS (arm64, x64) and Linux (x64, arm64). For other platforms, build the library yourself:
 
 ```bash
 npm ci
@@ -177,8 +166,7 @@ ast-grep -l nextflow -p 'Channel.from($$$)'
 ast-grep -l nextflow -p 'path("/$$$")'
 ```
 
-See [`docs/ast-grep/`](docs/ast-grep/) for the full setup guide, pattern
-library, and `ast-grep outline` documentation.
+See [`docs/ast-grep/`](docs/ast-grep/) for the full setup guide, pattern library, and `ast-grep outline` documentation.
 
 ### Custom Rules
 
@@ -210,12 +198,7 @@ See [ast-grep rule documentation](https://ast-grep.github.io/guide/rule-config.h
 
 ## Contributing
 
-Contributions are welcome. Grammar changes go in `grammar.js`. Run
-`npm ci` once to install the pinned tree-sitter CLI, then
-`npx tree-sitter generate && npm test` before opening a PR, and add corpus
-tests under `test/corpus/`. Commit the regenerated `src/` with the grammar
-change; CI fails if they drift apart. See [`ROADMAP.md`](ROADMAP.md) for priorities and
-[`CLAUDE.md`](CLAUDE.md) for the development workflow.
+Contributions are welcome. Grammar changes go in `grammar.js`. Run `npm ci` once to install the pinned tree-sitter CLI, then `npx tree-sitter generate && npm test` before opening a PR, and add corpus tests under `test/corpus/`. Commit the regenerated `src/` with the grammar change; CI fails if they drift apart. See [`ROADMAP.md`](ROADMAP.md) for priorities and [`CLAUDE.md`](CLAUDE.md) for the development workflow.
 
 ### Releasing
 
@@ -223,8 +206,7 @@ change; CI fails if they drift apart. See [`ROADMAP.md`](ROADMAP.md) for priorit
 2. `npx tree-sitter generate`, since the parser embeds the version.
 3. Update `CHANGELOG.md`, commit, then tag and push `vX.Y.Z`.
 
-The tag push builds the ast-grep parser libraries and attaches them to the
-GitHub release.
+The tag push builds the ast-grep parser libraries and attaches them to the GitHub release.
 
 ## License
 
