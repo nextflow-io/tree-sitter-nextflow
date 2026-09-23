@@ -6,4 +6,10 @@ note: |
   Instead of hardcoding paths like "/data/file.txt",
   use: params.input_file or file("${projectDir}/data/file.txt")
 rule:
-  pattern: path("$_PATH")
+  any:
+    - pattern: path($PATH)
+    - pattern: file($PATH)
+constraints:
+  PATH:
+    kind: string
+    regex: ^["']/

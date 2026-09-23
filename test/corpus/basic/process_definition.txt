@@ -12,11 +12,11 @@ process FASTQC {
 (source_file
   (process_definition
     (identifier)
-    (input_declaration
-      (simple_statement
-        (simple_expression
-          (command_expression
-            (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
             (identifier)))))))
 
 ==================
@@ -33,12 +33,12 @@ process FASTQC {
 (source_file
   (process_definition
     (identifier)
-    (output_declaration
-      (simple_statement
-        (simple_expression
-          (command_expression
-            (identifier)
-            (interpolated_string
+    (output_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
               (string_content))))))))
 
 ==================
@@ -55,10 +55,10 @@ process FASTQC {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content)
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
           (interpolation
             (identifier)))))))
 
@@ -82,22 +82,22 @@ process FASTQC {
 (source_file
   (process_definition
     (identifier)
-    (input_declaration
-      (simple_statement
-        (simple_expression
-          (command_expression
-            (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
             (identifier)))))
-    (output_declaration
-      (simple_statement
-        (simple_expression
-          (command_expression
-            (identifier)
-            (interpolated_string
+    (output_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
               (string_content))))))
-    (script_declaration
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content)
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
           (interpolation
             (identifier)))))))

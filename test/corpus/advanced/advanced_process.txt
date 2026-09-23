@@ -1,6 +1,5 @@
 ==================
 When conditions
-:skip
 ==================
 
 process conditionalProcess {
@@ -21,22 +20,34 @@ process conditionalProcess {
 (source_file
   (process_definition
     (identifier)
-    (when_block
-      (binary_expression))
-    (input_block
-      (input_declaration))
-    (script_block
-      (script_content))))
+    (when_section
+      (binary_expression
+        (member_expression
+          (identifier)
+          (identifier))
+        (string
+          (string_content))))
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))))))
 
 ==================
 Each qualifiers
-:skip
 ==================
 
 process eachExample {
     input:
-    each x from [1,2,3]
-    each y from ['a','b']
+    each x
+    each y
 
     script:
     """
@@ -49,17 +60,30 @@ process eachExample {
 (source_file
   (process_definition
     (identifier)
-    (input_block
-      (input_declaration
-        (each_qualifier))
-      (input_declaration
-        (each_qualifier)))
-    (script_block
-      (script_content))))
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (string_content)
+          (interpolation
+            (identifier))
+          (interpolation
+            (identifier))
+          (string_content))))))
 
 ==================
 Dynamic directives
-:skip
 ==================
 
 process dynamicResources {
@@ -78,9 +102,198 @@ process dynamicResources {
 (source_file
   (process_definition
     (identifier)
-    (directive_block
-      (dynamic_directive)
-      (dynamic_directive)
-      (dynamic_directive))
-    (script_block
-      (script_content))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (member_expression
+                (identifier)
+                (identifier))
+              (integer_literal))))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (member_expression
+                (integer_literal)
+                (identifier))
+              (member_expression
+                (identifier)
+                (identifier)))))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (member_expression
+                (integer_literal)
+                (identifier))
+              (member_expression
+                (identifier)
+                (identifier)))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (member_expression
+              (identifier)
+              (identifier)))
+          (string_content))))))
+
+==================
+Process with quoted env variables
+==================
+
+process my_task {
+    input:
+    env 'FOO'
+    env 'BAR'
+
+    script:
+    """
+    echo ${FOO}
+    echo ${BAR}
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content)
+          (interpolation
+            (identifier)))))))
+
+==================
+Environment variables with env function
+==================
+
+println("PWD = ${env('PWD')}")
+
+---
+
+(source_file
+  (expression_statement
+    (call_expression
+      (identifier)
+      (argument_list
+        (string
+          (string_content)
+          (interpolation
+            (call_expression
+              (identifier)
+              (argument_list
+                (string
+                  (string_content))))))))))
+
+==================
+Named arguments in path() call (stageAs, arity)
+==================
+
+process P {
+  input:
+  tuple val(meta), path(reads, arity: '1..*', stageAs: 'input/*')
+  script:
+  "echo hi"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (call_expression
+              (identifier)
+              (argument_list
+                (identifier)))
+            (call_expression
+              (identifier)
+              (argument_list
+                (identifier)
+                (named_argument
+                  (identifier)
+                  (string
+                    (string_content)))
+                (named_argument
+                  (identifier)
+                  (string
+                    (string_content)))))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Dynamic directive closure, memory-unit literal, and input named option
+==================
+
+process P {
+  memory { 7.GB * task.attempt }
+  input:
+  path ref, name: 'ref/*'
+  script:
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    name: (identifier)
+    (expression_statement
+      (call_expression
+        function: (identifier)
+        closure: (closure
+          (expression_statement
+            (binary_expression
+              left: (member_expression
+                object: (integer_literal)
+                property: (identifier))
+              right: (member_expression
+                object: (identifier)
+                property: (identifier)))))))
+    (input_section
+      (expression_statement
+        (command_expression
+          function: (identifier)
+          arguments: (argument_list
+            (identifier)
+            (named_argument
+              name: (identifier)
+              value: (string
+                (string_content)))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))

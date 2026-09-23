@@ -1,0 +1,568 @@
+==================
+Typed inputs and outputs
+==================
+
+process ALIGN {
+  input:
+  sample: Sample
+  index: Path
+
+  output:
+  bam: Path = file("${sample.id}.bam")
+  log = stdout()
+
+  script:
+  """
+  align ${index} > ${sample.id}.bam
+  """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (process_input
+        (identifier)
+        (type
+          (identifier)))
+      (process_input
+        (identifier)
+        (type
+          (identifier))))
+    (output_section
+      (process_output
+        (identifier)
+        (type
+          (identifier))
+        (call_expression
+          (identifier)
+          (argument_list
+            (string
+              (interpolation
+                (member_expression
+                  (identifier)
+                  (identifier)))
+              (string_content)))))
+      (process_output
+        (identifier)
+        (call_expression
+          (identifier)
+          (argument_list))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content)
+          (interpolation
+            (member_expression
+              (identifier)
+              (identifier)))
+          (string_content))))))
+
+==================
+Record and tuple inputs
+==================
+
+process FOO {
+  input:
+  record(id: String, fastq: Path)
+  tuple(meta: Map, reads: List<Path>,)
+
+  script:
+  "echo"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (process_record_input
+        (process_input
+          (identifier)
+          (type
+            (identifier)))
+        (process_input
+          (identifier)
+          (type
+            (identifier))))
+      (process_tuple_input
+        (process_input
+          (identifier)
+          (type
+            (identifier)))
+        (process_input
+          (identifier)
+          (type
+            (identifier)
+            (type_arguments
+              (type
+                (identifier)))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Stage and topic sections
+==================
+
+process FOO {
+  input:
+  reads: Path
+
+  stage:
+  stageAs 'input.fq', reads
+
+  output:
+  out: Path = file('out.txt')
+
+  topic:
+  tuple('foo', eval('foo --version')) >> 'versions'
+
+  script:
+  "foo input.fq > out.txt"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (process_input
+        (identifier)
+        (type
+          (identifier))))
+    (stage_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))
+            (identifier)))))
+    (output_section
+      (process_output
+        (identifier)
+        (type
+          (identifier))
+        (call_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))
+    (topic_section
+      (expression_statement
+        (binary_expression
+          (call_expression
+            (identifier)
+            (argument_list
+              (string
+                (string_content))
+              (call_expression
+                (identifier)
+                (argument_list
+                  (string
+                    (string_content))))))
+          (string
+            (string_content)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Legacy input and output qualifiers
+==================
+
+process FOO {
+  input:
+  tuple val(meta), path(reads, stageAs: 'in/*')
+  each mode
+  env 'TOKEN'
+  stdin
+
+  output:
+  tuple val(meta), path("*.bam"), emit: bam, optional: true
+  path("versions.yml"), emit: versions
+  stdout
+
+  script:
+  "echo"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (call_expression
+              (identifier)
+              (argument_list
+                (identifier)))
+            (call_expression
+              (identifier)
+              (argument_list
+                (identifier)
+                (named_argument
+                  (identifier)
+                  (string
+                    (string_content))))))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content)))))
+      (process_input
+        (identifier)))
+    (output_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (call_expression
+              (identifier)
+              (argument_list
+                (identifier)))
+            (call_expression
+              (identifier)
+              (argument_list
+                (string
+                  (string_content))))
+            (named_argument
+              (identifier)
+              (identifier))
+            (named_argument
+              (identifier)
+              (boolean_literal)))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (parenthesized_expression
+              (string
+                (string_content)))
+            (named_argument
+              (identifier)
+              (identifier)))))
+      (process_output
+        (identifier)))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Output after the script section
+==================
+
+process FOO {
+  input:
+  val x
+
+  script:
+  "echo $x"
+
+  output:
+  stdout
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))))
+    (output_section
+      (process_output
+        (identifier)))))
+
+==================
+Implicit script body
+==================
+
+process FOO {
+  """
+  echo hello
+  """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (expression_statement
+      (string
+        (string_content)))))
+
+==================
+Exec section with statements
+==================
+
+process FOO {
+  input:
+  val x
+
+  exec:
+  def y = x * 2
+  println y
+  if (y > 2) {
+    log.info "big"
+  }
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (variable_declaration
+        (identifier)
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier))))
+      (if_statement
+        (binary_expression
+          (identifier)
+          (integer_literal))
+        (block
+          (expression_statement
+            (command_expression
+              (member_expression
+                (identifier)
+                (identifier))
+              (argument_list
+                (string
+                  (string_content))))))))))
+
+==================
+Script prelude with command calls and keyword names
+==================
+
+process FOO {
+  script:
+  def args = task.ext.args ?: ''
+  input = meta.single_end ? "-i ${reads}" : "-1 ${reads[0]}"
+  output = "${prefix}.txt"
+  log.info "running"
+  """
+  tool ${args} ${input} > ${output}
+  """
+
+  stub:
+  """
+  touch ${prefix}.txt
+  """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (variable_declaration
+        (identifier)
+        (elvis_expression
+          (member_expression
+            (member_expression
+              (identifier)
+              (identifier))
+            (identifier))
+          (string)))
+      (assignment
+        (identifier)
+        (ternary_expression
+          (member_expression
+            (identifier)
+            (identifier))
+          (string
+            (string_content)
+            (interpolation
+              (identifier)))
+          (string
+            (string_content)
+            (interpolation
+              (index_expression
+                (identifier)
+                (integer_literal))))))
+      (assignment
+        (identifier)
+        (string
+          (interpolation
+            (identifier))
+          (string_content)))
+      (expression_statement
+        (command_expression
+          (member_expression
+            (identifier)
+            (identifier))
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content)
+          (interpolation
+            (identifier)))))
+    (stub_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content))))))
+
+==================
+Directives
+==================
+
+process FOO {
+  tag "${meta.id}"
+  label 'process_high'
+  cpus 4
+  memory { 2.GB * task.attempt }
+  publishDir "${params.outdir}", mode: 'copy', saveAs: { f -> f.endsWith('.log') ? null : f }
+  ext.args = '--fast'
+
+  when:
+  params.run_foo &&
+    !params.skip
+
+  script:
+  "foo"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (interpolation
+              (member_expression
+                (identifier)
+                (identifier)))))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content)))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (integer_literal))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (member_expression
+                (integer_literal)
+                (identifier))
+              (member_expression
+                (identifier)
+                (identifier)))))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (interpolation
+              (member_expression
+                (identifier)
+                (identifier))))
+          (named_argument
+            (identifier)
+            (string
+              (string_content)))
+          (named_argument
+            (identifier)
+            (closure
+              (parameters
+                (parameter
+                  (identifier)))
+              (expression_statement
+                (ternary_expression
+                  (call_expression
+                    (member_expression
+                      (identifier)
+                      (identifier))
+                    (argument_list
+                      (string
+                        (string_content))))
+                  (null_literal)
+                  (identifier))))))))
+    (assignment
+      (member_expression
+        (identifier)
+        (identifier))
+      (string
+        (string_content)))
+    (when_section
+      (binary_expression
+        (member_expression
+          (identifier)
+          (identifier))
+        (unary_expression
+          (member_expression
+            (identifier)
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))

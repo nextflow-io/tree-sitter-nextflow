@@ -14,10 +14,10 @@ process SIMPLE {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
 
 ==================
 Shell script block
@@ -35,9 +35,10 @@ process SHELL_TEST {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (triple_quoted_string)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
 
 ==================
 Exec script block
@@ -55,10 +56,10 @@ process EXEC_TEST {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
 
 ==================
 Stub script block
@@ -76,7 +77,55 @@ process STUB_TEST {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content))))))
+    (stub_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Template directive as script body
+==================
+
+process P {
+  script:
+  template 'main.R'
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))
+
+==================
+Script string followed by a template call
+==================
+
+process P {
+  script:
+  """echo"""
+  template 'x.R'
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (expression_statement
+        (string
+          (string_content)))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))

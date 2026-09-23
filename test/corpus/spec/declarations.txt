@@ -1,0 +1,337 @@
+==================
+Feature flag with an expression
+==================
+
+nextflow.enable.strict = params.strict ?: true
+
+---
+
+(source_file
+  (feature_flag
+    (identifier)
+    (identifier)
+    (elvis_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (boolean_literal))))
+
+==================
+Include with newline and semicolon separators
+==================
+
+include {
+  FOO
+  BAR as BAZ; QUX
+} from './modules/foo' 
+
+---
+
+(source_file
+  (include_declaration
+    (include_item
+      (identifier))
+    (include_item
+      (identifier)
+      (identifier))
+    (include_item
+      (identifier))
+    (string
+      (string_content))))
+
+==================
+Import
+==================
+
+import groovy.json.JsonSlurper
+
+---
+
+(source_file
+  (import_declaration
+    (qualified_name
+      (identifier)
+      (identifier)
+      (identifier))))
+
+==================
+Params block
+==================
+
+params {
+  input: Path
+  save_intermediates: Boolean = false
+  outdir = 'results'
+}
+
+---
+
+(source_file
+  (params_definition
+    (param_declaration
+      (identifier)
+      (type
+        (identifier)))
+    (param_declaration
+      (identifier)
+      (type
+        (identifier))
+      (boolean_literal))
+    (param_declaration
+      (identifier)
+      (string
+        (string_content)))))
+
+==================
+Legacy param assignment
+==================
+
+params.max_cpus = 4 * 2
+params.genomes.GRCh38.fasta = null
+
+---
+
+(source_file
+  (param_assignment
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
+  (param_assignment
+    (identifier)
+    (identifier)
+    (identifier)
+    (null_literal)))
+
+==================
+Record
+==================
+
+record Sample {
+  id: String
+  fastq_1: Path
+  fastq_2: Path?
+}
+
+---
+
+(source_file
+  (record_definition
+    (identifier)
+    (record_field
+      (identifier)
+      (type
+        (identifier)))
+    (record_field
+      (identifier)
+      (type
+        (identifier)))
+    (record_field
+      (identifier)
+      (type
+        (identifier)))))
+
+==================
+Enum
+==================
+
+enum Color {
+  RED, GREEN,
+  BLUE,
+}
+
+---
+
+(source_file
+  (enum_definition
+    (identifier)
+    (enum_constant)
+    (enum_constant)
+    (enum_constant)))
+
+==================
+Output block
+==================
+
+output {
+  samples: Channel<Sample> {
+    path { s -> s.id }
+    index {
+      path 'samples.csv'
+    }
+  }
+  summary {
+    path '.'
+  }
+}
+
+---
+
+(source_file
+  (output_definition
+    (output_declaration
+      (identifier)
+      (type
+        (identifier)
+        (type_arguments
+          (type
+            (identifier))))
+      (block
+        (expression_statement
+          (call_expression
+            (identifier)
+            (closure
+              (parameters
+                (parameter
+                  (identifier)))
+              (expression_statement
+                (member_expression
+                  (identifier)
+                  (identifier))))))
+        (expression_statement
+          (call_expression
+            (identifier)
+            (closure
+              (expression_statement
+                (command_expression
+                  (identifier)
+                  (argument_list
+                    (string
+                      (string_content))))))))))
+    (output_declaration
+      (identifier)
+      (block
+        (expression_statement
+          (command_expression
+            (identifier)
+            (argument_list
+              (string
+                (string_content)))))))))
+
+==================
+Function with typed parameters and return type
+==================
+
+def greet(name: String, times: Integer = 1) -> List<String> {
+  return [name] * times
+}
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)
+        (type
+          (identifier)))
+      (parameter
+        (identifier)
+        (type
+          (identifier))
+        (integer_literal)))
+    (type
+      (identifier)
+      (type_arguments
+        (type
+          (identifier))))
+    (block
+      (return_statement
+        (binary_expression
+          (list
+            (identifier))
+          (identifier))))))
+
+==================
+Legacy typed functions
+==================
+
+String greet(String name, int times = 1) {
+  name * times
+}
+
+def Map<String,Integer> counts() {
+  [:]
+}
+
+---
+
+(source_file
+  (function_definition
+    (type
+      (identifier))
+    (identifier)
+    (parameters
+      (parameter
+        (type
+          (identifier))
+        (identifier))
+      (parameter
+        (type
+          (identifier))
+        (identifier)
+        (integer_literal)))
+    (block
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (identifier)))))
+  (function_definition
+    (type
+      (identifier)
+      (type_arguments
+        (type
+          (identifier))
+        (type
+          (identifier))))
+    (identifier)
+    (parameters)
+    (block
+      (expression_statement
+        (map)))))
+
+==================
+Agent
+==================
+
+agent SUMMARIZE {
+  model 'claude'
+
+  input:
+  text: String
+
+  output:
+  summary: String
+
+  prompt:
+  "Summarize: ${text}"
+}
+
+---
+
+(source_file
+  (agent_definition
+    (identifier)
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content)))))
+    (input_section
+      (process_input
+        (identifier)
+        (type
+          (identifier))))
+    (output_section
+      (process_output
+        (identifier)
+        (type
+          (identifier))))
+    (prompt_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))))))

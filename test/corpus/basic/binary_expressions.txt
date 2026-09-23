@@ -13,40 +13,34 @@ def f = 2 ** 3
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (integer_literal)
-        (integer_literal))))
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (integer_literal)
-        (integer_literal))))
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (integer_literal)
-        (integer_literal))))
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (integer_literal)
-        (integer_literal))))
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (integer_literal)
-        (integer_literal))))
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (integer_literal)
-        (integer_literal)))))
+    (binary_expression
+      (integer_literal)
+      (integer_literal))))
 
 ==================
 Comparison operators
@@ -63,40 +57,34 @@ def gte = x >= y
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier))))
+    (binary_expression
+      (identifier)
+      (identifier)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier))))
+    (binary_expression
+      (identifier)
+      (identifier)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier))))
+    (binary_expression
+      (identifier)
+      (identifier)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier))))
+    (binary_expression
+      (identifier)
+      (identifier)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier))))
+    (binary_expression
+      (identifier)
+      (identifier)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier)))))
+    (binary_expression
+      (identifier)
+      (identifier))))
 
 ==================
 Logical operators
@@ -110,30 +98,25 @@ def complex = (x > 0) && (y < 10)
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier))))
+    (binary_expression
+      (identifier)
+      (identifier)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier))))
+    (binary_expression
+      (identifier)
+      (identifier)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (parenthesized_expression
-          (simple_expression
-            (binary_expression
-              (identifier)
-              (integer_literal))))
-        (parenthesized_expression
-          (simple_expression
-            (binary_expression
-              (identifier)
-              (integer_literal))))))))
+    (binary_expression
+      (parenthesized_expression
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (parenthesized_expression
+        (binary_expression
+          (identifier)
+          (integer_literal))))))
 
 ==================
 Range operators
@@ -147,22 +130,19 @@ def var_range = start..end
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (integer_literal)
-        (integer_literal))))
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (integer_literal)
-        (integer_literal))))
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier)))))
+    (binary_expression
+      (identifier)
+      (identifier))))
 
 ==================
 Operator precedence
@@ -176,33 +156,60 @@ def compound3 = x > 0 && y < 10 || z == 0
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
+    (binary_expression
+      (identifier)
+      (binary_expression
+        (identifier)
+        (identifier))))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (parenthesized_expression
+        (binary_expression
+          (identifier)
+          (identifier)))
+      (identifier)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
       (binary_expression
         (binary_expression
           (identifier)
-          (identifier))
-        (identifier))))
-  (variable_declaration
-    (identifier)
-    (simple_expression
-      (binary_expression
-        (parenthesized_expression
-          (simple_expression
-            (binary_expression
-              (identifier)
-              (identifier))))
-        (identifier))))
-  (variable_declaration
-    (identifier)
-    (simple_expression
-      (binary_expression
+          (integer_literal))
         (binary_expression
-          (binary_expression
-            (binary_expression
-              (binary_expression
-                (identifier)
-                (integer_literal))
-              (identifier))
-            (integer_literal))
-          (identifier))
+          (identifier)
+          (integer_literal)))
+      (binary_expression
+        (identifier)
         (integer_literal)))))
+
+==================
+Negated membership operator
+==================
+
+x = a !in b
+
+---
+
+(source_file
+  (assignment
+    left: (identifier)
+    right: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+==================
+Bitwise-negate slashy pattern in subtraction
+==================
+
+def i = fasta - ~/\.gz$/
+
+---
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    value: (binary_expression
+      left: (identifier)
+      right: (unary_expression
+        operand: (slashy_string)))))

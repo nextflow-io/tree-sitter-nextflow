@@ -1,6 +1,5 @@
 ==================
 Complex string interpolation
-:skip
 ==================
 
 x = 10
@@ -13,20 +12,46 @@ command = "samtools sort ${params.threads ? "-@ $params.threads" : ''} input.bam
 (source_file
   (assignment
     (identifier)
-    (number))
+    (integer_literal))
   (assignment
     (identifier)
-    (string))
+    (string
+      (string_content)))
   (assignment
     (identifier)
-    (string_interpolation))
+    (string
+      (string_content)
+      (interpolation
+        (ternary_expression
+          (binary_expression
+            (identifier)
+            (integer_literal))
+          (string
+            (string_content))
+          (string
+            (string_content))))
+      (string_content)
+      (interpolation
+        (identifier))))
   (assignment
     (identifier)
-    (string_interpolation)))
+    (string
+      (string_content)
+      (interpolation
+        (ternary_expression
+          (member_expression
+            (identifier)
+            (identifier))
+          (string
+            (string_content)
+            (interpolation
+              (identifier)
+              (identifier)))
+          (string)))
+      (string_content))))
 
 ==================
 Multiline strings with indentation
-:skip
 ==================
 
 script = '''
@@ -49,14 +74,20 @@ query = """
 (source_file
   (assignment
     (identifier)
-    (multiline_string))
+    (string
+      (string_content)))
   (assignment
     (identifier)
-    (multiline_string_interpolation)))
+    (string
+      (string_content)
+      (interpolation
+        (member_expression
+          (identifier)
+          (identifier)))
+      (string_content))))
 
 ==================
 Template strings
-:skip
 ==================
 
 template 'script.sh'
@@ -76,6 +107,80 @@ template """
 ---
 
 (source_file
-  (template_statement)
-  (template_statement
-    (template_string)))
+  (expression_statement
+    (command_expression
+      (identifier)
+      (argument_list
+        (string
+          (string_content)))))
+  (expression_statement
+    (command_expression
+      (identifier)
+      (argument_list
+        (string
+          (string_content)
+          (escape_sequence)
+          (string_content)
+          (escape_sequence)
+          (escape_sequence)
+          (escape_sequence)
+          (string_content)
+          (escape_sequence)
+          (string_content)
+          (escape_sequence)
+          (escape_sequence)
+          (escape_sequence)
+          (string_content))))))
+
+==================
+Slashy string regex without interpolation
+==================
+
+def pattern = /\w+\.\d+/
+def result = text =~ pattern
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (slashy_string))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier))))
+
+==================
+Double-slash inside a double-quoted string is content, not a comment
+==================
+
+def v = "sed 's/.\$//'"
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (string
+      (string_content)
+      (escape_sequence)
+      (string_content))))
+
+==================
+Method call on a triple-quoted string
+==================
+
+def m = """hi""".stripIndent()
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (call_expression
+      (member_expression
+        (string
+          (string_content))
+        (identifier))
+      (argument_list))))

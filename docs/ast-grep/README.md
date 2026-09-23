@@ -5,7 +5,6 @@ This grammar ships a ready-to-use [ast-grep](https://ast-grep.github.io/) distri
 - [Setup](#setup) — install ast-grep and the Nextflow distribution
 - [patterns.md](patterns.md) — pattern syntax and a Nextflow pattern library
 - [outline.md](outline.md) — `ast-grep outline` for `.nf` files
-- [testing-results.md](testing-results.md) — verified-pattern notes
 
 ## What's in the distribution
 

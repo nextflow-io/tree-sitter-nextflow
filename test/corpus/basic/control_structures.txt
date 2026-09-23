@@ -14,36 +14,33 @@ if (x > 5) {
 
 (source_file
   (if_statement
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (integer_literal)))
+    (binary_expression
+      (identifier)
+      (integer_literal))
     (block
       (expression_statement
-        (simple_expression
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))
+    (if_statement
+      (binary_expression
+        (identifier)
+        (integer_literal))
+      (block
+        (expression_statement
           (command_expression
             (identifier)
-            (interpolated_string
-              (string_content))))))
-    (else_if_clause
-      (simple_expression
-        (binary_expression
-          (identifier)
-          (integer_literal)))
+            (argument_list
+              (string
+                (string_content))))))
       (block
         (expression_statement
-          (simple_expression
-            (command_expression
-              (identifier)
-              (interpolated_string
-                (string_content)))))))
-    (else_clause
-      (block
-        (expression_statement
-          (simple_expression
-            (command_expression
-              (identifier)
-              (interpolated_string
+          (command_expression
+            (identifier)
+            (argument_list
+              (string
                 (string_content)))))))))
 
 =================
@@ -57,12 +54,11 @@ foo = bar("baz")
 (source_file
   (assignment
     (identifier)
-    (simple_expression
-      (function_call
-        (identifier)
-        (simple_expression
-          (interpolated_string
-            (string_content)))))))
+    (call_expression
+      (identifier)
+      (argument_list
+        (string
+          (string_content))))))
 
 =================
 Operator precedence
@@ -77,33 +73,120 @@ def c = (1 + x) * y + 5 * z + 3
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
+    (binary_expression
+      (identifier)
       (binary_expression
-        (binary_expression
-          (identifier)
-          (identifier))
+        (identifier)
         (identifier))))
   (variable_declaration
     (identifier)
-    (simple_expression
+    (binary_expression
       (binary_expression
-        (binary_expression
-          (identifier)
-          (identifier))
-        (identifier))))
+        (identifier)
+        (identifier))
+      (identifier)))
   (variable_declaration
     (identifier)
-    (simple_expression
+    (binary_expression
       (binary_expression
         (binary_expression
-          (binary_expression
+          (parenthesized_expression
             (binary_expression
-              (parenthesized_expression
-                (simple_expression
-                  (binary_expression
-                    (integer_literal)
-                    (identifier))))
-              (identifier))
-            (integer_literal))
+              (integer_literal)
+              (identifier)))
           (identifier))
-        (integer_literal)))))
+        (binary_expression
+          (integer_literal)
+          (identifier)))
+      (integer_literal))))
+
+==================
+Each instead of for loops
+==================
+
+['read_distribution', 'inner_distance', 'tin'].each { rseqc_module ->
+    if (rseqc_modules.contains(rseqc_module)) {
+        rseqc_modules.remove(rseqc_module)
+    }
+}
+
+---
+
+(source_file
+  (expression_statement
+    (call_expression
+      (member_expression
+        (list
+          (string
+            (string_content))
+          (string
+            (string_content))
+          (string
+            (string_content)))
+        (identifier))
+      (closure
+        (parameters
+          (parameter
+            (identifier)))
+        (if_statement
+          (call_expression
+            (member_expression
+              (identifier)
+              (identifier))
+            (argument_list
+              (identifier)))
+          (block
+            (expression_statement
+              (call_expression
+                (member_expression
+                  (identifier)
+                  (identifier))
+                (argument_list
+                  (identifier))))))))))
+
+==================
+If-else instead of switch
+==================
+
+if (aligner == 'bowtie2') {
+    println("Using bowtie2")
+} else if (aligner == 'bwamem') {
+    println("Using bwamem")
+} else {
+    println("Unknown aligner")
+}
+
+---
+
+(source_file
+  (if_statement
+    (binary_expression
+      (identifier)
+      (string
+        (string_content)))
+    (block
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))
+    (if_statement
+      (binary_expression
+        (identifier)
+        (string
+          (string_content)))
+      (block
+        (expression_statement
+          (call_expression
+            (identifier)
+            (argument_list
+              (string
+                (string_content))))))
+      (block
+        (expression_statement
+          (call_expression
+            (identifier)
+            (argument_list
+              (string
+                (string_content)))))))))

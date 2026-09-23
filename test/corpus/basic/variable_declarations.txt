@@ -9,8 +9,7 @@ def x = 1
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (integer_literal))))
+    (integer_literal)))
 
 ==================
 String variable declaration
@@ -23,8 +22,8 @@ def greeting = 'Hello'
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (string_literal))))
+    (string
+      (string_content))))
 
 ==================
 Multiple variable declarations
@@ -39,18 +38,15 @@ def z = x + y
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (integer_literal)))
+    (integer_literal))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (integer_literal)))
+    (integer_literal))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier)))))
+    (binary_expression
+      (identifier)
+      (identifier))))
 
 ==================
 Variable assignment
@@ -63,8 +59,7 @@ x = 42
 (source_file
   (assignment
     (identifier)
-    (simple_expression
-      (integer_literal))))
+    (integer_literal)))
 
 ==================
 Variable declaration with expression
@@ -77,15 +72,14 @@ def result = Channel.from(1,2,3)
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (channel_expression
-        (channel_from
-          (simple_expression
-            (integer_literal))
-          (simple_expression
-            (integer_literal))
-          (simple_expression
-            (integer_literal)))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (integer_literal)
+        (integer_literal)
+        (integer_literal)))))
 
 ==================
 Variable declaration with list
@@ -98,14 +92,10 @@ def numbers = [1, 2, 3]
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (list
-        (simple_expression
-          (integer_literal))
-        (simple_expression
-          (integer_literal))
-        (simple_expression
-          (integer_literal))))))
+    (list
+      (integer_literal)
+      (integer_literal)
+      (integer_literal))))
 
 ==================
 Variable declaration with map
@@ -118,13 +108,139 @@ def config = [foo: 'bar', count: 42]
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (map
-        (map_entry
+    (map
+      (map_entry
+        (identifier)
+        (string
+          (string_content)))
+      (map_entry
+        (identifier)
+        (integer_literal)))))
+
+==================
+Variable declarations with type annotations
+==================
+
+def a: Integer = 1
+def str: String = 'hello'
+def meta: Map = [:]
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (type
+      (identifier))
+    (integer_literal))
+  (variable_declaration
+    (identifier)
+    (type
+      (identifier))
+    (string
+      (string_content)))
+  (variable_declaration
+    (identifier)
+    (type
+      (identifier))
+    (map)))
+
+==================
+Destructuring assignment with types
+==================
+
+def (c: Integer, d: Integer) = [3, 4]
+def (e, f) = [5, 6]
+
+---
+
+(source_file
+  (variable_declaration
+    (destructuring_pattern
+      (identifier)
+      (type
+        (identifier))
+      (identifier)
+      (type
+        (identifier)))
+    (list
+      (integer_literal)
+      (integer_literal)))
+  (variable_declaration
+    (destructuring_pattern
+      (identifier)
+      (identifier))
+    (list
+      (integer_literal)
+      (integer_literal))))
+
+==================
+Compound assignment operator
+==================
+
+args += " --seed=42"
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (string
+      (string_content))))
+
+==================
+Consecutive bare assignments in a block are separate statements
+==================
+
+process P {
+  script:
+  if (x) {
+    a = b
+    c = "d"
+  }
+  "run"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (if_statement
+        (identifier)
+        (block
+          (assignment
+            (identifier)
+            (identifier))
+          (assignment
+            (identifier)
+            (string
+              (string_content)))))
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Destructuring assignment
+==================
+
+workflow W {
+  main:
+  (a, b) = f(x)
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (identifier)
+    (main_section
+      (assignment
+        (destructuring_pattern
           (identifier)
-          (simple_expression
-            (string_literal)))
-        (map_entry
+          (identifier))
+        (call_expression
           (identifier)
-          (simple_expression
-            (integer_literal)))))))
+          (argument_list
+            (identifier)))))))

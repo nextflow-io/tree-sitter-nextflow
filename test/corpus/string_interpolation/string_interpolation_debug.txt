@@ -8,11 +8,9 @@ Interpolation at string end (working case)
 
 (source_file
   (expression_statement
-    (simple_expression
-      (interpolated_string
-        (interpolation
-          (simple_expression
-            (identifier)))))))
+    (string
+      (interpolation
+        (identifier)))))
 
 ==================
 Single character after interpolation - exclamation
@@ -24,12 +22,10 @@ Single character after interpolation - exclamation
 
 (source_file
   (expression_statement
-    (simple_expression
-      (interpolated_string
-        (interpolation
-          (simple_expression
-            (identifier)))
-        (string_content)))))
+    (string
+      (interpolation
+        (identifier))
+      (string_content))))
 
 ==================
 Single character after interpolation - letter
@@ -41,12 +37,10 @@ Single character after interpolation - letter
 
 (source_file
   (expression_statement
-    (simple_expression
-      (interpolated_string
-        (interpolation
-          (simple_expression
-            (identifier)))
-        (string_content)))))
+    (string
+      (interpolation
+        (identifier))
+      (string_content))))
 
 ==================
 Single character after interpolation - number
@@ -58,12 +52,10 @@ Single character after interpolation - number
 
 (source_file
   (expression_statement
-    (simple_expression
-      (interpolated_string
-        (interpolation
-          (simple_expression
-            (identifier)))
-        (string_content)))))
+    (string
+      (interpolation
+        (identifier))
+      (string_content))))
 
 ==================
 Multiple characters after interpolation (confirmed working)
@@ -75,12 +67,10 @@ Multiple characters after interpolation (confirmed working)
 
 (source_file
   (expression_statement
-    (simple_expression
-      (interpolated_string
-        (interpolation
-          (simple_expression
-            (identifier)))
-        (string_content)))))
+    (string
+      (interpolation
+        (identifier))
+      (string_content))))
 
 ==================
 Content before and after interpolation
@@ -92,13 +82,11 @@ Content before and after interpolation
 
 (source_file
   (expression_statement
-    (simple_expression
-      (interpolated_string
-        (string_content)
-        (interpolation
-          (simple_expression
-            (identifier)))
-        (string_content)))))
+    (string
+      (string_content)
+      (interpolation
+        (identifier))
+      (string_content))))
 
 ==================
 Multiple interpolations in one string
@@ -110,17 +98,14 @@ Multiple interpolations in one string
 
 (source_file
   (expression_statement
-    (simple_expression
-      (interpolated_string
-        (string_content)
-        (interpolation
-          (simple_expression
-            (identifier)))
-        (string_content)
-        (interpolation
-          (simple_expression
-            (identifier)))
-        (string_content)))))
+    (string
+      (string_content)
+      (interpolation
+        (identifier))
+      (string_content)
+      (interpolation
+        (identifier))
+      (string_content))))
 
 ==================
 Expression interpolation with method call
@@ -132,14 +117,14 @@ Expression interpolation with method call
 
 (source_file
   (expression_statement
-    (simple_expression
-      (interpolated_string
-        (string_content)
-        (interpolation
-          (simple_expression
-            (method_call
-              (identifier)
-              (identifier))))))))
+    (string
+      (string_content)
+      (interpolation
+        (call_expression
+          (member_expression
+            (identifier)
+            (identifier))
+          (argument_list))))))
 
 ==================
 Interpolation with binary expression
@@ -151,14 +136,12 @@ Interpolation with binary expression
 
 (source_file
   (expression_statement
-    (simple_expression
-      (interpolated_string
-        (string_content)
-        (interpolation
-          (simple_expression
-            (binary_expression
-              (identifier)
-              (identifier))))))))
+    (string
+      (string_content)
+      (interpolation
+        (binary_expression
+          (identifier)
+          (identifier))))))
 
 ==================
 Empty string content after interpolation
@@ -170,8 +153,6 @@ Empty string content after interpolation
 
 (source_file
   (expression_statement
-    (simple_expression
-      (interpolated_string
-        (interpolation
-          (simple_expression
-            (identifier)))))))
+    (string
+      (interpolation
+        (identifier)))))

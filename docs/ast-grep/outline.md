@@ -30,6 +30,7 @@ Useful flags: `--json` for machine-readable output, `--items imports|exports|all
 | `process FOO { ... }`             | `process_definition`  | `function`   | name = process name            |
 | `workflow FOO { ... }`            | `workflow_definition` | `function`   | named / reusable subworkflow   |
 | `workflow { ... }`                | `workflow_definition` | `function`   | entry workflow, named `main`   |
+| `def helper(x) { ... }`           | `function_definition` | `function`   | name = function name           |
 | `include { FOO } from './m'`      | `include_item`        | `module`     | one per symbol, `isImport`     |
 
 Process and workflow definitions share `symbolType: function`; they are distinguished by the `astKind` field in the output (`process_definition` vs `workflow_definition`).
@@ -42,7 +43,5 @@ The `symbolType` values come from a fixed LSP-derived enum, so they are approxim
 
 Grammar-specific notes:
 
-- Include lists must be comma-separated (`include { A, B as C }`). The grammar does not yet parse semicolon-separated include lists.
-- For aliased imports (`FOO as BAR`), the extracted name is the original name (`FOO`). The grammar exposes no name field and cannot match the `as` clause as a standalone pattern, so the alias is not surfaced separately.
+- For aliased imports (`FOO as BAR`), the extracted name is the original name (`FOO`).
 - A process or workflow whose body fails to parse will not be extracted. Outline reflects whatever the grammar parses successfully.
-- There is no Nextflow function-declaration node in this grammar, so top-level `def fn() { ... }` is not extracted.

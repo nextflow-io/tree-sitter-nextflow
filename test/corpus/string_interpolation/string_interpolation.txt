@@ -10,60 +10,46 @@ println("Hello ${name}!")
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (string_literal)))
+    (string
+      (string_content)))
   (expression_statement
-    (simple_expression
-      (function_call
-        (identifier)
-        (simple_expression
-          (interpolated_string
-            (string_content)
-            (interpolation
-              (simple_expression
-                (identifier)))
-            (string_content)))))))
+    (call_expression
+      (identifier)
+      (argument_list
+        (string
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content))))))
 
 ==================
-Simple property access
-:skip
+String interpolation with escape sequences
 ==================
 
-def person = [first: 'John', last: 'Doe']
-println("Hello ${person.first} ${person.last}!")
+def id = 'SRA001'
+assert 'SRA001.fastq' =~ "${id}\\.f(?:ast)?q"
 
 ---
 
 (source_file
   (variable_declaration
     (identifier)
-    (map
-      (map_entry
-        (identifier)
-        (string))
-      (map_entry
-        (identifier)
-        (string))))
-  (function_call
-    (identifier)
-    (interpolated_string
-      (string_content)
-      (property_access
-        (identifier)
-        (identifier))
-      (string_content)
-      (property_access
-        (identifier)
-        (identifier))
-      (string_content))))
+    (string
+      (string_content)))
+  (assert_statement
+    (binary_expression
+      (string
+        (string_content))
+      (string
+        (interpolation
+          (identifier))
+        (escape_sequence)
+        (string_content)))))
 
 ==================
-Triple-quoted string interpolation
-:skip
+Multi-line string with interpolation
 ==================
 
-def input = 'sample.fa'
-def output = 'result.txt'
 def cmd = """
     blastp \\
         -in ${input} \\
@@ -76,106 +62,40 @@ def cmd = """
 (source_file
   (variable_declaration
     (identifier)
-    (string))
-  (variable_declaration
-    (identifier)
-    (string))
-  (variable_declaration
-    (identifier)
-    (interpolated_string
+    (string
       (string_content)
-      (identifier)
-      (string_content)
-      (identifier)
-      (string_content))))
-
-==================
-Complex interpolation with expressions
-:skip
-==================
-
-def names = ['Thing 1', 'Thing 2']
-println "Hello, ${names.join(' and ')}!"
-
----
-
-(source_file
-  (variable_declaration
-    (identifier)
-    (list
-      (string)
-      (string)))
-  (function_call
-    (identifier)
-    (interpolated_string
+      (escape_sequence)
       (string_content)
       (interpolation
-        (function_call
-          (property_access
-            (identifier)
-            (identifier))
-          (string)))
-      (string_content))))
-
-==================
-Mixed interpolation styles
-:skip
-==================
-
-def user = [name: 'John', age: 30]
-println "User $user.name is ${user.age} years old"
-
----
-
-(source_file
-  (variable_declaration
-    (identifier)
-    (map
-      (map_entry
-        (identifier)
-        (string))
-      (map_entry
-        (identifier)
-        (number))))
-  (function_call
-    (identifier)
-    (interpolated_string
-      (string_content)
-      (property_access
-        (identifier)
         (identifier))
       (string_content)
+      (escape_sequence)
+      (string_content)
       (interpolation
-        (property_access
-          (identifier)
-          (identifier)))
+        (identifier))
+      (string_content)
+      (escape_sequence)
       (string_content))))
 
 ==================
-Triple single-quoted string interpolation
-:skip
+Quote abutting interpolation inside a triple-quoted GString
 ==================
 
-def tool = 'blastp'
-def text = '''
-    Running $tool
-    with default parameters
-    on ${new Date()}
-'''
+x = """
+"${task.process}":
+    tool: 1.0
+"""
 
 ---
 
 (source_file
-  (variable_declaration
+  (assignment
     (identifier)
-    (string))
-  (variable_declaration
-    (identifier)
-    (interpolated_string
+    (string
       (string_content)
-      (identifier)
       (string_content)
       (interpolation
-        (constructor_call
+        (member_expression
+          (identifier)
           (identifier)))
       (string_content))))

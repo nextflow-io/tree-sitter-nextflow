@@ -14,6 +14,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+The grammar is rewritten from scratch to mirror the official Nextflow grammar (`ScriptParser.g4` in nextflow-io/nextflow). Most node names change, so queries, ast-grep rules and anything else that matches on the tree need updating.
+
+### Changed
+
+- **Breaking:** expressions follow the ANTLR grammar: one postfix chain (`member_expression`, `call_expression`, `index_expression`) over any primary, and `binary_expression` with ANTLR's precedence levels. `1 + 2 * 3` used to parse as `(1 + 2) * 3`.
+- **Breaking:** Nextflow semantics are no longer baked into the syntax. `Channel.of(...)`, `FOO(x)`, `FOO.out.bam` and `ch | map { }` are ordinary calls, member accesses and `|` binary expressions. The `channel_*`, `process_invocation`, `process_output`, `pipe_expression`, `map_operation`, `env_function`, `dotted_identifier` and `method_call` nodes are gone.
+- **Breaking:** one `string` node covers `'...'`, `"..."`, `'''...'''` and `"""..."""`, with `string_content`, `escape_sequence` and `interpolation` children. Single-quoted script bodies now inject bash without their quotes.
+- **Breaking:** process and workflow bodies contain section nodes (`input_section`, `script_section`, `take_section`, `emit_section`, ...) that own their entries. Statements before the first section (directives, or an implicit script or main body) are direct children of the definition.
+- **Breaking:** statements must be separated by a newline or `;`. Two statements on one line used to parse silently as separate statements (`log.info "x"` became `log.info` and `"x"`).
+- Calls without parentheses (`println "x"`, `log.info "x"`, `path x, emit: y`) are `command_expression`, only as a statement, as in Nextflow.
+- Definitions, parameters and declarations have `name`, `type`, `body` and similar fields.
+- The scanner decides whether a newline ends a statement from where the ANTLR grammar allows a line break, so `+` or `-` at the start of a line begins a new statement, while `.`, `?`, `:`, `|`, `&&`, `else`, `catch` and similar continue the previous one.
+
+### Added
+
+- Strict-syntax declarations: `params { }` blocks, `record` and `enum` definitions, the `output { }` block, `import`, `agent` definitions, and typed functions (`def f(x: Path) -> List<Path>`).
+- Typed process inputs and outputs, `record(...)` and `tuple(...)` inputs, and the `stage:` and `topic:` sections.
+- Typed `take:` and `emit:` entries, and the `publish:`, `onComplete:` and `onError:` workflow sections.
+- Types with qualified names, generics, nullable `?` and legacy `[]`.
+- `throw`, braceless `if`/`else`/`try`/`catch` bodies, `catch (e: A | B)`, legacy Java-style declarations (`String x = ...`, `String f() { }`), and destructuring (`def (a, b) = ...`).
+- Closures as values, typed and defaulted closure parameters, `null`, `>>` / `>>>` operators, hex, binary and octal numbers with `_` separators and type suffixes, multi-line slashy strings, and `"$a.b.c"` GString paths.
+- Corpus tests derived from `ScriptParser.g4` in `test/corpus/spec/`.
+
+### Fixed
+
+- The Rust binding did not compile the external scanner (thanks @Sam-Sims, #31).
+- The `channel-into-deprecated` ast-grep rule never matched, and `hardcoded-paths` flagged every `path("...")`.
+
+### Removed
+
+- The Node binding, which was never published.
+- The prebuilt ast-grep parser libraries in `lib/`. `scripts/install-ast-grep.sh` downloads them from the GitHub release, which a `v*` tag now builds and attaches.
+
 ## [0.3.0] - 2026-08-04
 
 ### Added

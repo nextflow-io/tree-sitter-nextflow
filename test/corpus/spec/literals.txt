@@ -1,0 +1,221 @@
+==================
+Numbers
+==================
+
+a = [0, 42, 1_000_000, 0xFF, 0b1010, 017, 10L, 3G]
+b = [1.5, 1.5e-3, .5, 1e10, 2d, 1.0f]
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (list
+      (integer_literal)
+      (integer_literal)
+      (integer_literal)
+      (integer_literal)
+      (integer_literal)
+      (integer_literal)
+      (integer_literal)
+      (integer_literal)))
+  (assignment
+    (identifier)
+    (list
+      (float_literal)
+      (float_literal)
+      (float_literal)
+      (float_literal)
+      (float_literal)
+      (float_literal))))
+
+==================
+Booleans and null
+==================
+
+x = [true, false, null]
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (list
+      (boolean_literal)
+      (boolean_literal)
+      (null_literal))))
+
+==================
+Strings
+==================
+
+a = 'single $not interpolated'
+b = "double ${x} and $y"
+c = '''
+triple single $x
+'''
+d = """
+triple double ${x}
+"""
+e = ''
+f = ""
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (string
+      (string_content)))
+  (assignment
+    (identifier)
+    (string
+      (string_content)
+      (interpolation
+        (identifier))
+      (string_content)
+      (interpolation
+        (identifier))))
+  (assignment
+    (identifier)
+    (string
+      (string_content)))
+  (assignment
+    (identifier)
+    (string
+      (string_content)
+      (interpolation
+        (identifier))))
+  (assignment
+    (identifier)
+    (string))
+  (assignment
+    (identifier)
+    (string)))
+
+==================
+Escape sequences
+==================
+
+a = 'it\'s'
+b = "tab\tnewline\n\$notvar \u0041"
+c = "line \
+continued"
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (string
+      (string_content)
+      (escape_sequence)
+      (string_content)))
+  (assignment
+    (identifier)
+    (string
+      (string_content)
+      (escape_sequence)
+      (string_content)
+      (escape_sequence)
+      (escape_sequence)
+      (string_content)
+      (escape_sequence)))
+  (assignment
+    (identifier)
+    (string
+      (string_content)
+      (escape_sequence)
+      (string_content))))
+
+==================
+GString paths
+==================
+
+a = "$meta.id"
+b = "$a$b"
+c = "$file.name."
+d = "$x. y"
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (string
+      (interpolation
+        (identifier)
+        (identifier))))
+  (assignment
+    (identifier)
+    (string
+      (interpolation
+        (identifier))
+      (interpolation
+        (identifier))))
+  (assignment
+    (identifier)
+    (string
+      (interpolation
+        (identifier)
+        (identifier))
+      (string_content)))
+  (assignment
+    (identifier)
+    (string
+      (interpolation
+        (identifier))
+      (string_content))))
+
+==================
+Slashy strings
+==================
+
+a = /foo.*bar/
+b = ~/^\d+$/
+c = /multi
+line/
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (slashy_string))
+  (assignment
+    (identifier)
+    (unary_expression
+      (slashy_string)))
+  (assignment
+    (identifier)
+    (slashy_string)))
+
+==================
+Quotes inside triple-quoted strings
+==================
+
+a = """say "hi" and ""twice"" to ${name}"""
+b = '''it's 'fine' '''
+c = """ "${x}": """
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (string
+      (string_content)
+      (interpolation
+        (identifier))))
+  (assignment
+    (identifier)
+    (string
+      (string_content)))
+  (assignment
+    (identifier)
+    (string
+      (string_content)
+      (string_content)
+      (interpolation
+        (identifier))
+      (string_content))))

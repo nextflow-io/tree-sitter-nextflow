@@ -15,9 +15,7 @@
 # project call graph (subworkflow/module nesting, alias resolution) see the
 # `nextflow tree` ADR: https://github.com/nextflow-io/nextflow/pull/7196
 #
-# Patterns are kind-based rather than `pattern:`-based on purpose: this grammar
-# cannot parse a standalone block body (`{ $$$ }`) or an `as` clause as an
-# isolated pattern, so `kind` + `has` is the robust way to select declarations.
+# Rules select declarations by `kind` and read the name from the `name` field.
 # Metavariables use the normal `$NAME` form; sgconfig.yml's `expandoChar: _`
 # maps `$` to `_` internally for the parser.
 
@@ -29,6 +27,7 @@ symbolType: function
 rule:
   kind: process_definition
   has:
+    field: name
     kind: identifier
     pattern: $NAME
 name: $NAME
@@ -41,6 +40,7 @@ symbolType: function
 rule:
   kind: workflow_definition
   has:
+    field: name
     kind: identifier
     pattern: $NAME
 name: $NAME
@@ -54,12 +54,26 @@ rule:
   kind: workflow_definition
   not:
     has:
+      field: name
       kind: identifier
 name: main
 ---
+# Functions: `def helper(x) { ... }`
+id: nextflow-function
+language: nextflow
+role: item
+symbolType: function
+rule:
+  kind: function_definition
+  has:
+    field: name
+    kind: identifier
+    pattern: $NAME
+name: $NAME
+---
 # Included components: `include { FOO; BAR as BAZ } from './m'`
-# Each imported symbol is one import item. The first identifier is the
-# imported name (the original name for aliased imports).
+# Each imported symbol is one import item, named by its original name
+# (not the alias).
 id: nextflow-include
 language: nextflow
 role: item
@@ -67,6 +81,7 @@ symbolType: module
 rule:
   kind: include_item
   has:
+    field: name
     kind: identifier
     pattern: $NAME
 name: $NAME

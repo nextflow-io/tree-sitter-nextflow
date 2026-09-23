@@ -1,6 +1,5 @@
 ==================
 Complex maps and lists
-:skip
 ==================
 
 params {
@@ -21,18 +20,45 @@ list = [[1,2], [3,4], [5,6]]
 ---
 
 (source_file
-  (params_block
-    (map
-      (map_entry
-        (identifier)
-        (nested_map))))
+  (params_definition
+    (param_declaration
+      (identifier)
+      (map
+        (map_entry
+          (identifier)
+          (map
+            (map_entry
+              (identifier)
+              (integer_literal))
+            (map_entry
+              (identifier)
+              (string
+                (string_content)))))
+        (map_entry
+          (identifier)
+          (map
+            (map_entry
+              (identifier)
+              (integer_literal))
+            (map_entry
+              (identifier)
+              (string
+                (string_content))))))))
   (assignment
     (identifier)
-    (nested_list)))
+    (list
+      (list
+        (integer_literal)
+        (integer_literal))
+      (list
+        (integer_literal)
+        (integer_literal))
+      (list
+        (integer_literal)
+        (integer_literal)))))
 
 ==================
 Ranges
-:skip
 ==================
 
 range1 = 1..10
@@ -45,20 +71,29 @@ range4 = 10..1
 (source_file
   (assignment
     (identifier)
-    (range_expression))
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
   (assignment
     (identifier)
-    (range_expression))
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
   (assignment
     (identifier)
-    (range_expression))
+    (binary_expression
+      (string
+        (string_content))
+      (string
+        (string_content))))
   (assignment
     (identifier)
-    (range_expression)))
+    (binary_expression
+      (integer_literal)
+      (integer_literal))))
 
 ==================
 Sets
-:skip
 ==================
 
 set1 = [1,2,3,4] as Set
@@ -72,13 +107,36 @@ intersection = set1.intersect(set2)
 (source_file
   (assignment
     (identifier)
-    (set_expression))
+    (cast_expression
+      (list
+        (integer_literal)
+        (integer_literal)
+        (integer_literal)
+        (integer_literal))
+      (type
+        (identifier))))
   (assignment
     (identifier)
-    (set_expression))
+    (cast_expression
+      (list
+        (string
+          (string_content))
+        (string
+          (string_content))
+        (string
+          (string_content)))
+      (type
+        (identifier))))
   (assignment
     (identifier)
-    (binary_expression))
+    (binary_expression
+      (identifier)
+      (identifier)))
   (assignment
     (identifier)
-    (method_call)))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (identifier)))))

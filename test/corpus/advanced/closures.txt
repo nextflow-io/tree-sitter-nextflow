@@ -1,6 +1,5 @@
 ==================
 Single parameter closure
-:skip
 ==================
 
 def square = { x -> x * x }
@@ -11,14 +10,15 @@ def square = { x -> x * x }
     (identifier)
     (closure
       (parameters
-        (identifier))
-      (binary_expression
-        (identifier)
-        (identifier)))))
+        (parameter
+          (identifier)))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (identifier))))))
 
 ==================
 Multiple parameter closure
-:skip
 ==================
 
 def add = { a, b -> a + b }
@@ -29,15 +29,17 @@ def add = { a, b -> a + b }
     (identifier)
     (closure
       (parameters
-        (identifier)
-        (identifier))
-      (binary_expression
-        (identifier)
-        (identifier)))))
+        (parameter
+          (identifier))
+        (parameter
+          (identifier)))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (identifier))))))
 
 ==================
 Multi-line closure with statements
-:skip
 ==================
 
 def process = { v ->
@@ -52,21 +54,27 @@ def process = { v ->
     (identifier)
     (closure
       (parameters
-        (identifier))
-      (block
-        (function_call
+        (parameter
+          (identifier)))
+      (expression_statement
+        (command_expression
           (identifier)
-          (string))
-        (function_call
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
+        (command_expression
           (identifier)
-          (string))
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
         (binary_expression
           (identifier)
           (identifier))))))
 
 ==================
 Closure with variable declarations
-:skip
 ==================
 
 def compute = { x, y ->
@@ -80,14 +88,111 @@ def compute = { x, y ->
     (identifier)
     (closure
       (parameters
+        (parameter
+          (identifier))
+        (parameter
+          (identifier)))
+      (variable_declaration
         (identifier)
-        (identifier))
-      (block
-        (variable_declaration
-          (identifier)
-          (binary_expression
-            (identifier)
-            (identifier)))
         (binary_expression
           (identifier)
-          (number))))))
+          (identifier)))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (integer_literal))))))
+
+==================
+Assert inside a closure and bare stdout tuple output
+==================
+
+process P {
+  output:
+  tuple val(meta), stdout, emit: gender
+  script:
+  input.collect{ f -> assert f.name != "x" : "same" }
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    name: (identifier)
+    (output_section
+      (expression_statement
+        (command_expression
+          function: (identifier)
+          arguments: (argument_list
+            (call_expression
+              function: (identifier)
+              arguments: (argument_list
+                (identifier)))
+            (identifier)
+            (named_argument
+              name: (identifier)
+              value: (identifier))))))
+    (script_section
+      (expression_statement
+        (call_expression
+          function: (member_expression
+            object: (identifier)
+            property: (identifier))
+          closure: (closure
+            parameters: (parameters
+              (parameter
+                name: (identifier)))
+            (assert_statement
+              condition: (binary_expression
+                left: (member_expression
+                  object: (identifier)
+                  property: (identifier))
+                right: (string
+                  (string_content)))
+              message: (string
+                (string_content))))))
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Bitwise operator and multiMap label statements
+==================
+
+workflow W {
+  main:
+  ch = a.multiMap { meta, db ->
+    db: [ meta, db ]
+  }
+  n = ix & 1
+}
+
+---
+
+(source_file
+  (workflow_definition
+    name: (identifier)
+    (main_section
+      (assignment
+        left: (identifier)
+        right: (call_expression
+          function: (member_expression
+            object: (identifier)
+            property: (identifier))
+          closure: (closure
+            parameters: (parameters
+              (parameter
+                name: (identifier))
+              (parameter
+                name: (identifier)))
+            (labeled_statement
+              label: (identifier)
+              (expression_statement
+                (list
+                  (identifier)
+                  (identifier)))))))
+      (assignment
+        left: (identifier)
+        right: (binary_expression
+          left: (identifier)
+          right: (integer_literal))))))
