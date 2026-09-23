@@ -2,11 +2,14 @@ name: ast-grep distribution
 
 # Builds the tree-sitter parser shared libraries that ast-grep loads as the
 # `nextflow` custom language, verifies each is a usable parser, and smoke-tests
-# the shipped sgconfig + outline rules end-to-end.
+# the shipped sgconfig + outline rules end-to-end. On a v* tag, attaches the
+# libraries to that tag's GitHub release, where scripts/install-ast-grep.sh
+# downloads them from.
 
 on:
   push:
     branches: [main, ast-grep-distribution]
+    tags: ['v*']
     paths:
       - grammar.js
       - src/**
@@ -40,10 +43,22 @@ jobs:
             triple: aarch64-apple-darwin
             libdir: lib/macos-arm64
             libname: libnextflow.dylib
+            asset: libnextflow-macos-arm64.dylib
+          - os: macos-15-intel
+            triple: x86_64-apple-darwin
+            libdir: lib/macos-x64
+            libname: libnextflow.dylib
+            asset: libnextflow-macos-x64.dylib
           - os: ubuntu-latest
             triple: x86_64-unknown-linux-gnu
             libdir: lib/linux-x64
             libname: libnextflow.so
+            asset: libnextflow-linux-x64.so
+          - os: ubuntu-24.04-arm
+            triple: aarch64-unknown-linux-gnu
+            libdir: lib/linux-arm64
+            libname: libnextflow.so
+            asset: libnextflow-linux-arm64.so
     steps:
       - uses: actions/checkout@v4
 
@@ -110,9 +125,34 @@ jobs:
           done
           echo "✓ outline extracted all expected symbols"
 
-      - name: Upload parser library
-        uses: actions/upload-artifact@v4
+      - name: Name release asset
+        run: cp "${{ matrix.libdir }}/${{ matrix.libname }}" "${{ matrix.asset }}"
+
+      - uses: actions/upload-artifact@v4
         with:
-          name: libnextflow-${{ matrix.triple }}
-          path: ${{ matrix.libdir }}/${{ matrix.libname }}
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
           if-no-files-found: error
+
+  release:
+    name: Attach libraries to release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Create release and upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 \
+            || gh release create "$TAG" --verify-tag --generate-notes
+          gh release upload "$TAG" assets/* --clobber
