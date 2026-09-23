@@ -149,7 +149,8 @@ Each instead of for loops
         (identifier))
       (closure
         (parameters
-          (identifier))
+          (parameter
+            (identifier)))
         (if_statement
           (call_expression
             (member_expression
@@ -333,25 +334,26 @@ process P {
   (process_definition
     (identifier)
     (input_section
-      (command_expression
-        (identifier)
-        (argument_list
-          (call_expression
-            (identifier)
-            (argument_list
-              (identifier)))
-          (call_expression
-            (identifier)
-            (argument_list
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (call_expression
               (identifier)
-              (named_argument
+              (argument_list
+                (identifier)))
+            (call_expression
+              (identifier)
+              (argument_list
                 (identifier)
-                (string
-                  (string_content)))
-              (named_argument
-                (identifier)
-                (string
-                  (string_content))))))))
+                (named_argument
+                  (identifier)
+                  (string
+                    (string_content)))
+                (named_argument
+                  (identifier)
+                  (string
+                    (string_content)))))))))
     (script_section
       (expression_statement
         (string
@@ -600,7 +602,8 @@ process P {
             property: (identifier))
           closure: (closure
             parameters: (parameters
-              name: (identifier))
+              (parameter
+                name: (identifier)))
             (assert_statement
               condition: (binary_expression
                 left: (member_expression
@@ -640,8 +643,8 @@ workflow W {
             property: (identifier))
           closure: (closure
             parameters: (parameters
-              name: (identifier))
-            parameters: (parameters
+              (parameter
+                name: (identifier))
               (parameter
                 name: (identifier)))
             (labeled_statement
@@ -826,7 +829,8 @@ b = r.d as Float > 0
         (slashy_string))
       closure: (closure
         parameters: (parameters
-          name: (identifier))
+          (parameter
+            name: (identifier)))
         (expression_statement
           (identifier)))))
   (assignment
@@ -856,7 +860,8 @@ x = [(key): v]
       (identifier)
       (closure
         (parameters
-          (identifier))
+          (parameter
+            (identifier)))
         (expression_statement
           (identifier)))))
   (assignment

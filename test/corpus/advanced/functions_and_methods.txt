@@ -140,8 +140,8 @@ numbers = [1,2,3,4]
     (identifier)
     (closure
       (parameters
-        (identifier))
-      (parameters
+        (parameter
+          (identifier))
         (parameter
           (identifier)))
       (variable_declaration

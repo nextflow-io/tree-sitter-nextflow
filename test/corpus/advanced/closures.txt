@@ -10,7 +10,8 @@ def square = { x -> x * x }
     (identifier)
     (closure
       (parameters
-        (identifier))
+        (parameter
+          (identifier)))
       (expression_statement
         (binary_expression
           (identifier)
@@ -28,8 +29,8 @@ def add = { a, b -> a + b }
     (identifier)
     (closure
       (parameters
-        (identifier))
-      (parameters
+        (parameter
+          (identifier))
         (parameter
           (identifier)))
       (expression_statement
@@ -53,7 +54,8 @@ def process = { v ->
     (identifier)
     (closure
       (parameters
-        (identifier))
+        (parameter
+          (identifier)))
       (expression_statement
         (command_expression
           (identifier)
@@ -86,8 +88,8 @@ def compute = { x, y ->
     (identifier)
     (closure
       (parameters
-        (identifier))
-      (parameters
+        (parameter
+          (identifier))
         (parameter
           (identifier)))
       (variable_declaration

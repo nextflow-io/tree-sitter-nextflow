@@ -577,7 +577,7 @@
     "named": true,
     "fields": {
       "parameters": {
-        "multiple": true,
+        "multiple": false,
         "required": false,
         "types": [
           {
@@ -1042,10 +1042,6 @@
       "types": [
         {
           "type": "_statement",
-          "named": true
-        },
-        {
-          "type": "command_expression",
           "named": true
         },
         {
@@ -1552,38 +1548,7 @@
   {
     "type": "parameters",
     "named": true,
-    "fields": {
-      "default": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "_expression",
-            "named": true
-          }
-        ]
-      },
-      "name": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "identifier",
-            "named": true
-          }
-        ]
-      },
-      "type": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "type",
-            "named": true
-          }
-        ]
-      }
-    },
+    "fields": {},
     "children": {
       "multiple": true,
       "required": false,

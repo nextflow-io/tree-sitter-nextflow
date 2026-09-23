@@ -1029,7 +1029,7 @@
                               "name": "_legacy_tuple_input"
                             },
                             "named": true,
-                            "value": "command_expression"
+                            "value": "expression_statement"
                           }
                         ]
                       },
@@ -1068,7 +1068,7 @@
                                     "name": "_legacy_tuple_input"
                                   },
                                   "named": true,
-                                  "value": "command_expression"
+                                  "value": "expression_statement"
                                 }
                               ]
                             }
@@ -1218,6 +1218,15 @@
       ]
     },
     "_legacy_tuple_input": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "_legacy_tuple_command"
+      },
+      "named": true,
+      "value": "command_expression"
+    },
+    "_legacy_tuple_command": {
       "type": "PREC_DYNAMIC",
       "value": -1,
       "content": {
@@ -4648,29 +4657,8 @@
                       "content": {
                         "type": "ALIAS",
                         "content": {
-                          "type": "SEQ",
-                          "members": [
-                            {
-                              "type": "SYMBOL",
-                              "name": "parameter"
-                            },
-                            {
-                              "type": "REPEAT",
-                              "content": {
-                                "type": "SEQ",
-                                "members": [
-                                  {
-                                    "type": "STRING",
-                                    "value": ","
-                                  },
-                                  {
-                                    "type": "SYMBOL",
-                                    "name": "parameter"
-                                  }
-                                ]
-                              }
-                            }
-                          ]
+                          "type": "SYMBOL",
+                          "name": "_closure_parameters"
                         },
                         "named": true,
                         "value": "parameters"
@@ -4719,6 +4707,31 @@
         {
           "type": "STRING",
           "value": "}"
+        }
+      ]
+    },
+    "_closure_parameters": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "parameter"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "STRING",
+                "value": ","
+              },
+              {
+                "type": "SYMBOL",
+                "name": "parameter"
+              }
+            ]
+          }
         }
       ]
     },

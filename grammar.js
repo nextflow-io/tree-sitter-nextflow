@@ -221,7 +221,7 @@ module.exports = grammar({
       $.process_record_input,
       $.process_tuple_input,
       $._statement,
-      alias($._legacy_tuple_input, $.command_expression),
+      alias($._legacy_tuple_input, $.expression_statement),
     )),
 
     process_input: $ => prec(1, seq(
@@ -244,7 +244,9 @@ module.exports = grammar({
 
     // `tuple` is a keyword in an input section, so a legacy
     // `tuple val(x), path(y)` needs its own rule there.
-    _legacy_tuple_input: $ => prec.dynamic(-1, seq(
+    _legacy_tuple_input: $ => alias($._legacy_tuple_command, $.command_expression),
+
+    _legacy_tuple_command: $ => prec.dynamic(-1, seq(
       field('function', alias('tuple', $.identifier)),
       field('arguments', alias($._command_arguments, $.argument_list)),
     )),
@@ -566,13 +568,15 @@ module.exports = grammar({
       '{',
       optional($._sep),
       optional(seq(
-        optional(field('parameters', alias(commaSep1($.parameter), $.parameters))),
+        optional(field('parameters', alias($._closure_parameters, $.parameters))),
         '->',
         optional($._sep),
       )),
       optional($._statements),
       '}',
     ),
+
+    _closure_parameters: $ => commaSep1($.parameter),
 
     new_expression: $ => seq(
       'new',
