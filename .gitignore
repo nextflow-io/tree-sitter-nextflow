@@ -26,9 +26,6 @@ dist/
 *.dll
 *.pc
 
-# Exception: Include ast-grep parser libraries
-!lib/**/libnextflow.dylib
-!lib/**/libnextflow.so
 
 # Example dirs
 /examples/*/
@@ -43,3 +40,6 @@ dist/
 *.tgz
 *.zip
 .aider*
+
+# ast-grep parser libraries (downloaded from releases)
+/lib/

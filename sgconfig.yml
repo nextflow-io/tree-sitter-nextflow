@@ -6,13 +6,13 @@ ruleDirs:
 
 customLanguages:
   nextflow:
-    # Path to the compiled tree-sitter parser library
-    # Platform-specific builds are provided in lib/ directory
+    # Compiled parser libraries. scripts/install-ast-grep.sh downloads the
+    # one for your platform from the GitHub release into lib/.
     libraryPath:
       aarch64-apple-darwin: lib/macos-arm64/libnextflow.dylib
+      x86_64-apple-darwin: lib/macos-x64/libnextflow.dylib
       x86_64-unknown-linux-gnu: lib/linux-x64/libnextflow.so
-      # Fallback to local build if platform not found
-      # Build with: tree-sitter build --output libnextflow.so
+      aarch64-unknown-linux-gnu: lib/linux-arm64/libnextflow.so
 
     # File extensions for Nextflow files
     extensions: [nf, config]

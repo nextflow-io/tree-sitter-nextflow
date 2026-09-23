@@ -99,7 +99,8 @@ cd tree-sitter-nextflow
 The script will:
 
 - Detect your platform (macOS, Linux)
-- Verify the appropriate parser library exists
+- Download the parser library from the matching GitHub release into `lib/`,
+  or build it locally if there is no prebuilt one
 - Copy `sgconfig.yml` to your project or `~/.config/ast-grep/`
 
 #### Option 2: Manual Installation
@@ -116,15 +117,12 @@ cp path/to/tree-sitter-nextflow/sgconfig.yml .
 
 #### Platform Support
 
-Pre-built parser libraries are included for:
-
-- ✅ macOS ARM64 (Apple Silicon) - `lib/macos-arm64/libnextflow.dylib`
-- ✅ Linux x64 - `lib/linux-x64/libnextflow.so`
-
-For other platforms, you can build the library yourself:
+Each GitHub release has prebuilt parser libraries for macOS (arm64, x64) and
+Linux (x64, arm64). For other platforms, build the library yourself:
 
 ```bash
-tree-sitter build --output libnextflow.so
+npm ci
+npx tree-sitter build --output libnextflow.so
 ```
 
 ### Quick Start
@@ -212,10 +210,21 @@ See [ast-grep rule documentation](https://ast-grep.github.io/guide/rule-config.h
 
 ## Contributing
 
-Contributions are welcome. Grammar changes go in `grammar.js`; run
-`tree-sitter generate && tree-sitter test` before opening a PR, and add corpus
-tests under `test/corpus/`. See [`ROADMAP.md`](ROADMAP.md) for priorities and
+Contributions are welcome. Grammar changes go in `grammar.js`. Run
+`npm ci` once to install the pinned tree-sitter CLI, then
+`npx tree-sitter generate && npm test` before opening a PR, and add corpus
+tests under `test/corpus/`. Commit the regenerated `src/` with the grammar
+change; CI fails if they drift apart. See [`ROADMAP.md`](ROADMAP.md) for priorities and
 [`CLAUDE.md`](CLAUDE.md) for the development workflow.
+
+### Releasing
+
+1. `npx tree-sitter version X.Y.Z` bumps the version in every manifest.
+2. `npx tree-sitter generate`, since the parser embeds the version.
+3. Update `CHANGELOG.md`, commit, then tag and push `vX.Y.Z`.
+
+The tag push builds the ast-grep parser libraries and attaches them to the
+GitHub release.
 
 ## License
 

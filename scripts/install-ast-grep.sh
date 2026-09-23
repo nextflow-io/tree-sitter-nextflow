@@ -3,7 +3,8 @@
 #
 # This script sets up ast-grep to work with Nextflow files by:
 # 1. Detecting your platform
-# 2. Verifying the appropriate parser library exists
+# 2. Downloading the parser library from the matching GitHub release
+#    (or building it locally if no prebuilt library exists)
 # 3. Installing sgconfig.yml to your project or global config
 #
 # Usage:
@@ -89,9 +90,6 @@ detect_platform() {
                     ;;
             esac
             ;;
-        MINGW*|MSYS*|CYGWIN*)
-            platform_triple="x86_64-pc-windows-msvc"
-            ;;
         *)
             echo -e "${RED}Error: Unsupported operating system: $os${NC}"
             return 1
@@ -101,46 +99,51 @@ detect_platform() {
     echo "$platform_triple"
 }
 
-# Verify library exists for platform
-verify_library() {
+# Print the library path for a platform, downloading or building it if missing.
+# Progress messages go to stderr so callers can capture the path from stdout.
+ensure_library() {
     local platform="$1"
-    local lib_path=""
+    local dir ext
 
     case "$platform" in
-        aarch64-apple-darwin)
-            lib_path="$PROJECT_ROOT/lib/macos-arm64/libnextflow.dylib"
-            ;;
-        x86_64-apple-darwin)
-            lib_path="$PROJECT_ROOT/lib/macos-x64/libnextflow.dylib"
-            ;;
-        x86_64-unknown-linux-gnu)
-            lib_path="$PROJECT_ROOT/lib/linux-x64/libnextflow.so"
-            ;;
-        aarch64-unknown-linux-gnu)
-            lib_path="$PROJECT_ROOT/lib/linux-arm64/libnextflow.so"
-            ;;
-        x86_64-pc-windows-msvc)
-            lib_path="$PROJECT_ROOT/lib/windows-x64/nextflow.dll"
-            ;;
+        aarch64-apple-darwin)      dir="macos-arm64"; ext="dylib" ;;
+        x86_64-apple-darwin)       dir="macos-x64";   ext="dylib" ;;
+        x86_64-unknown-linux-gnu)  dir="linux-x64";   ext="so" ;;
+        aarch64-unknown-linux-gnu) dir="linux-arm64"; ext="so" ;;
         *)
-            echo -e "${RED}Error: Unknown platform: $platform${NC}"
+            echo -e "${RED}Error: Unknown platform: $platform${NC}" >&2
             return 1
             ;;
     esac
 
-    if [[ ! -f "$lib_path" ]]; then
-        echo -e "${RED}Error: Parser library not found for platform $platform${NC}"
-        echo -e "${YELLOW}Expected: $lib_path${NC}"
-        echo ""
-        echo "You may need to build it manually:"
-        echo "  tree-sitter build --output libnextflow.so"
-        echo ""
-        echo "Or request support for your platform at:"
-        echo "  https://github.com/nextflow-io/tree-sitter-nextflow/issues"
-        return 1
+    local lib_path="$PROJECT_ROOT/lib/$dir/libnextflow.$ext"
+    if [[ -f "$lib_path" ]]; then
+        echo "$lib_path"
+        return 0
     fi
 
-    echo "$lib_path"
+    local version url
+    version=$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "$PROJECT_ROOT/tree-sitter.json" | head -1)
+    url="https://github.com/nextflow-io/tree-sitter-nextflow/releases/download/v$version/libnextflow-$dir.$ext"
+    mkdir -p "$(dirname "$lib_path")"
+
+    echo "   Downloading $url" >&2
+    if curl -fsL -o "$lib_path" "$url"; then
+        echo "$lib_path"
+        return 0
+    fi
+    rm -f "$lib_path"
+
+    echo -e "   ${YELLOW}No prebuilt library for v$version, building locally${NC}" >&2
+    if (cd "$PROJECT_ROOT" && npm ci --silent && npx tree-sitter build --output "$lib_path") >&2; then
+        echo "$lib_path"
+        return 0
+    fi
+
+    echo -e "${RED}Error: Could not download or build the parser library${NC}" >&2
+    echo "Building needs Node.js and a C compiler. Report platform issues at:" >&2
+    echo "  https://github.com/nextflow-io/tree-sitter-nextflow/issues" >&2
+    return 1
 }
 
 # Install configuration
@@ -200,8 +203,8 @@ main() {
     echo ""
 
     # Verify library
-    echo -e "${BLUE}2. Verifying parser library...${NC}"
-    LIB_PATH=$(verify_library "$PLATFORM")
+    echo -e "${BLUE}2. Fetching parser library...${NC}"
+    LIB_PATH=$(ensure_library "$PLATFORM")
     echo -e "   Library: ${GREEN}$LIB_PATH${NC}"
     echo -e "   Size: $(du -h "$LIB_PATH" | cut -f1)"
     echo ""
@@ -226,7 +229,7 @@ main() {
     echo "  ast-grep -l nextflow -p 'Channel.from(\$\$\$)' ."
     echo ""
     echo "For more patterns and examples, see:"
-    echo "  $PROJECT_ROOT/docs/ast-grep-patterns.md"
+    echo "  $PROJECT_ROOT/docs/ast-grep/patterns.md"
 }
 
 # Run main function
