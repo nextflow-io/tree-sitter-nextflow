@@ -188,3 +188,111 @@ numbers = [1,2,3,4]
             (identifier)
             (argument_list
               (identifier))))))))
+
+==================
+Constructor call with new
+==================
+
+def y = new groovy.yaml.YamlBuilder()
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (new_expression
+      (type
+        (identifier)
+        (identifier)
+        (identifier))
+      (argument_list))))
+
+==================
+Top-level function definition with return
+==================
+
+def mergeMaps(meta, meta2) {
+  return meta + meta2
+}
+
+---
+
+(source_file
+  (function_definition
+    name: (identifier)
+    parameters: (parameters
+      (parameter
+        name: (identifier))
+      (parameter
+        name: (identifier)))
+    body: (block
+      (return_statement
+        (binary_expression
+          left: (identifier)
+          right: (identifier))))))
+
+==================
+Method call named argument and safe navigation
+==================
+
+x = ch.combine(ch_map, by: 0)
+y = args?.contains('j')
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (identifier)
+        (named_argument
+          (identifier)
+          (integer_literal)))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (string
+          (string_content))))))
+
+==================
+Trailing closure after parenthesised args, and cast as binary operand
+==================
+
+def a = s.replaceAll(/x/) { m -> m }
+b = r.d as Float > 0
+
+---
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    value: (call_expression
+      function: (member_expression
+        object: (identifier)
+        property: (identifier))
+      arguments: (argument_list
+        (slashy_string))
+      closure: (closure
+        parameters: (parameters
+          (parameter
+            name: (identifier)))
+        (expression_statement
+          (identifier)))))
+  (assignment
+    left: (identifier)
+    right: (binary_expression
+      left: (cast_expression
+        value: (member_expression
+          object: (identifier)
+          property: (identifier))
+        type: (type
+          (identifier)))
+      right: (integer_literal))))

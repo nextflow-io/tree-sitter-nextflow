@@ -182,3 +182,34 @@ def compound3 = x > 0 && y < 10 || z == 0
       (binary_expression
         (identifier)
         (integer_literal)))))
+
+==================
+Negated membership operator
+==================
+
+x = a !in b
+
+---
+
+(source_file
+  (assignment
+    left: (identifier)
+    right: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+==================
+Bitwise-negate slashy pattern in subtraction
+==================
+
+def i = fasta - ~/\.gz$/
+
+---
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    value: (binary_expression
+      left: (identifier)
+      right: (unary_expression
+        operand: (slashy_string)))))

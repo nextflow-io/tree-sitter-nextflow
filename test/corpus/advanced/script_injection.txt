@@ -81,3 +81,51 @@ process STUB_TEST {
       (expression_statement
         (string
           (string_content))))))
+
+==================
+Template directive as script body
+==================
+
+process P {
+  script:
+  template 'main.R'
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))
+
+==================
+Script string followed by a template call
+==================
+
+process P {
+  script:
+  """echo"""
+  template 'x.R'
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (expression_statement
+        (string
+          (string_content)))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))

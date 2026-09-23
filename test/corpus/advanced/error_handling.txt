@@ -143,3 +143,102 @@ process withErrorDirectives {
       (expression_statement
         (string
           (string_content))))))
+
+==================
+Exit with code and message, env output with emit
+==================
+
+process P {
+  output:
+  env "VER", emit: v
+  script:
+  if (x) { exit 1, "no" }
+  "y"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (output_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))
+            (named_argument
+              (identifier)
+              (identifier))))))
+    (script_section
+      (if_statement
+        (identifier)
+        (block
+          (expression_statement
+            (command_expression
+              (identifier)
+              (argument_list
+                (integer_literal)
+                (string
+                  (string_content)))))))
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Exit with parenthesised args
+==================
+
+if (x) { exit(1, "no") }
+
+---
+
+(source_file
+  (if_statement
+    (identifier)
+    (block
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (integer_literal)
+            (string
+              (string_content))))))))
+
+==================
+Try catch statement
+==================
+
+process P {
+  script:
+  try {
+    x = 1
+  } catch (Exception e) {
+    y = 2
+  }
+  """cmd"""
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (try_statement
+        (block
+          (assignment
+            (identifier)
+            (integer_literal)))
+        (catch_clause
+          (type
+            (identifier))
+          (identifier)
+          (block
+            (assignment
+              (identifier)
+              (integer_literal)))))
+      (expression_statement
+        (string
+          (string_content))))))

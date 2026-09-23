@@ -1,32 +1,119 @@
 ==================
-Module imports
+Basic workflow declaration
 ==================
 
-include { FASTQC } from './modules/fastqc'
-include { BWA_INDEX; BWA_ALIGN } from './modules/bwa'
-include { MULTIQC as MULTIQC_RAW } from './modules/multiqc'
+workflow {
+    "Hello world"
+}
 
 ---
 
 (source_file
-  (include_declaration
-    (include_item
-      (identifier))
-    (string
-      (string_content)))
-  (include_declaration
-    (include_item
-      (identifier))
-    (include_item
-      (identifier))
-    (string
-      (string_content)))
-  (include_declaration
-    (include_item
-      (identifier)
-      (identifier))
-    (string
-      (string_content))))
+  (workflow_definition
+    (expression_statement
+      (string
+        (string_content)))))
+
+==================
+Workflow with input
+==================
+
+workflow {
+    take:
+    x
+    y
+
+    main:
+    "Processing ${x} and ${y}"
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (take_section
+      (workflow_take
+        (identifier))
+      (workflow_take
+        (identifier)))
+    (main_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content)
+          (interpolation
+            (identifier)))))))
+
+==================
+Workflow with process calls
+==================
+
+workflow {
+    PROCESS_A()
+    PROCESS_B()
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (expression_statement
+      (call_expression
+        (identifier)
+        (argument_list)))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (argument_list)))))
+
+==================
+Complete workflow definition
+==================
+
+workflow {
+    take:
+    reads
+    reference
+
+    main:
+    ALIGN(reads, reference)
+    CALL_VARIANTS(ALIGN.out)
+
+    emit:
+    variants = CALL_VARIANTS.out
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (take_section
+      (workflow_take
+        (identifier))
+      (workflow_take
+        (identifier)))
+    (main_section
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (identifier)
+            (identifier))))
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (member_expression
+              (identifier)
+              (identifier))))))
+    (emit_section
+      (workflow_emit
+        (identifier)
+        (member_expression
+          (identifier)
+          (identifier))))))
 
 ==================
 Workflow composability

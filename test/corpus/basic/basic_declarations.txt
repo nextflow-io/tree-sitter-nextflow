@@ -54,3 +54,33 @@ params.message = 'Hello world!'
     (identifier)
     (string
       (string_content))))
+
+==================
+Module imports
+==================
+
+include { FASTQC } from './modules/fastqc'
+include { BWA_INDEX; BWA_ALIGN } from './modules/bwa'
+include { MULTIQC as MULTIQC_RAW } from './modules/multiqc'
+
+---
+
+(source_file
+  (include_declaration
+    (include_item
+      (identifier))
+    (string
+      (string_content)))
+  (include_declaration
+    (include_item
+      (identifier))
+    (include_item
+      (identifier))
+    (string
+      (string_content)))
+  (include_declaration
+    (include_item
+      (identifier)
+      (identifier))
+    (string
+      (string_content))))

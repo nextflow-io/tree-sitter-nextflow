@@ -127,3 +127,39 @@ if( "foo bar" =~ pattern ) {
           (argument_list
             (string
               (string_content))))))))
+
+==================
+Regex match with slashy string operand
+==================
+
+def matcher = args =~ /-j\s+(\S+)/
+
+---
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    value: (binary_expression
+      left: (identifier)
+      right: (slashy_string))))
+
+==================
+Cast expression with as
+==================
+
+def n = (task.cpus * 0.9) as int
+
+---
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    value: (cast_expression
+      value: (parenthesized_expression
+        (binary_expression
+          left: (member_expression
+            object: (identifier)
+            property: (identifier))
+          right: (float_literal)))
+      type: (type
+        (identifier)))))

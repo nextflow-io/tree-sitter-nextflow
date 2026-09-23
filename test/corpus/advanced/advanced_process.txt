@@ -145,3 +145,155 @@ process dynamicResources {
               (identifier)
               (identifier)))
           (string_content))))))
+
+==================
+Process with quoted env variables
+==================
+
+process my_task {
+    input:
+    env 'FOO'
+    env 'BAR'
+
+    script:
+    """
+    echo ${FOO}
+    echo ${BAR}
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content)
+          (interpolation
+            (identifier)))))))
+
+==================
+Environment variables with env function
+==================
+
+println("PWD = ${env('PWD')}")
+
+---
+
+(source_file
+  (expression_statement
+    (call_expression
+      (identifier)
+      (argument_list
+        (string
+          (string_content)
+          (interpolation
+            (call_expression
+              (identifier)
+              (argument_list
+                (string
+                  (string_content))))))))))
+
+==================
+Named arguments in path() call (stageAs, arity)
+==================
+
+process P {
+  input:
+  tuple val(meta), path(reads, arity: '1..*', stageAs: 'input/*')
+  script:
+  "echo hi"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (call_expression
+              (identifier)
+              (argument_list
+                (identifier)))
+            (call_expression
+              (identifier)
+              (argument_list
+                (identifier)
+                (named_argument
+                  (identifier)
+                  (string
+                    (string_content)))
+                (named_argument
+                  (identifier)
+                  (string
+                    (string_content)))))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Dynamic directive closure, memory-unit literal, and input named option
+==================
+
+process P {
+  memory { 7.GB * task.attempt }
+  input:
+  path ref, name: 'ref/*'
+  script:
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    name: (identifier)
+    (expression_statement
+      (call_expression
+        function: (identifier)
+        closure: (closure
+          (expression_statement
+            (binary_expression
+              left: (member_expression
+                object: (integer_literal)
+                property: (identifier))
+              right: (member_expression
+                object: (identifier)
+                property: (identifier)))))))
+    (input_section
+      (expression_statement
+        (command_expression
+          function: (identifier)
+          arguments: (argument_list
+            (identifier)
+            (named_argument
+              name: (identifier)
+              value: (string
+                (string_content)))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
