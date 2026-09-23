@@ -47,16 +47,16 @@ pip install tree-sitter-nextflow
 
 ### From source (Node.js, Rust, C)
 
-The Node, Rust, and C bindings are built from source:
+The Rust, Python, and C bindings are built from source:
 
 ```bash
 git clone https://github.com/nextflow-io/tree-sitter-nextflow.git
 cd tree-sitter-nextflow
-tree-sitter generate
-tree-sitter test
+npm ci        # installs the pinned tree-sitter CLI
+npm test
 ```
 
-- **Node.js:** `npm install` (builds via `node-gyp-build`).
+- **Python:** `pip install .`
 - **Rust:** add a path/git dependency on this repo in `Cargo.toml`.
 - **C:** `make` builds the shared library.
 
