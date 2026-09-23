@@ -9,8 +9,7 @@ def x = 1
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (integer_literal))))
+    (integer_literal)))
 
 ==================
 String variable declaration
@@ -23,8 +22,8 @@ def greeting = 'Hello'
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (string_literal))))
+    (string
+      (string_content))))
 
 ==================
 Multiple variable declarations
@@ -39,18 +38,15 @@ def z = x + y
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (integer_literal)))
+    (integer_literal))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (integer_literal)))
+    (integer_literal))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier)))))
+    (binary_expression
+      (identifier)
+      (identifier))))
 
 ==================
 Variable assignment
@@ -63,8 +59,7 @@ x = 42
 (source_file
   (assignment
     (identifier)
-    (simple_expression
-      (integer_literal))))
+    (integer_literal)))
 
 ==================
 Variable declaration with expression
@@ -77,15 +72,14 @@ def result = Channel.from(1,2,3)
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (channel_expression
-        (channel_from
-          (simple_expression
-            (integer_literal))
-          (simple_expression
-            (integer_literal))
-          (simple_expression
-            (integer_literal)))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (integer_literal)
+        (integer_literal)
+        (integer_literal)))))
 
 ==================
 Variable declaration with list
@@ -98,14 +92,10 @@ def numbers = [1, 2, 3]
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (list
-        (simple_expression
-          (integer_literal))
-        (simple_expression
-          (integer_literal))
-        (simple_expression
-          (integer_literal))))))
+    (list
+      (integer_literal)
+      (integer_literal)
+      (integer_literal))))
 
 ==================
 Variable declaration with map
@@ -118,13 +108,11 @@ def config = [foo: 'bar', count: 42]
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (map
-        (map_entry
-          (identifier)
-          (simple_expression
-            (string_literal)))
-        (map_entry
-          (identifier)
-          (simple_expression
-            (integer_literal)))))))
+    (map
+      (map_entry
+        (identifier)
+        (string
+          (string_content)))
+      (map_entry
+        (identifier)
+        (integer_literal)))))

@@ -1,5 +1,6 @@
-// Fixture for scripts/check_injections.sh — covers all four
-// injections.scm patterns. Keep in sync with expected.txt.
+// Fixture for scripts/check_injections.sh: every string kind as a script
+// body, plus stub, implicit script, prelude, and exec (not injected) cases.
+// Keep in sync with expected.txt.
 
 process INTERP_TRIPLE {
     script:
@@ -24,4 +25,28 @@ process PLAIN_TRIPLE {
     '''
     echo hello
     '''
+}
+
+process STUB_AND_PRELUDE {
+    script:
+    def args = task.ext.args ?: ''
+    """
+    tool ${args}
+    """
+
+    stub:
+    """
+    touch out.txt
+    """
+}
+
+process IMPLICIT {
+    """
+    echo implicit
+    """
+}
+
+process EXEC_NOT_INJECTED {
+    exec:
+    println 'not bash'
 }

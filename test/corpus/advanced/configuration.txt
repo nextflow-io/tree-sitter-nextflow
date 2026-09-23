@@ -1,6 +1,5 @@
 ==================
 Config file
-:skip
 ==================
 
 process {
@@ -18,20 +17,40 @@ executor {
 ---
 
 (source_file
-  (config_block
-    (process_config
-      (config_assignment)
-      (config_assignment)
-      (config_assignment)
-      (config_assignment)))
-  (config_block
-    (executor_config
-      (config_assignment)
-      (config_assignment))))
+  (expression_statement
+    (call_expression
+      (identifier)
+      (closure
+        (assignment
+          (identifier)
+          (string
+            (string_content)))
+        (assignment
+          (identifier)
+          (string
+            (string_content)))
+        (assignment
+          (identifier)
+          (string
+            (string_content)))
+        (assignment
+          (identifier)
+          (string
+            (string_content))))))
+  (expression_statement
+    (call_expression
+      (identifier)
+      (closure
+        (assignment
+          (identifier)
+          (string
+            (string_content)))
+        (assignment
+          (identifier)
+          (integer_literal))))))
 
 ==================
 Profiles
-:skip
 ==================
 
 profiles {
@@ -51,14 +70,55 @@ profiles {
 ---
 
 (source_file
-  (profiles_block
-    (profile_config)
-    (profile_config)
-    (profile_config)))
+  (expression_statement
+    (call_expression
+      (identifier)
+      (closure
+        (expression_statement
+          (call_expression
+            (identifier)
+            (closure
+              (assignment
+                (member_expression
+                  (identifier)
+                  (identifier))
+                (string
+                  (string_content))))))
+        (expression_statement
+          (call_expression
+            (identifier)
+            (closure
+              (assignment
+                (member_expression
+                  (identifier)
+                  (identifier))
+                (string
+                  (string_content)))
+              (assignment
+                (member_expression
+                  (identifier)
+                  (identifier))
+                (string
+                  (string_content))))))
+        (expression_statement
+          (call_expression
+            (identifier)
+            (closure
+              (assignment
+                (member_expression
+                  (identifier)
+                  (identifier))
+                (string
+                  (string_content)))
+              (assignment
+                (member_expression
+                  (identifier)
+                  (identifier))
+                (string
+                  (string_content))))))))))
 
 ==================
 Environment variables
-:skip
 ==================
 
 env {
@@ -73,9 +133,27 @@ process {
 ---
 
 (source_file
-  (env_block
-    (env_assignment)
-    (env_assignment))
-  (config_block
-    (process_config
-      (env_assignment))))
+  (expression_statement
+    (call_expression
+      (identifier)
+      (closure
+        (assignment
+          (identifier)
+          (string
+            (string_content)))
+        (assignment
+          (identifier)
+          (string
+            (interpolation
+              (identifier))
+            (string_content))))))
+  (expression_statement
+    (call_expression
+      (identifier)
+      (closure
+        (assignment
+          (member_expression
+            (identifier)
+            (identifier))
+          (string
+            (string_content)))))))

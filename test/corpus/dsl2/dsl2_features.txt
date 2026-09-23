@@ -1,24 +1,35 @@
 ==================
 Module imports
-:skip
 ==================
 
 include { FASTQC } from './modules/fastqc'
-include { BWA_INDEX; BWA_ALIGN } from './modules/bwa' addParams(options: [:])
+include { BWA_INDEX; BWA_ALIGN } from './modules/bwa'
 include { MULTIQC as MULTIQC_RAW } from './modules/multiqc'
 
 ---
 
 (source_file
-  (include_statement)
-  (include_statement
-    (include_params))
-  (include_statement
-    (include_alias)))
+  (include_declaration
+    (include_item
+      (identifier))
+    (string
+      (string_content)))
+  (include_declaration
+    (include_item
+      (identifier))
+    (include_item
+      (identifier))
+    (string
+      (string_content)))
+  (include_declaration
+    (include_item
+      (identifier)
+      (identifier))
+    (string
+      (string_content))))
 
 ==================
 Workflow composability
-:skip
 ==================
 
 workflow ALIGN_READS {
@@ -39,13 +50,36 @@ workflow ALIGN_READS {
 (source_file
   (workflow_definition
     (identifier)
-    (workflow_take)
-    (workflow_main)
-    (workflow_emit)))
+    (take_section
+      (workflow_take
+        (identifier))
+      (workflow_take
+        (identifier)))
+    (main_section
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (identifier)
+            (identifier))))
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (member_expression
+              (identifier)
+              (identifier))))))
+    (emit_section
+      (workflow_emit
+        (identifier)
+        (member_expression
+          (member_expression
+            (identifier)
+            (identifier))
+          (identifier))))))
 
 ==================
 Named workflow outputs
-:skip
 ==================
 
 workflow {
@@ -62,5 +96,38 @@ workflow {
 
 (source_file
   (workflow_definition
-    (workflow_body)
-    (workflow_emit)))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (argument_list
+          (identifier))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (argument_list
+          (identifier))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (argument_list
+          (identifier)
+          (member_expression
+            (member_expression
+              (identifier)
+              (identifier))
+            (identifier)))))
+    (emit_section
+      (workflow_emit
+        (identifier)
+        (member_expression
+          (member_expression
+            (identifier)
+            (identifier))
+          (identifier)))
+      (workflow_emit
+        (identifier)
+        (member_expression
+          (member_expression
+            (identifier)
+            (identifier))
+          (identifier))))))

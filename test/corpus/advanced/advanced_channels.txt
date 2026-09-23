@@ -12,91 +12,38 @@ values = Channel.value('constant')
 (source_file
   (assignment
     (identifier)
-    (simple_expression
-      (channel_expression
-        (channel_of
-          (simple_expression
-            (binary_expression
-              (integer_literal)
-              (integer_literal)))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (binary_expression
+          (integer_literal)
+          (integer_literal)))))
   (assignment
     (identifier)
-    (simple_expression
-      (channel_expression
-        (channel_factory
-          (identifier)
-          (simple_expression
-            (string_literal))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (string
+          (string_content)))))
   (assignment
     (identifier)
-    (simple_expression
-      (channel_expression
-        (channel_factory
-          (identifier)
-          (simple_expression
-            (string_literal))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (string
+          (string_content)))))
   (assignment
     (identifier)
-    (simple_expression
-      (channel_expression
-        (channel_value
-          (simple_expression
-            (string_literal)))))))
-
-==================
-Channel operators
-:skip
-==================
-
-ch1 = Channel.of(1,2,3)
-ch2 = Channel.of('a','b','c')
-
-combined = ch1.combine(ch2)
-joined = ch1.join(ch2)
-crossed = ch1.cross(ch2)
-grouped = ch1.groupTuple(by: 2)
-
----
-
-(source_file
-  (assignment
-    (identifier)
-    (channel_expression))
-  (assignment
-    (identifier)
-    (channel_expression))
-  (assignment
-    (identifier)
-    (channel_operator))
-  (assignment
-    (identifier)
-    (channel_operator))
-  (assignment
-    (identifier)
-    (channel_operator))
-  (assignment
-    (identifier)
-    (channel_operator)))
-
-==================
-Channel methods
-:skip
-==================
-
-result = Channel.of(1,2,3,4)
-    .filter { it > 2 }
-    .map { it * 2 }
-    .collect()
-    .view()
-
----
-
-(source_file
-  (assignment
-    (identifier)
-    (pipe_expression
-      (channel_expression)
-      (channel_operator)
-      (channel_operator)
-      (channel_operator)
-      (channel_operator))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (string
+          (string_content))))))

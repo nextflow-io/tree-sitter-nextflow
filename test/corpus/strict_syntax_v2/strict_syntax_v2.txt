@@ -10,18 +10,17 @@ assert 'SRA001.fastq' =~ "${id}\\.f(?:ast)?q"
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (string_literal)))
+    (string
+      (string_content)))
   (assert_statement
-    (simple_expression
-      (binary_expression
-        (string_literal)
-        (interpolated_string
-          (interpolation
-            (simple_expression
-              (identifier)))
-          (escape_sequence)
-          (string_content))))))
+    (binary_expression
+      (string
+        (string_content))
+      (string
+        (interpolation
+          (identifier))
+        (escape_sequence)
+        (string_content)))))
 
 ==================
 Variable declarations with type annotations
@@ -36,22 +35,20 @@ def meta: Map = [:]
 (source_file
   (variable_declaration
     (identifier)
-    (type_annotation
+    (type
       (identifier))
-    (simple_expression
-      (integer_literal)))
+    (integer_literal))
   (variable_declaration
     (identifier)
-    (type_annotation
+    (type
       (identifier))
-    (simple_expression
-      (string_literal)))
+    (string
+      (string_content)))
   (variable_declaration
     (identifier)
-    (type_annotation
+    (type
       (identifier))
-    (simple_expression
-      (map))))
+    (map)))
 
 ==================
 Destructuring assignment with types
@@ -65,30 +62,22 @@ def (e, f) = [5, 6]
 (source_file
   (variable_declaration
     (destructuring_pattern
-      (typed_identifier
-        (identifier)
-        (type_annotation
-          (identifier)))
-      (typed_identifier
-        (identifier)
-        (type_annotation
-          (identifier))))
-    (simple_expression
-      (list
-        (simple_expression
-          (integer_literal))
-        (simple_expression
-          (integer_literal)))))
+      (identifier)
+      (type
+        (identifier))
+      (identifier)
+      (type
+        (identifier)))
+    (list
+      (integer_literal)
+      (integer_literal)))
   (variable_declaration
     (destructuring_pattern
       (identifier)
       (identifier))
-    (simple_expression
-      (list
-        (simple_expression
-          (integer_literal))
-        (simple_expression
-          (integer_literal))))))
+    (list
+      (integer_literal)
+      (integer_literal))))
 
 ==================
 Process with quoted env variables
@@ -111,22 +100,28 @@ process my_task {
 (source_file
   (process_definition
     (identifier)
-    (input_declaration
-      (env_input
-        (string_literal))
-      (env_input
-        (string_literal)))
-    (script_declaration
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
           (interpolation
-            (simple_expression
-              (identifier)))
-          (triple_string_content)
+            (identifier))
+          (string_content)
           (interpolation
-            (simple_expression
-              (identifier))))))))
+            (identifier)))))))
 
 ==================
 Each instead of for loops
@@ -142,34 +137,34 @@ Each instead of for loops
 
 (source_file
   (expression_statement
-    (simple_expression
-      (method_call
+    (call_expression
+      (member_expression
         (list
-          (simple_expression
-            (string_literal))
-          (simple_expression
-            (string_literal))
-          (simple_expression
-            (string_literal)))
-        (identifier)
-        (closure
-          (closure_parameter)
-          (closure_block
-            (if_statement
-              (simple_expression
-                (method_call
+          (string
+            (string_content))
+          (string
+            (string_content))
+          (string
+            (string_content)))
+        (identifier))
+      (closure
+        (parameters
+          (identifier))
+        (if_statement
+          (call_expression
+            (member_expression
+              (identifier)
+              (identifier))
+            (argument_list
+              (identifier)))
+          (block
+            (expression_statement
+              (call_expression
+                (member_expression
                   (identifier)
-                  (identifier)
-                  (simple_expression
-                    (identifier))))
-              (block
-                (expression_statement
-                  (simple_expression
-                    (method_call
-                      (identifier)
-                      (identifier)
-                      (simple_expression
-                        (identifier)))))))))))))
+                  (identifier))
+                (argument_list
+                  (identifier))))))))))
 
 ==================
 If-else instead of switch
@@ -187,40 +182,36 @@ if (aligner == 'bowtie2') {
 
 (source_file
   (if_statement
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (string_literal)))
+    (binary_expression
+      (identifier)
+      (string
+        (string_content)))
     (block
       (expression_statement
-        (simple_expression
-          (function_call
-            (identifier)
-            (simple_expression
-              (interpolated_string
-                (string_content)))))))
-    (else_if_clause
-      (simple_expression
-        (binary_expression
+        (call_expression
           (identifier)
-          (string_literal)))
+          (argument_list
+            (string
+              (string_content))))))
+    (if_statement
+      (binary_expression
+        (identifier)
+        (string
+          (string_content)))
       (block
         (expression_statement
-          (simple_expression
-            (function_call
-              (identifier)
-              (simple_expression
-                (interpolated_string
-                  (string_content))))))))
-    (else_clause
+          (call_expression
+            (identifier)
+            (argument_list
+              (string
+                (string_content))))))
       (block
         (expression_statement
-          (simple_expression
-            (function_call
-              (identifier)
-              (simple_expression
-                (interpolated_string
-                  (string_content))))))))))
+          (call_expression
+            (identifier)
+            (argument_list
+              (string
+                (string_content)))))))))
 
 ==================
 Environment variables with env function
@@ -232,17 +223,17 @@ println("PWD = ${env('PWD')}")
 
 (source_file
   (expression_statement
-    (simple_expression
-      (function_call
-        (identifier)
-        (simple_expression
-          (interpolated_string
-            (string_content)
-            (interpolation
-              (simple_expression
-                (env_function
-                  (simple_expression
-                    (string_literal)))))))))))
+    (call_expression
+      (identifier)
+      (argument_list
+        (string
+          (string_content)
+          (interpolation
+            (call_expression
+              (identifier)
+              (argument_list
+                (string
+                  (string_content))))))))))
 
 ==================
 Slashy string regex without interpolation
@@ -256,14 +247,12 @@ def result = text =~ pattern
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (slashy_string)))
+    (slashy_string))
   (variable_declaration
     (identifier)
-    (simple_expression
-      (binary_expression
-        (identifier)
-        (identifier)))))
+    (binary_expression
+      (identifier)
+      (identifier))))
 
 ==================
 Multi-line string with interpolation
@@ -281,23 +270,20 @@ def cmd = """
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (interpolated_triple_quoted_string
-        (triple_string_content)
-        (escape_sequence)
-        (triple_string_content)
-        (interpolation
-          (simple_expression
-            (identifier)))
-        (triple_string_content)
-        (escape_sequence)
-        (triple_string_content)
-        (interpolation
-          (simple_expression
-            (identifier)))
-        (triple_string_content)
-        (escape_sequence)
-        (triple_string_content)))))
+    (string
+      (string_content)
+      (escape_sequence)
+      (string_content)
+      (interpolation
+        (identifier))
+      (string_content)
+      (escape_sequence)
+      (string_content)
+      (interpolation
+        (identifier))
+      (string_content)
+      (escape_sequence)
+      (string_content))))
 
 ==================
 Regex match with slashy string operand
@@ -309,11 +295,10 @@ def matcher = args =~ /-j\s+(\S+)/
 
 (source_file
   (variable_declaration
-    (identifier)
-    (simple_expression
-      (binary_expression
-        left: (identifier)
-        right: (slashy_string)))))
+    name: (identifier)
+    value: (binary_expression
+      left: (identifier)
+      right: (slashy_string))))
 
 ==================
 Double-slash inside a double-quoted string is content, not a comment
@@ -326,11 +311,10 @@ def v = "sed 's/.\$//'"
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (interpolated_string
-        (string_content)
-        (escape_sequence)
-        (string_content)))))
+    (string
+      (string_content)
+      (escape_sequence)
+      (string_content))))
 
 ==================
 Named arguments in path() call (stageAs, arity)
@@ -348,27 +332,29 @@ process P {
 (source_file
   (process_definition
     (identifier)
-    (input_declaration
-      (tuple_declaration
-        (function_call
-          (identifier)
-          (simple_expression
-            (identifier)))
-        (function_call
-          (identifier)
-          (simple_expression
-            (identifier))
-          (option_entry
+    (input_section
+      (command_expression
+        (identifier)
+        (argument_list
+          (call_expression
             (identifier)
-            (option_value
-              (string_literal)))
-          (option_entry
+            (argument_list
+              (identifier)))
+          (call_expression
             (identifier)
-            (option_value
-              (string_literal))))))
-    (script_declaration
-      (script_content
-        (interpolated_string
+            (argument_list
+              (identifier)
+              (named_argument
+                (identifier)
+                (string
+                  (string_content)))
+              (named_argument
+                (identifier)
+                (string
+                  (string_content))))))))
+    (script_section
+      (expression_statement
+        (string
           (string_content))))))
 
 ==================
@@ -382,9 +368,8 @@ args += " --seed=42"
 (source_file
   (assignment
     (identifier)
-    (simple_expression
-      (interpolated_string
-        (string_content)))))
+    (string
+      (string_content))))
 
 ==================
 Negated membership operator
@@ -396,11 +381,10 @@ x = a !in b
 
 (source_file
   (assignment
-    (identifier)
-    (simple_expression
-      (binary_expression
-        left: (identifier)
-        right: (identifier)))))
+    left: (identifier)
+    right: (binary_expression
+      left: (identifier)
+      right: (identifier))))
 
 ==================
 Bitwise-negate slashy pattern in subtraction
@@ -412,13 +396,11 @@ def i = fasta - ~/\.gz$/
 
 (source_file
   (variable_declaration
-    (identifier)
-    (simple_expression
-      (binary_expression
-        left: (identifier)
-        right: (unary_expression
-          (simple_expression
-            (slashy_string)))))))
+    name: (identifier)
+    value: (binary_expression
+      left: (identifier)
+      right: (unary_expression
+        operand: (slashy_string)))))
 
 ==================
 Dynamic directive closure, memory-unit literal, and input named option
@@ -436,32 +418,32 @@ process P {
 
 (source_file
   (process_definition
-    (identifier)
-    (directive
-      (identifier)
-      (closure
-        (closure_block
+    name: (identifier)
+    (expression_statement
+      (call_expression
+        function: (identifier)
+        closure: (closure
           (expression_statement
-            (simple_expression
-              (binary_expression
-                left: (property_expression
-                  (integer_literal)
-                  (identifier))
-                right: (dotted_identifier
-                  (identifier)
-                  (identifier))))))))
-    (input_declaration
-      (emit_declaration
+            (binary_expression
+              left: (member_expression
+                object: (integer_literal)
+                property: (identifier))
+              right: (member_expression
+                object: (identifier)
+                property: (identifier)))))))
+    (input_section
+      (expression_statement
         (command_expression
-          (identifier)
-          (identifier))
-        (option_entry
-          (identifier)
-          (option_value
-            (string_literal)))))
-    (script_declaration
-      (script_content
-        (interpolated_string
+          function: (identifier)
+          arguments: (argument_list
+            (identifier)
+            (named_argument
+              name: (identifier)
+              value: (string
+                (string_content)))))))
+    (script_section
+      (expression_statement
+        (string
           (string_content))))))
 
 ==================
@@ -474,17 +456,15 @@ def n = (task.cpus * 0.9) as int
 
 (source_file
   (variable_declaration
-    (identifier)
-    (simple_expression
-      (cast_expression
-        (simple_expression
-          (parenthesized_expression
-            (simple_expression
-              (binary_expression
-                left: (dotted_identifier
-                  (identifier)
-                  (identifier))
-                right: (float_literal)))))
+    name: (identifier)
+    value: (cast_expression
+      value: (parenthesized_expression
+        (binary_expression
+          left: (member_expression
+            object: (identifier)
+            property: (identifier))
+          right: (float_literal)))
+      type: (type
         (identifier)))))
 
 ==================
@@ -498,12 +478,12 @@ def y = new groovy.yaml.YamlBuilder()
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (constructor_call
-        (dotted_identifier
-          (identifier)
-          (identifier)
-          (identifier))))))
+    (new_expression
+      (type
+        (identifier)
+        (identifier)
+        (identifier))
+      (argument_list))))
 
 ==================
 Template directive as script body
@@ -519,10 +499,13 @@ process P {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (template_declaration
-          (string_literal))))))
+    (script_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))
 
 ==================
 Top-level function definition with return
@@ -536,15 +519,17 @@ def mergeMaps(meta, meta2) {
 
 (source_file
   (function_definition
-    (identifier)
-    (identifier)
-    (identifier)
-    (block
+    name: (identifier)
+    parameters: (parameters
+      (parameter
+        name: (identifier))
+      (parameter
+        name: (identifier)))
+    body: (block
       (return_statement
-        (simple_expression
-          (binary_expression
-            left: (identifier)
-            right: (identifier)))))))
+        (binary_expression
+          left: (identifier)
+          right: (identifier))))))
 
 ==================
 Method call named argument and safe navigation
@@ -558,24 +543,24 @@ y = args?.contains('j')
 (source_file
   (assignment
     (identifier)
-    (simple_expression
-      (method_call
+    (call_expression
+      (member_expression
         (identifier)
+        (identifier))
+      (argument_list
         (identifier)
-        (simple_expression
-          (identifier))
-        (option_entry
+        (named_argument
           (identifier)
-          (option_value
-            (integer_literal))))))
+          (integer_literal)))))
   (assignment
     (identifier)
-    (simple_expression
-      (method_call
+    (call_expression
+      (member_expression
         (identifier)
-        (identifier)
-        (simple_expression
-          (string_literal))))))
+        (identifier))
+      (argument_list
+        (string
+          (string_content))))))
 
 ==================
 Assert inside a closure and bare stdout tuple output
@@ -593,39 +578,40 @@ process P {
 
 (source_file
   (process_definition
-    (identifier)
-    (output_declaration
-      (tuple_declaration
-        (function_call
-          (identifier)
-          (simple_expression
-            (identifier)))
-        (identifier)
-        (option_entry
-          (identifier)
-          (option_value
-            (identifier)))))
-    (script_declaration
-      (script_statement
-        (method_call
-          (identifier)
-          (identifier)
-          (closure
-            (closure_parameter)
-            (closure_block
-              (assert_statement
-                (simple_expression
-                  (binary_expression
-                    left: (dotted_identifier
-                      (identifier)
-                      (identifier))
-                    right: (interpolated_string
-                      (string_content))))
-                (simple_expression
-                  (interpolated_string
-                    (string_content))))))))
-      (script_content
-        (interpolated_string
+    name: (identifier)
+    (output_section
+      (expression_statement
+        (command_expression
+          function: (identifier)
+          arguments: (argument_list
+            (call_expression
+              function: (identifier)
+              arguments: (argument_list
+                (identifier)))
+            (identifier)
+            (named_argument
+              name: (identifier)
+              value: (identifier))))))
+    (script_section
+      (expression_statement
+        (call_expression
+          function: (member_expression
+            object: (identifier)
+            property: (identifier))
+          closure: (closure
+            parameters: (parameters
+              name: (identifier))
+            (assert_statement
+              condition: (binary_expression
+                left: (member_expression
+                  object: (identifier)
+                  property: (identifier))
+                right: (string
+                  (string_content)))
+              message: (string
+                (string_content))))))
+      (expression_statement
+        (string
           (string_content))))))
 
 ==================
@@ -644,33 +630,31 @@ workflow W {
 
 (source_file
   (workflow_definition
-    (identifier)
-    (workflow_body
-      (workflow_main
-        (assignment
-          (identifier)
-          (simple_expression
-            (method_call
-              (identifier)
-              (identifier)
-              (closure
-                (closure_parameter)
-                (closure_parameter)
-                (closure_block
-                  (label_statement
-                    (identifier)
-                    (simple_expression
-                      (list
-                        (simple_expression
-                          (identifier))
-                        (simple_expression
-                          (identifier)))))))))))
+    name: (identifier)
+    (main_section
       (assignment
-        (identifier)
-        (simple_expression
-          (binary_expression
-            left: (identifier)
-            right: (integer_literal)))))))
+        left: (identifier)
+        right: (call_expression
+          function: (member_expression
+            object: (identifier)
+            property: (identifier))
+          closure: (closure
+            parameters: (parameters
+              name: (identifier))
+            parameters: (parameters
+              (parameter
+                name: (identifier)))
+            (labeled_statement
+              label: (identifier)
+              (expression_statement
+                (list
+                  (identifier)
+                  (identifier)))))))
+      (assignment
+        left: (identifier)
+        right: (binary_expression
+          left: (identifier)
+          right: (integer_literal))))))
 
 ==================
 Method chain on process output channel
@@ -686,20 +670,23 @@ workflow W {
 (source_file
   (workflow_definition
     (identifier)
-    (workflow_body
-      (workflow_main
-        (assignment
-          (identifier)
-          (simple_expression
-            (method_call
-              (process_output
+    (main_section
+      (assignment
+        (identifier)
+        (call_expression
+          (member_expression
+            (member_expression
+              (member_expression
                 (identifier)
                 (identifier))
-              (identifier)
-              (simple_expression
-                (process_output
-                  (identifier)
-                  (identifier))))))))))
+              (identifier))
+            (identifier))
+          (argument_list
+            (member_expression
+              (member_expression
+                (identifier)
+                (identifier))
+              (identifier))))))))
 
 ==================
 Consecutive bare assignments in a block are separate statements
@@ -719,23 +706,19 @@ process P {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_statement
-        (if_statement
-          (simple_expression
+    (script_section
+      (if_statement
+        (identifier)
+        (block
+          (assignment
+            (identifier)
             (identifier))
-          (block
-            (assignment
-              (identifier)
-              (simple_expression
-                (identifier)))
-            (assignment
-              (identifier)
-              (simple_expression
-                (interpolated_string
-                  (string_content)))))))
-      (script_content
-        (interpolated_string
+          (assignment
+            (identifier)
+            (string
+              (string_content)))))
+      (expression_statement
+        (string
           (string_content))))))
 
 ==================
@@ -752,14 +735,14 @@ x = """
 (source_file
   (assignment
     (identifier)
-    (simple_expression
-      (interpolated_triple_quoted_string
-        (interpolation
-          (simple_expression
-            (dotted_identifier
-              (identifier)
-              (identifier))))
-        (triple_string_content)))))
+    (string
+      (string_content)
+      (string_content)
+      (interpolation
+        (member_expression
+          (identifier)
+          (identifier)))
+      (string_content))))
 
 ==================
 Exit with code and message, env output with emit
@@ -778,29 +761,29 @@ process P {
 (source_file
   (process_definition
     (identifier)
-    (output_declaration
-      (emit_declaration
-        (env_input
-          (interpolated_string
-            (string_content)))
-        (option_entry
+    (output_section
+      (expression_statement
+        (command_expression
           (identifier)
-          (option_value
-            (identifier)))))
-    (script_declaration
-      (script_statement
-        (if_statement
-          (simple_expression
-            (identifier))
-          (block
-            (exit_statement
-              (simple_expression
-                (integer_literal))
-              (simple_expression
-                (interpolated_string
+          (argument_list
+            (string
+              (string_content))
+            (named_argument
+              (identifier)
+              (identifier))))))
+    (script_section
+      (if_statement
+        (identifier)
+        (block
+          (expression_statement
+            (command_expression
+              (identifier)
+              (argument_list
+                (integer_literal)
+                (string
                   (string_content)))))))
-      (script_content
-        (interpolated_string
+      (expression_statement
+        (string
           (string_content))))))
 
 ==================
@@ -813,15 +796,15 @@ if (x) { exit(1, "no") }
 
 (source_file
   (if_statement
-    (simple_expression
-      (identifier))
+    (identifier)
     (block
-      (exit_statement
-        (simple_expression
-          (integer_literal))
-        (simple_expression
-          (interpolated_string
-            (string_content)))))))
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (integer_literal)
+            (string
+              (string_content))))))))
 
 ==================
 Trailing closure after parenthesised args, and cast as binary operand
@@ -834,30 +817,28 @@ b = r.d as Float > 0
 
 (source_file
   (variable_declaration
-    (identifier)
-    (simple_expression
-      (method_call
-        (identifier)
-        (identifier)
-        (simple_expression
-          (slashy_string))
-        (closure
-          (closure_parameter)
-          (closure_block
-            (expression_statement
-              (simple_expression
-                (identifier))))))))
+    name: (identifier)
+    value: (call_expression
+      function: (member_expression
+        object: (identifier)
+        property: (identifier))
+      arguments: (argument_list
+        (slashy_string))
+      closure: (closure
+        parameters: (parameters
+          name: (identifier))
+        (expression_statement
+          (identifier)))))
   (assignment
-    (identifier)
-    (simple_expression
-      (binary_expression
-        left: (cast_expression
-          (simple_expression
-            (dotted_identifier
-              (identifier)
-              (identifier)))
-          (identifier))
-        right: (integer_literal)))))
+    left: (identifier)
+    right: (binary_expression
+      left: (cast_expression
+        value: (member_expression
+          object: (identifier)
+          property: (identifier))
+        type: (type
+          (identifier)))
+      right: (integer_literal))))
 
 ==================
 No-paren call with closure, map with computed key, pipe continuation
@@ -871,25 +852,20 @@ x = [(key): v]
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (command_expression
-        (identifier)
-        (closure
-          (closure_parameter)
-          (closure_block
-            (expression_statement
-              (simple_expression
-                (identifier))))))))
+    (call_expression
+      (identifier)
+      (closure
+        (parameters
+          (identifier))
+        (expression_statement
+          (identifier)))))
   (assignment
     (identifier)
-    (simple_expression
-      (map
-        (map_entry
-          (parenthesized_expression
-            (simple_expression
-              (identifier)))
-          (simple_expression
-            (identifier)))))))
+    (map
+      (map_entry
+        (parenthesized_expression
+          (identifier))
+        (identifier)))))
 
 ==================
 Script string followed by a template call
@@ -906,12 +882,16 @@ process P {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content))
-        (template_declaration
-          (string_literal))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))
 
 ==================
 Try catch statement
@@ -932,24 +912,23 @@ process P {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_statement
-        (try_statement
+    (script_section
+      (try_statement
+        (block
+          (assignment
+            (identifier)
+            (integer_literal)))
+        (catch_clause
+          (type
+            (identifier))
+          (identifier)
           (block
             (assignment
               (identifier)
-              (simple_expression
-                (integer_literal))))
-          (catch_clause
-            (identifier)
-            (block
-              (assignment
-                (identifier)
-                (simple_expression
-                  (integer_literal)))))))
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content))))))
+              (integer_literal)))))
+      (expression_statement
+        (string
+          (string_content))))))
 
 ==================
 Chained pipe operations
@@ -962,25 +941,20 @@ x = a | map { it } | combine(b) | view
 (source_file
   (assignment
     (identifier)
-    (simple_expression
-      (pipe_expression
-        (pipe_expression
-          (pipe_expression
+    (binary_expression
+      (binary_expression
+        (binary_expression
+          (identifier)
+          (call_expression
             (identifier)
-            (pipe_operation
-              (map_operation
-                (closure
-                  (closure_block
-                    (expression_statement
-                      (simple_expression
-                        (identifier))))))))
-          (pipe_operation
-            (function_call
-              (identifier)
-              (simple_expression
+            (closure
+              (expression_statement
                 (identifier)))))
-        (pipe_operation
-          (identifier))))))
+        (call_expression
+          (identifier)
+          (argument_list
+            (identifier))))
+      (identifier))))
 
 ==================
 Destructuring assignment
@@ -996,17 +970,15 @@ workflow W {
 (source_file
   (workflow_definition
     (identifier)
-    (workflow_body
-      (workflow_main
-        (assignment
-          (destructuring_pattern
-            (identifier)
-            (identifier))
-          (simple_expression
-            (function_call
-              (identifier)
-              (simple_expression
-                (identifier)))))))))
+    (main_section
+      (assignment
+        (destructuring_pattern
+          (identifier)
+          (identifier))
+        (call_expression
+          (identifier)
+          (argument_list
+            (identifier)))))))
 
 ==================
 Method call on a triple-quoted string
@@ -1019,8 +991,9 @@ def m = """hi""".stripIndent()
 (source_file
   (variable_declaration
     (identifier)
-    (simple_expression
-      (string_method_call
-        (interpolated_triple_quoted_string
-          (triple_string_content))
-        (identifier)))))
+    (call_expression
+      (member_expression
+        (string
+          (string_content))
+        (identifier))
+      (argument_list))))

@@ -14,10 +14,10 @@ process SIMPLE {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
 
 ==================
 Shell script block
@@ -35,9 +35,10 @@ process SHELL_TEST {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (triple_quoted_string)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
 
 ==================
 Exec script block
@@ -55,10 +56,10 @@ process EXEC_TEST {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
 
 ==================
 Stub script block
@@ -76,7 +77,7 @@ process STUB_TEST {
 (source_file
   (process_definition
     (identifier)
-    (script_declaration
-      (script_content
-        (interpolated_triple_quoted_string
-          (triple_string_content))))))
+    (stub_section
+      (expression_statement
+        (string
+          (string_content))))))

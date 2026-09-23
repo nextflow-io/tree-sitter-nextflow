@@ -8,15 +8,14 @@ Channel.from(1, 2, 3)
 
 (source_file
   (expression_statement
-    (simple_expression
-      (channel_expression
-        (channel_from
-          (simple_expression
-            (integer_literal))
-          (simple_expression
-            (integer_literal))
-          (simple_expression
-            (integer_literal)))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (integer_literal)
+        (integer_literal)
+        (integer_literal)))))
 
 ==================
 Channel value operation
@@ -28,11 +27,13 @@ Channel.value('Hello')
 
 (source_file
   (expression_statement
-    (simple_expression
-      (channel_expression
-        (channel_value
-          (simple_expression
-            (string_literal)))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (string
+          (string_content))))))
 
 ==================
 Channel pipe operation
@@ -44,25 +45,22 @@ Channel.from(1, 2, 3) | map { it * 2 }
 
 (source_file
   (expression_statement
-    (simple_expression
-      (pipe_expression
-        (channel_expression
-          (channel_from
-            (simple_expression
-              (integer_literal))
-            (simple_expression
-              (integer_literal))
-            (simple_expression
-              (integer_literal))))
-        (pipe_operation
-          (map_operation
-            (closure
-              (closure_block
-                (expression_statement
-                  (simple_expression
-                    (binary_expression
-                      (identifier)
-                      (integer_literal))))))))))))
+    (binary_expression
+      (call_expression
+        (member_expression
+          (identifier)
+          (identifier))
+        (argument_list
+          (integer_literal)
+          (integer_literal)
+          (integer_literal)))
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (identifier)
+              (integer_literal))))))))
 
 ==================
 Channel of operation
@@ -74,15 +72,17 @@ Channel.of('a', 'b', 'c')
 
 (source_file
   (expression_statement
-    (simple_expression
-      (channel_expression
-        (channel_of
-          (simple_expression
-            (string_literal))
-          (simple_expression
-            (string_literal))
-          (simple_expression
-            (string_literal)))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (string
+          (string_content))
+        (string
+          (string_content))
+        (string
+          (string_content))))))
 
 ==================
 Channel with dynamic strings
@@ -95,21 +95,19 @@ line ${text}""")
 
 (source_file
   (expression_statement
-    (simple_expression
-      (channel_expression
-        (channel_of
-          (simple_expression
-            (interpolated_string
-              (string_content)
-              (interpolation
-                (simple_expression
-                  (identifier)))))
-          (simple_expression
-            (interpolated_triple_quoted_string
-              (triple_string_content)
-              (interpolation
-                (simple_expression
-                  (identifier))))))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))))))
 
 ==================
 Channel with list input
@@ -121,16 +119,18 @@ Channel.fromList(['a', 'b', 'c'])
 
 (source_file
   (expression_statement
-    (simple_expression
-      (channel_expression
-        (channel_from_list
-          (list
-            (simple_expression
-              (string_literal))
-            (simple_expression
-              (string_literal))
-            (simple_expression
-              (string_literal))))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (list
+          (string
+            (string_content))
+          (string
+            (string_content))
+          (string
+            (string_content)))))))
 
 ==================
 Channel with map input
@@ -142,19 +142,20 @@ Channel.value([foo: 'bar', baz: 'qux'])
 
 (source_file
   (expression_statement
-    (simple_expression
-      (channel_expression
-        (channel_value
-          (simple_expression
-            (map
-              (map_entry
-                (identifier)
-                (simple_expression
-                  (string_literal)))
-              (map_entry
-                (identifier)
-                (simple_expression
-                  (string_literal))))))))))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (map
+          (map_entry
+            (identifier)
+            (string
+              (string_content)))
+          (map_entry
+            (identifier)
+            (string
+              (string_content))))))))
 
 ==================
 Pipe to operator with arguments
@@ -166,14 +167,12 @@ ch | ifEmpty(null)
 
 (source_file
   (expression_statement
-    (simple_expression
-      (pipe_expression
+    (binary_expression
+      (identifier)
+      (call_expression
         (identifier)
-        (pipe_operation
-          (function_call
-            (identifier)
-            (simple_expression
-              (identifier))))))))
+        (argument_list
+          (null_literal))))))
 
 ==================
 Pipe to bare operator
@@ -185,8 +184,6 @@ ch | view
 
 (source_file
   (expression_statement
-    (simple_expression
-      (pipe_expression
-        (identifier)
-        (pipe_operation
-          (identifier))))))
+    (binary_expression
+      (identifier)
+      (identifier))))

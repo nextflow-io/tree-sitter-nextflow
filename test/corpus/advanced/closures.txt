@@ -1,6 +1,5 @@
 ==================
 Single parameter closure
-:skip
 ==================
 
 def square = { x -> x * x }
@@ -12,13 +11,13 @@ def square = { x -> x * x }
     (closure
       (parameters
         (identifier))
-      (binary_expression
-        (identifier)
-        (identifier)))))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (identifier))))))
 
 ==================
 Multiple parameter closure
-:skip
 ==================
 
 def add = { a, b -> a + b }
@@ -29,15 +28,17 @@ def add = { a, b -> a + b }
     (identifier)
     (closure
       (parameters
-        (identifier)
         (identifier))
-      (binary_expression
-        (identifier)
-        (identifier)))))
+      (parameters
+        (parameter
+          (identifier)))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (identifier))))))
 
 ==================
 Multi-line closure with statements
-:skip
 ==================
 
 def process = { v ->
@@ -53,20 +54,25 @@ def process = { v ->
     (closure
       (parameters
         (identifier))
-      (block
-        (function_call
+      (expression_statement
+        (command_expression
           (identifier)
-          (string))
-        (function_call
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
+        (command_expression
           (identifier)
-          (string))
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
         (binary_expression
           (identifier)
           (identifier))))))
 
 ==================
 Closure with variable declarations
-:skip
 ==================
 
 def compute = { x, y ->
@@ -80,14 +86,16 @@ def compute = { x, y ->
     (identifier)
     (closure
       (parameters
-        (identifier)
         (identifier))
-      (block
-        (variable_declaration
-          (identifier)
-          (binary_expression
-            (identifier)
-            (identifier)))
+      (parameters
+        (parameter
+          (identifier)))
+      (variable_declaration
+        (identifier)
         (binary_expression
           (identifier)
-          (number))))))
+          (identifier)))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (integer_literal))))))

@@ -1,6 +1,5 @@
 ==================
 Try catch blocks
-:skip
 ==================
 
 try {
@@ -18,19 +17,37 @@ try {
     (block
       (assignment
         (identifier)
-        (function_call)))
+        (call_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))
     (catch_clause
-      (identifier)
+      (type
+        (identifier))
       (identifier)
       (block
-        (expression_statement)))
+        (expression_statement
+          (command_expression
+            (identifier)
+            (argument_list
+              (string
+                (string_content)
+                (interpolation
+                  (member_expression
+                    (identifier)
+                    (identifier)))))))))
     (finally_clause
       (block
-        (expression_statement)))))
+        (expression_statement
+          (command_expression
+            (identifier)
+            (argument_list
+              (string
+                (string_content)))))))))
 
 ==================
 Process error handling
-:skip
 ==================
 
 process errorExample {
@@ -53,17 +70,32 @@ process errorExample {
 (source_file
   (process_definition
     (identifier)
-    (directive_block
-      (directive)
-      (directive))
-    (input_block
-      (input_declaration))
-    (script_block
-      (script_content))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content)))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (integer_literal))))
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (escape_sequence)
+          (string_content))))))
 
 ==================
 Error directives
-:skip
 ==================
 
 process withErrorDirectives {
@@ -82,9 +114,32 @@ process withErrorDirectives {
 (source_file
   (process_definition
     (identifier)
-    (directive_block
-      (directive)
-      (directive)
-      (directive))
-    (script_block
-      (script_content))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (ternary_expression
+              (binary_expression
+                (member_expression
+                  (identifier)
+                  (identifier))
+                (integer_literal))
+              (string
+                (string_content))
+              (string
+                (string_content)))))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (integer_literal))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (integer_literal))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))

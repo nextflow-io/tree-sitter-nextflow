@@ -1,6 +1,5 @@
 ==================
 Channel operators
-:skip
 ==================
 
 ch1 = Channel.from(1,2,3)
@@ -17,24 +16,55 @@ result = ch1
 (source_file
   (assignment
     (identifier)
-    (channel_expression
-      (channel_from)))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (integer_literal)
+        (integer_literal)
+        (integer_literal))))
   (assignment
     (identifier)
-    (channel_expression
-      (channel_from)))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (integer_literal)
+        (integer_literal)
+        (integer_literal))))
   (assignment
     (identifier)
-    (pipe_expression
-      (identifier)
-      (operator_expression)
-      (operator_expression)
-      (operator_expression)
-      (operator_expression))))
+    (call_expression
+      (member_expression
+        (call_expression
+          (member_expression
+            (call_expression
+              (member_expression
+                (call_expression
+                  (member_expression
+                    (identifier)
+                    (identifier))
+                  (argument_list
+                    (identifier)))
+                (identifier))
+              (closure
+                (expression_statement
+                  (binary_expression
+                    (identifier)
+                    (integer_literal)))))
+            (identifier))
+          (closure
+            (expression_statement
+              (binary_expression
+                (identifier)
+                (integer_literal)))))
+        (identifier))
+      (argument_list))))
 
 ==================
 Math operations
-:skip
 ==================
 
 x = 1 + 2 * 3
@@ -46,17 +76,31 @@ z = Math.round(3.14)
 (source_file
   (assignment
     (identifier)
-    (binary_expression))
+    (binary_expression
+      (integer_literal)
+      (binary_expression
+        (integer_literal)
+        (integer_literal))))
   (assignment
     (identifier)
-    (function_call))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (integer_literal)
+        (integer_literal))))
   (assignment
     (identifier)
-    (function_call)))
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (float_literal)))))
 
 ==================
 Regular expressions
-:skip
 ==================
 
 pattern = ~/foo.*/
@@ -69,8 +113,17 @@ if( "foo bar" =~ pattern ) {
 (source_file
   (assignment
     (identifier)
-    (regex_literal))
+    (unary_expression
+      (slashy_string)))
   (if_statement
-    (binary_expression)
+    (binary_expression
+      (string
+        (string_content))
+      (identifier))
     (block
-      (expression_statement))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))

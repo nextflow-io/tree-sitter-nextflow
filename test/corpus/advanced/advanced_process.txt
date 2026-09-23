@@ -1,6 +1,5 @@
 ==================
 When conditions
-:skip
 ==================
 
 process conditionalProcess {
@@ -21,22 +20,34 @@ process conditionalProcess {
 (source_file
   (process_definition
     (identifier)
-    (when_block
-      (binary_expression))
-    (input_block
-      (input_declaration))
-    (script_block
-      (script_content))))
+    (when_section
+      (binary_expression
+        (member_expression
+          (identifier)
+          (identifier))
+        (string
+          (string_content))))
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))))))
 
 ==================
 Each qualifiers
-:skip
 ==================
 
 process eachExample {
     input:
-    each x from [1,2,3]
-    each y from ['a','b']
+    each x
+    each y
 
     script:
     """
@@ -49,17 +60,30 @@ process eachExample {
 (source_file
   (process_definition
     (identifier)
-    (input_block
-      (input_declaration
-        (each_qualifier))
-      (input_declaration
-        (each_qualifier)))
-    (script_block
-      (script_content))))
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (string_content)
+          (interpolation
+            (identifier))
+          (interpolation
+            (identifier))
+          (string_content))))))
 
 ==================
 Dynamic directives
-:skip
 ==================
 
 process dynamicResources {
@@ -78,9 +102,46 @@ process dynamicResources {
 (source_file
   (process_definition
     (identifier)
-    (directive_block
-      (dynamic_directive)
-      (dynamic_directive)
-      (dynamic_directive))
-    (script_block
-      (script_content))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (member_expression
+                (identifier)
+                (identifier))
+              (integer_literal))))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (member_expression
+                (integer_literal)
+                (identifier))
+              (member_expression
+                (identifier)
+                (identifier)))))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (member_expression
+                (integer_literal)
+                (identifier))
+              (member_expression
+                (identifier)
+                (identifier)))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (member_expression
+              (identifier)
+              (identifier)))
+          (string_content))))))

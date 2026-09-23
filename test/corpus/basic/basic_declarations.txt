@@ -21,24 +21,25 @@ nextflow.preview.topic = true
   (feature_flag
     (identifier)
     (identifier)
-    (boolean)))
+    (boolean_literal)))
 
 ==================
 Include declaration
 ==================
 
-include { foo, bar as baz } from './some/module'
+include { foo; bar as baz } from './some/module'
 
 ---
 
 (source_file
-  (include
+  (include_declaration
     (include_item
       (identifier))
     (include_item
       (identifier)
       (identifier))
-    (string)))
+    (string
+      (string_content))))
 
 ==================
 Parameter declaration
@@ -49,6 +50,7 @@ params.message = 'Hello world!'
 ---
 
 (source_file
-  (parameter
+  (param_assignment
     (identifier)
-    (string)))
+    (string
+      (string_content))))

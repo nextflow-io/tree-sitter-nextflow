@@ -1,6 +1,5 @@
 ==================
 Function declarations
-:skip
 ==================
 
 def square(x) {
@@ -14,20 +13,37 @@ def greet(name, greeting = 'Hello') {
 ---
 
 (source_file
-  (function_declaration
+  (function_definition
     (identifier)
-    (parameter_list)
+    (parameters
+      (parameter
+        (identifier)))
     (block
-      (return_statement)))
-  (function_declaration
+      (return_statement
+        (binary_expression
+          (identifier)
+          (identifier)))))
+  (function_definition
     (identifier)
-    (parameter_list)
+    (parameters
+      (parameter
+        (identifier))
+      (parameter
+        (identifier)
+        (string
+          (string_content))))
     (block
-      (return_statement))))
+      (return_statement
+        (string
+          (interpolation
+            (identifier))
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content))))))
 
 ==================
 Method calls
-:skip
 ==================
 
 result = [1,2,3].collect { it * 2 }
@@ -40,20 +56,71 @@ mapped = [1,2,3].collectEntries { [(it): it * 2] }
 (source_file
   (assignment
     (identifier)
-    (method_call))
+    (call_expression
+      (member_expression
+        (list
+          (integer_literal)
+          (integer_literal)
+          (integer_literal))
+        (identifier))
+      (closure
+        (expression_statement
+          (binary_expression
+            (identifier)
+            (integer_literal))))))
   (assignment
     (identifier)
-    (method_call))
+    (call_expression
+      (member_expression
+        (list
+          (integer_literal)
+          (integer_literal)
+          (integer_literal)
+          (integer_literal))
+        (identifier))
+      (closure
+        (expression_statement
+          (binary_expression
+            (binary_expression
+              (identifier)
+              (integer_literal))
+            (integer_literal))))))
   (assignment
     (identifier)
-    (method_call))
+    (call_expression
+      (member_expression
+        (list
+          (string
+            (string_content))
+          (string
+            (string_content))
+          (string
+            (string_content)))
+        (identifier))
+      (argument_list
+        (string
+          (string_content)))))
   (assignment
     (identifier)
-    (method_call)))
+    (call_expression
+      (member_expression
+        (list
+          (integer_literal)
+          (integer_literal)
+          (integer_literal))
+        (identifier))
+      (closure
+        (expression_statement
+          (map
+            (map_entry
+              (parenthesized_expression
+                (identifier))
+              (binary_expression
+                (identifier)
+                (integer_literal)))))))))
 
 ==================
 Complex closures
-:skip
 ==================
 
 transform = { x, y ->
@@ -72,8 +139,52 @@ numbers = [1,2,3,4]
   (assignment
     (identifier)
     (closure
-      (parameter_list)
-      (block)))
+      (parameters
+        (identifier))
+      (parameters
+        (parameter
+          (identifier)))
+      (variable_declaration
+        (identifier)
+        (binary_expression
+          (identifier)
+          (identifier)))
+      (return_statement
+        (ternary_expression
+          (binary_expression
+            (identifier)
+            (integer_literal))
+          (identifier)
+          (integer_literal)))))
   (assignment
     (identifier)
-    (pipe_expression)))
+    (call_expression
+      (member_expression
+        (call_expression
+          (member_expression
+            (call_expression
+              (member_expression
+                (list
+                  (integer_literal)
+                  (integer_literal)
+                  (integer_literal)
+                  (integer_literal))
+                (identifier))
+              (closure
+                (expression_statement
+                  (binary_expression
+                    (identifier)
+                    (integer_literal)))))
+            (identifier))
+          (closure
+            (expression_statement
+              (binary_expression
+                (identifier)
+                (integer_literal)))))
+        (identifier))
+      (closure
+        (expression_statement
+          (command_expression
+            (identifier)
+            (argument_list
+              (identifier))))))))

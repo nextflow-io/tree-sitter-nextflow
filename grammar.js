@@ -1,1235 +1,855 @@
 /**
- * @file Nextflow grammar for tree-sitter - Comprehensive Language Parser
+ * @file Tree-sitter grammar for Nextflow scripts (strict syntax)
  * @author Edmund Miller <edmund@nf-co.re>
  * @author Ben Sherman <bentshermann@gmail.com>
  * @license MIT
  *
- * GRAMMAR ARCHITECTURE & DESIGN DECISIONS
- * =====================================
+ * Mirrors the official ANTLR grammar, ScriptParser.g4 in nextflow-io/nextflow
+ * (modules/nf-lang/src/main/antlr). Rule names and precedence levels follow it
+ * where tree-sitter allows.
  *
- * This grammar implements a complete parser for the Nextflow workflow language,
- * which is built on Groovy with domain-specific extensions for bioinformatics
- * workflows. Key design principles:
- *
- * 1. EXPRESSION PRECEDENCE HIERARCHY (lowest to highest):
- *    - Binary expressions (1): arithmetic, comparison, logical
- *    - Pipe expressions (2): channel operations like `| map { }`
- *    - Command expressions (3): function calls without parens `println "hello"`
- *    - Function calls (4): standard calls with parentheses `func(args)`
- *    - Method calls (5): object.method() chains
- *    - Dotted identifiers (6): property access chains
- *    - Interpolated strings (10): GString expressions "${expr}"
- *
- * 2. CONFLICT RESOLUTION:
- *    - [$.list, $.map]: Both use `[...]` syntax, resolved by content analysis
- *    - Lists contain expressions: `[1, 2, 3]`
- *    - Maps contain key:value pairs: `[key: value]`
- *
- * 3. NEXTFLOW-SPECIFIC FEATURES:
- *    - Process definitions with script injection points for language servers
- *    - Channel operations with specialized pipe syntax
- *    - GString interpolation: `$var`, `${expr}`, `$var.property`
- *    - Multiple script types: script:, shell:, exec:, stub:
- *    - Feature flags: nextflow.enable.dsl=2
- *
- * 4. LANGUAGE INJECTION SUPPORT:
- *    - script_content nodes enable Bash/shell highlighting in editors
- *    - Triple-quoted strings support heredoc syntax
- *    - Interpolation enables Nextflow expression highlighting within strings
- *
- * 5. GROOVY COMPATIBILITY:
- *    - Supports Groovy expressions, closures, and data structures
- *    - Handles method chaining and property access
- *    - Implements GString interpolation patterns
- *
- * TESTING STRATEGY:
- * - Use `tree-sitter test` to run comprehensive corpus tests
- * - Test individual expressions: `echo 'code' | tree-sitter parse`
- * - Update expectations: `tree-sitter test --update`
- * - Focus testing: `tree-sitter test --file-name specific_test.txt`
- *
- * EXTENSION POINTS:
- * - Add new Nextflow operators to pipe_operation choices
- * - Extend channel_expression for new Channel factories
- * - Expand simple_expression for new literal types
- * - Add process directives to process_definition content
+ * Statements are separated by `_terminator`, which the external scanner
+ * (src/scanner.c) emits at a newline or `;` when the next line cannot continue
+ * the current statement.
  */
 
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
+// ANTLR's expression levels, loosest to tightest.
+const PREC = {
+  ternary: 1,
+  or: 2,
+  and: 3,
+  bitor: 4,
+  xor: 5,
+  bitand: 6,
+  regex: 7,
+  equality: 8,
+  relational: 9,
+  shift: 10,
+  additive: 11,
+  multiplicative: 12,
+  sign: 13,
+  power: 14,
+  not: 15,
+  postfix: 16,
+};
+
+// Keywords that ANTLR's `identifier` rule also accepts as names.
+const CONTEXTUAL_KEYWORDS = [
+  'nextflow', 'params', 'from', 'record', 'agent', 'prompt', 'process',
+  'exec', 'input', 'output', 'script', 'shell', 'stage', 'stub', 'topic',
+  'tuple', 'when', 'workflow', 'emit', 'main', 'onComplete', 'onError',
+  'publish', 'take',
+];
+
+const ASSIGNMENT_OPERATORS = [
+  '=', '+=', '-=', '*=', '/=', '%=', '**=',
+  '&=', '|=', '^=', '<<=', '>>=', '>>>=', '?=',
+];
+
 module.exports = grammar({
-  name: "nextflow",
+  name: 'nextflow',
 
-  // External scanner (src/scanner.c) emits _terminator at newlines/';'
-  // where the parser state allows a statement to end.
-  externals: $ => [$._terminator],
-
-  // KEYWORD EXTRACTION:
-  // Ensures keyword tokens ('from', 'of', 'value', ...) only match complete
-  // identifiers, so e.g. Channel.fromPath is not tokenized as 'from' + ERROR.
-  word: $ => $.identifier,
-
-  extras: $ => [
-    $.line_comment,
-    $.block_comment,
-    /\s/
+  externals: $ => [
+    $._terminator,
+    // A `.` inside a GString path (`"$a.b"`), emitted only when an identifier
+    // follows, so `"$a."` and `"$a. b"` keep the dot as text.
+    $._gstring_path_dot,
   ],
 
-  // CONFLICT RESOLUTION STRATEGY
-  // ============================
-  //
-  // Tree-sitter requires explicit conflict resolution for ambiguous grammar rules.
-  // The following conflicts are intentionally allowed and resolved during parsing:
-  //
-  // [$.list, $.map] - BRACKET AMBIGUITY:
-  // Both lists and maps use square bracket syntax: [...]
-  // - Lists: [1, 2, 3]           (comma-separated expressions)
-  // - Maps:  [key: value]        (colon-separated key-value pairs)
-  // - Empty: []                  (could be either, defaults to empty list)
-  //
-  // Resolution strategy:
-  // 1. Parser attempts to parse as list first
-  // 2. If it encounters a colon (:), backtracks and parses as map
-  // 3. This allows both syntaxes to coexist without grammar conflicts
-  //
-  // Alternative approaches considered:
-  // - Separate bracket types: {} for maps (rejected - not Groovy compatible)
-  // - Lookahead tokens (rejected - complex and fragile)
-  // - Context-sensitive parsing (rejected - not supported by tree-sitter)
+  extras: $ => [/\s/, $.line_comment, $.block_comment],
+
+  word: $ => $.identifier,
+
+  supertypes: $ => [$._statement, $._expression],
+
   conflicts: $ => [
-    [$.list, $.map],  // Square bracket ambiguity: [expr, expr] vs [key: value]
-    [$.method_call, $.dotted_identifier],  // a.b.c: property chain vs method receiver path
-    [$.process_output],  // PROCESS.out.ch: channel name vs method navigation start
-    [$.exit_statement, $.parenthesized_expression],  // exit (x): args vs grouped expr
-    [$.script_content],  // script string optionally trailed by a template call
-    [$.destructuring_pattern, $.simple_expression],  // (a,b)=f() vs grouped expr
-    [$.simple_expression, $.closure_parameter],  // { Type name -> }: typed param vs expr
+    // `Foo x = ...` / `Foo f() {}` (legacy typed declaration) vs a command call `Foo x`.
+    [$._expression, $._type_name],
+    [$._expression, $.parameter],
+    // `path("x"), emit: y`: a command whose first argument is parenthesized,
+    // vs the call `path("x")`. Dynamic precedence prefers the call.
+    [$._expression, $.command_expression],
+    [$.command_expression, $._expression, $._type_name],
+    [$.type],
+    [$.take_section],
+    [$.main_section],
+    [$.emit_section],
+    [$.publish_section],
+    [$.on_complete_section],
+    [$.on_error_section],
+    [$.variable_declaration, $._type_name],
+    [$.input_section],
+    [$.stage_section],
+    [$.output_section],
+    [$.topic_section],
+    [$.script_section],
+    [$.stub_section],
+    [$.prompt_section],
+    [$.command_expression, $._type_name],
+    [$._type_name],
   ],
 
   rules: {
+    source_file: $ => seq(
+      optional(choice(seq(optional($._sep), $.shebang, optional($._sep)), $._sep)),
+      optional(seq(
+        $._declaration_or_statement,
+        repeat(seq($._sep, $._declaration_or_statement)),
+        optional($._sep),
+      )),
+    ),
 
-    source_file: $ => repeat(choice(
-      $.shebang,
+    _sep: $ => repeat1($._terminator),
+
+    _declaration_or_statement: $ => choice(
       $.feature_flag,
-      $.include,
-      $.workflow_event_handler,
-      $.parameter,
+      $.include_declaration,
+      $.import_declaration,
+      $.params_definition,
+      $.param_assignment,
+      $.record_definition,
+      $.enum_definition,
+      $.agent_definition,
       $.process_definition,
       $.workflow_definition,
+      $.output_definition,
       $.function_definition,
-      $.variable_declaration,
-      $.assignment,
-      $.if_statement,
-      $.for_statement,
-      $.assert_statement,
-      $.expression_statement,
-      $.line_comment,
-      $.block_comment
-    )),
+      $._statement,
+    ),
 
-    // CORE NEXTFLOW LANGUAGE CONSTRUCTS
-    // =================================
+    shebang: _ => token(seq('#!', /[^\n]*/)),
 
-    // Shebang line support for executable Nextflow scripts
-    // Matches: #!/usr/bin/env nextflow
-    shebang: $ => token(seq('#!', /.*/)),
+    // -- script declarations
 
-    // Nextflow feature flags enable/disable language features
-    // Examples: nextflow.enable.dsl=2, nextflow.preview.topic=true
-    // Used to control DSL2 vs DSL1, experimental features, etc.
+    // nextflow.enable.strict = true
     feature_flag: $ => seq(
       'nextflow',
-      repeat1(seq('.', $.identifier)), // Supports nested properties: enable.dsl
+      repeat1(seq('.', $._identifier)),
       '=',
-      choice($.string, $.number, $.boolean)
+      field('value', $._expression),
     ),
 
-    // Module inclusion with optional aliasing
-    // Examples:
-    //   include { processName } from './modules/process.nf'
-    //   include { processName as myProcess } from './lib.nf'
-    // Critical for Nextflow module system and code organization
-    include: $ => seq(
+    // include { FOO; BAR as BAZ } from './module'
+    include_declaration: $ => seq(
       'include',
       '{',
-      commaSep1($.include_item),
+      optional($._sep),
+      sepBy1($._sep, $.include_item),
+      optional($._sep),
       '}',
       'from',
-      $.string
+      field('source', $.string),
     ),
 
-    // Individual items in include statements
-    // Supports aliasing: processName as alias
     include_item: $ => seq(
-      $.identifier,
-      optional(seq('as', $.identifier))
+      field('name', $._identifier),
+      optional(seq('as', field('alias', $._identifier))),
     ),
 
-    // Parameter declarations define workflow inputs
-    // Examples: params.input = 'data.txt', params.outputDir = 'results'
-    // These become command-line parameters: --input data.txt
-    parameter: $ => seq(
+    // Legacy: import groovy.json.JsonSlurper
+    import_declaration: $ => seq('import', field('name', $.qualified_name)),
+
+    qualified_name: $ => sepBy1('.', $._identifier),
+
+    // params { input: Path; save: Boolean = false }
+    params_definition: $ => seq(
       'params',
-      '.',
-      $.identifier,
-      '=',
-      choice($.string, $.number, $.boolean)
+      body($, choice($.param_declaration, $._statement)),
     ),
 
-    // PROCESS DEFINITIONS - CORE NEXTFLOW CONSTRUCT
-    // ============================================
+    param_declaration: $ => prec(1, seq(
+      field('name', $._identifier),
+      optional(seq(':', field('type', $.type))),
+      optional(seq('=', field('default', $._expression))),
+    )),
 
-    // Process definition: the fundamental unit of computation in Nextflow
-    // Example:
-    //   process EXAMPLE {
-    //     input: val x
-    //     output: stdout
-    //     script: "echo $x"
-    //   }
-    // Language servers use script_content nodes for Bash/shell syntax highlighting
+    // Legacy: params.foo.bar = 1
+    param_assignment: $ => seq(
+      'params',
+      repeat1(seq('.', $._identifier)),
+      '=',
+      field('value', $._expression),
+    ),
+
+    // record Sample { id: String; fastq: Path? }
+    record_definition: $ => seq(
+      'record',
+      field('name', $._identifier),
+      body($, $.record_field),
+    ),
+
+    record_field: $ => seq(
+      field('name', $._identifier),
+      optional(seq(':', field('type', $.type))),
+    ),
+
+    // enum Color { RED, GREEN, BLUE }
+    enum_definition: $ => seq(
+      'enum',
+      field('name', $._identifier),
+      '{',
+      optional($._sep),
+      optional(seq(
+        sepBy1(seq(',', optional($._sep)), alias($.identifier, $.enum_constant)),
+        optional(','),
+        optional($._sep),
+      )),
+      '}',
+    ),
+
+    // -- process
+
     process_definition: $ => seq(
       'process',
-      $.identifier, // Process name, must be unique in scope
-      '{',
-      // Strict-syntax process structure in three ordered phases:
-      //   1. directives (tag, label, container, ...)
-      //   2. input:/output:/when: sections
-      //   3. script:/shell:/exec:/stub: sections
-      // Ordering removes two ambiguities the newline terminator exposes:
-      //   - a bare `env 'X'` / `path y` line after `input:` can only be
-      //     another input, never a directive
-      //   - a bare prelude assignment (prefix = ...) inside a script section
-      //     cannot be read as a directive
-      repeat($.directive),
-      repeat(choice(
-        $.input_declaration,
-        $.output_declaration,
-        $.when_declaration
-      )),
-      repeat(seq($.script_declaration, optional($._terminator))),
-      '}'
+      field('name', $._identifier),
+      sectionedBody($, [
+        $.input_section,
+        $.stage_section,
+        $.output_section,
+        $.topic_section,
+        $.when_section,
+        $.script_section,
+        $.stub_section,
+      ]),
     ),
 
-    // Process directives: tag "$meta.id", label 'process_medium',
-    // container "...", publishDir "path", mode: 'copy', cpus 4, debug true
-    // A dynamic directive can take a closure body: memory { 7.B * x.size() },
-    // containerOptions { ... }, publishDir path, mode: 'copy'.
-    directive: $ => prec.right(-1, seq(
-      $.identifier,
-      choice(
-        $.closure,
-        commaSep1(choice($.option_entry, $.simple_expression))
-      ),
-      optional($._terminator)
+    input_section: $ => section($, 'input', choice(
+      $.process_input,
+      $.process_record_input,
+      $.process_tuple_input,
+      $._statement,
+      alias($._legacy_tuple_input, $.command_expression),
     )),
 
-    // Input declarations specify process parameters and channels
-    // Examples:
-    //   input: val x           - simple value input
-    //   input: path "*.txt"    - file path input
-    //   input: env SAMPLE_ID   - environment variable
-    input_declaration: $ => prec.right(seq('input:', optional($._terminator), repeat1(seq(choice(
-      $.tuple_declaration,
-      $.emit_declaration,   // qualifier with named options: path x, name: 'y'
-      $.simple_statement,
-      $.env_input
-    ), optional($._terminator))))),
-
-    // Tuple inputs/outputs: tuple val(meta), path(bam)
-    // Output form adds named options: tuple val(meta), path("*.bam"), emit: bam, optional: true
-    // Components: val(x)/path(y) calls, env('V'), bare stdout, named options.
-    tuple_declaration: $ => prec.right(seq(
-      'tuple',
-      commaSep1(choice($.option_entry, $.function_call, $.env_function, $.identifier))
+    process_input: $ => prec(1, seq(
+      field('name', $._identifier),
+      optional(seq(':', field('type', $.type))),
     )),
 
-    // Environment variable inputs/outputs: env VAR, env 'X', env "X"
-    env_input: $ => seq('env', choice(
-      $.string_literal,
-      $.interpolated_string,
-      $.identifier
+    // record(id: String, fastq: Path)
+    process_record_input: $ => seq('record', $._process_input_list),
+
+    // tuple(id: String, reads: Path)
+    process_tuple_input: $ => seq('tuple', $._process_input_list),
+
+    _process_input_list: $ => seq(
+      '(',
+      commaSep1($.process_input),
+      optional(','),
+      ')',
+    ),
+
+    // `tuple` is a keyword in an input section, so a legacy
+    // `tuple val(x), path(y)` needs its own rule there.
+    _legacy_tuple_input: $ => prec.dynamic(-1, seq(
+      field('function', alias('tuple', $.identifier)),
+      field('arguments', alias($._command_arguments, $.argument_list)),
     )),
 
-    // Output declarations specify what the process produces
-    // Examples:
-    //   output: path "*.txt"   - file outputs
-    //   output: stdout         - standard output
-    output_declaration: $ => prec.right(seq('output:', optional($._terminator), repeat1(seq(choice(
-      $.tuple_declaration,
-      $.emit_declaration,
-      $.simple_statement
-    ), optional($._terminator))))),
+    stage_section: $ => section($, 'stage', $._statement),
 
-    // Qualified output/input with named options:
-    //   path "versions.yml", emit: versions, topic: versions
-    //   val meta, emit: meta, optional: true
-    // Requires at least one option so bare 'path "x"' stays a simple_statement.
-    emit_declaration: $ => prec.right(seq(
-      choice($.command_expression, $.function_call, $.env_input, $.identifier),
-      repeat1(seq(',', $.option_entry))
+    output_section: $ => section($, 'output', choice($.process_output, $._statement)),
+
+    process_output: $ => prec(1, seq(
+      field('name', $._identifier),
+      optional(seq(':', field('type', $.type))),
+      optional(seq('=', field('value', $._expression))),
     )),
 
-    // Named option in a declaration: emit: bam, optional: true, mode: 'copy'.
-    // The value excludes command_expression so a bare-identifier value
-    // (emit: versions) does not greedily consume the next declaration line.
-    option_entry: $ => seq(
-      $.identifier,
+    topic_section: $ => section($, 'topic', $._statement),
+
+    when_section: $ => prec.dynamic(1, seq(
+      'when',
       ':',
-      $.option_value
-    ),
-
-    option_value: $ => choice(
-      $.closure,               // saveAs: { f -> ... }
-      $.ternary_expression,
-      $.boolean_literal,
-      $.string_literal,
-      $.interpolated_string,
-      $.integer_literal,
-      $.float_literal,
-      $.list,
-      $.map,
-      $.function_call,
-      $.method_call,
-      $.dotted_identifier,
-      $.identifier
-    ),
-
-    // Conditional execution guard for processes
-    // Example: when: params.run_analysis
-    when_declaration: $ => prec.right(seq('when:', $.simple_expression, optional($._terminator))),
-
-    // SCRIPT DECLARATIONS - CRITICAL FOR LANGUAGE INJECTION
-    // =====================================================
-
-    // Script types define different execution contexts:
-    // - script: Standard Nextflow script (default)
-    // - shell:  Bash shell script with special variable handling
-    // - exec:   Direct command execution
-    // - stub:   Mock/test script for development
-    script_declaration: $ => prec.right(seq(
-      // seq(word, ':') not 'word:' so a stray space (stub :) is tolerated
-      choice(seq('script', ':'), seq('shell', ':'), seq('exec', ':'), seq('stub', ':')),
-      optional($._terminator),
-      repeat(seq($.script_statement, $._terminator)),  // Groovy prelude, each terminated
-      // exec: sections are Groovy-only; script/shell/stub end in a string.
-      optional($.script_content)
+      optional($._sep),
+      field('condition', $._expression),
+      optional($._sep),
     )),
 
-    // Groovy statements allowed before the script string.
-    // Deliberately excludes bare string expressions so the final
-    // string is parsed as script_content, not a statement.
-    script_statement: $ => choice(
-      $.variable_declaration,
-      $.assignment,
-      $.if_statement,
-      $.assert_statement,
-      $.return_statement,
-      $.exit_statement,
-      $.try_statement,
-      $.method_call,
-      $.function_call,
-      $.binary_expression,   // bare side-effecting op: outputs << "x"
-      $.ternary_expression   // bare ternary for side effects: cond ? a.each{} : b
+    script_section: $ => section($, choice('script', 'shell', 'exec'), $._statement),
+
+    stub_section: $ => section($, 'stub', $._statement),
+
+    // -- agent
+
+    agent_definition: $ => seq(
+      'agent',
+      field('name', $._identifier),
+      sectionedBody($, [$.input_section, $.output_section, $.prompt_section]),
     ),
 
-    // Script content enables language server integration
-    // Language servers can inject Bash/shell highlighting into these nodes
-    // Supports both single-line strings and multi-line heredoc syntax
-    // Either a template, or a script string optionally followed by a template
-    // (a handful of modules leave a dead """...""" before the template call).
-    script_content: $ => choice(
-      $.template_declaration,                // template 'main.R' (external script file)
-      seq(
-        choice(
-          $.string_literal,                    // Simple string: "echo hello"
-          $.triple_quoted_string,              // Heredoc: """complex bash script"""
-          $.interpolated_string,               // "echo ${prefix}"
-          $.interpolated_triple_quoted_string  // Heredoc with ${...} interpolation
-        ),
-        optional(seq(optional($._terminator), $.template_declaration))
-      )
-    ),
+    prompt_section: $ => section($, 'prompt', $._statement),
 
-    // template 'file.sh' or template('file.sh') names an external script.
-    template_declaration: $ => seq(
-      'template',
-      choice(
-        $.string_literal,
-        $.interpolated_string,
-        seq('(', choice($.string_literal, $.interpolated_string), ')')
-      )
-    ),
+    // -- workflow
 
-    // WORKFLOW DEFINITIONS - ORCHESTRATION LAYER
-    // ==========================================
-
-    // Workflow definition: orchestrates processes and defines data flow
-    // Examples:
-    //   workflow { ... }                    - main/default workflow
-    //   workflow ANALYSIS { ... }          - named workflow for reuse
-    //   workflow onComplete: { ... }       - workflow with completion handler
-    // Workflows contain process calls, channel operations, and data flow logic
     workflow_definition: $ => seq(
       'workflow',
-      optional($.identifier), // Optional name for reusable workflows
-      '{',
-      $.workflow_body,
-      '}'
+      optional(field('name', $._identifier)),
+      sectionedBody($, [
+        $.take_section,
+        $.main_section,
+        $.emit_section,
+        $.publish_section,
+        $.on_complete_section,
+        $.on_error_section,
+      ]),
     ),
 
-    // Workflow event handlers, both forms:
-    //   workflow.onComplete { ... }   and   workflow.onComplete = { ... }
-    workflow_event_handler: $ => seq(
-      'workflow',
-      '.',
-      alias(choice('onComplete', 'onError'), $.identifier),
-      optional('='),
-      $.closure
+    take_section: $ => section($, 'take', choice($.workflow_take, $._statement)),
+
+    workflow_take: $ => prec(1, seq(
+      field('name', $._identifier),
+      optional(seq(':', field('type', $.type))),
+    )),
+
+    main_section: $ => section($, 'main', $._statement),
+
+    emit_section: $ => section($, 'emit', choice($.workflow_emit, $._statement)),
+
+    workflow_emit: $ => prec(1, seq(
+      field('name', $._identifier),
+      optional(seq(':', field('type', $.type))),
+      optional(seq('=', field('value', $._expression))),
+    )),
+
+    publish_section: $ => section($, 'publish', choice(
+      alias($.workflow_emit, $.workflow_publish),
+      $._statement,
+    )),
+
+    on_complete_section: $ => section($, 'onComplete', $._statement),
+
+    on_error_section: $ => section($, 'onError', $._statement),
+
+    // -- output block
+
+    output_definition: $ => seq(
+      'output',
+      body($, choice($.output_declaration, $._statement)),
     ),
 
-    // Workflow body contains the main computational logic
-    // Supports structured workflow sections (take:/main:/emit:) and traditional statements
-    workflow_body: $ => repeat1(seq(choice(
-      $.workflow_input,       // take: param1 param2 (input parameters)
-      $.workflow_main,        // main: workflow_logic (main execution block)
-      $.workflow_emit,        // emit: output (output declarations)
-      $.expression_statement, // Process calls, channel operations
-      $.assignment,           // Variable assignments: x = PROCESS(y)
-      $.variable_declaration, // Typed declarations: def String result = ...
-      $.if_statement,         // Conditional workflow logic
-      $.for_statement         // Loops directly in workflow body
-    ), optional($._terminator))),
-
-    // Workflow input section: take: param1 param2 ... (space or newline separated)
-    workflow_input: $ => prec.right(seq(
-      'take:',
-      optional($._terminator),
-      repeat1(seq($.identifier, optional($._terminator)))
+    output_declaration: $ => prec(1, seq(
+      field('name', $._identifier),
+      optional(seq(':', field('type', $.type))),
+      field('body', $.block),
     )),
 
-    // Workflow main section: main: statements...
-    workflow_main: $ => prec.left(seq(
-      'main:',
-      repeat1(seq(choice(
-        $.process_invocation,   // Process calls: PROCESS(input, output)
-        $.expression_statement,
-        $.assignment,
-        $.variable_declaration,
-        $.if_statement,         // Conditional workflow logic
-        $.for_statement         // Loops in main section
-      ), optional($._terminator)))
-    )),
+    // -- function
 
-    // Workflow emit section: emit: output_channel
-    workflow_emit: $ => prec.left(seq(
-      'emit:',
-      repeat1(seq(choice(
-        $.assignment,        // variants = PROCESS.out
-        $.process_output,    // PROCESS.out
-        $.identifier         // Simple identifiers
-      ), optional($._terminator)))
-    )),
-
-    // Process invocation in workflows: PROCESS(ch, ch.map { }, [[], []], '')
-    process_invocation: $ => prec(8, seq(
-      $.identifier,        // Process name (uppercase by convention)
-      '(',
-      commaSep(choice($.option_entry, $.simple_expression)),
-      ')'
-    )),
-
-    // Process output reference: PROCESS.out, PROCESS.out.channel
-    process_output: $ => prec(8, seq(
-      $.identifier,        // Process name
-      '.',
-      'out',
-      optional(seq('.', $.identifier))  // Optional channel name
-    )),
-
-    // VARIABLE DECLARATIONS & ASSIGNMENTS
-    // ===================================
-
-    // Variable declarations with optional type annotations
-    // Examples:
-    //   def x = 5                    - simple variable
-    //   def String name = "test"     - typed variable
-    //   def (a, b) = [1, 2]          - destructuring assignment
-    //   def (String x, int y) = fn() - typed destructuring
-    variable_declaration: $ => seq(
-      'def',
-      choice(
-        seq($.identifier, optional($.type_annotation)),
-        $.destructuring_pattern
+    function_definition: $ => prec.dynamic(1, choice(
+      seq(
+        'def',
+        field('name', $._identifier),
+        field('parameters', $.parameters),
+        optional(seq('->', field('return_type', $.type))),
+        field('body', $.block),
       ),
-      optional(seq('=', $.simple_expression))
+      seq(
+        optional('def'),
+        field('return_type', $.type),
+        field('name', $._identifier),
+        field('parameters', $.parameters),
+        field('body', $.block),
+      ),
+    )),
+
+    parameters: $ => seq('(', optional(commaSep1($.parameter)), ')'),
+
+    parameter: $ => seq(
+      choice(
+        seq(field('name', $._identifier), optional(seq(':', field('type', $.type)))),
+        seq('def', field('name', $._identifier)),
+        seq(optional('def'), field('type', $.type), field('name', $._identifier)),
+      ),
+      optional(seq('=', field('default', $._expression))),
     ),
 
-    // Top-level function: def name(params) { ... }, optional -> return type.
-    // Params may be typed (String x) and/or have defaults (y = 5).
-    function_definition: $ => prec(2, seq(
-      // `def name(...)` or a typed function `ReturnType name(...)`
-      choice('def', field('return_type', choice($.identifier, $.dotted_identifier))),
-      $.identifier,
+    // -- statements
+
+    _statement: $ => choice(
+      $.if_statement,
+      $.try_statement,
+      $.for_statement,
+      $.return_statement,
+      $.throw_statement,
+      $.assert_statement,
+      $.variable_declaration,
+      $.assignment,
+      $.expression_statement,
+    ),
+
+    block: $ => prec(1, seq('{', optional($._sep), optional($._statements), '}')),
+
+    // Labels are only meaningful in closures (multiMap/branch criteria), but
+    // blocks and closures share one body so `{` can stay undecided until `}`.
+    _statements: $ => seq(
+      sepBy1($._sep, choice($._statement, $.labeled_statement)),
+      optional($._sep),
+    ),
+
+    _statement_or_block: $ => choice($.block, $._statement),
+
+    if_statement: $ => prec.right(seq(
+      'if',
       '(',
-      commaSep(seq(
-        // bare `a`, colon-typed `a: T`, or Groovy-typed `T a`
-        choice($.typed_identifier, seq(choice($.identifier, $.dotted_identifier), $.identifier), $.identifier),
-        optional(seq('=', $.simple_expression))
-      )),
+      field('condition', $._expression),
       ')',
-      optional(seq('->', choice($.identifier, $.dotted_identifier))),
-      $.block
+      field('consequence', $._statement_or_block),
+      optional(seq('else', field('alternative', $._statement_or_block))),
     )),
 
-    // Type annotations for strict syntax and better IDE support
-    // Examples: : String, : List<Integer>, : Path
-    type_annotation: $ => seq(':', $.identifier),
-
-    // Destructuring patterns for multiple return values
-    // Example: def (stdout, stderr) = executeProcess()
-    destructuring_pattern: $ => seq(
-      '(',
-      commaSep1(choice(
-        $.identifier,        // Simple: (a, b)
-        $.typed_identifier   // Typed: (String a, int b)
-      )),
-      ')'
-    ),
-
-    // Typed identifier within destructuring patterns
-    typed_identifier: $ => seq(
-      $.identifier,
-      $.type_annotation
-    ),
-
-    // Simple variable assignment (no declaration)
-    // Example: result = processChannel.collect()
-    assignment: $ => seq(
-      choice($.identifier, $.dotted_identifier, $.index_expression, $.property_expression, $.destructuring_pattern),
-      choice('=', '+=', '-=', '*=', '/=', '%=', '**=', '<<=', '>>=', '&=', '|=', '^=', '?='),
-      $.simple_expression
-    ),
-
-    // Expression statements (standalone expressions)
-    // Examples: process calls, println statements, channel operations
-    expression_statement: $ => $.simple_expression,
-
-    // Control structures
-    assert_statement: $ => prec.right(seq(
-      'assert',
-      $.simple_expression,
-      optional(seq(':', $.simple_expression))  // assert cond : message
-    )),
-
-    // try/catch/finally — present in current modules (pre-26.04 lib code).
     try_statement: $ => prec.right(seq(
       'try',
-      $.block,
+      field('body', $._statement_or_block),
       repeat($.catch_clause),
-      optional($.finally_clause)
+      optional($.finally_clause),
     )),
 
     catch_clause: $ => seq(
       'catch',
       '(',
-      // catch (Exception e) or catch (e); optional multi-type A | B e
-      optional(seq(choice($.identifier, $.dotted_identifier), repeat(seq('|', choice($.identifier, $.dotted_identifier))))),
-      alias($.identifier, 'parameter'),
+      choice(
+        seq(field('name', $._identifier), optional(seq(':', $._catch_types))),
+        seq($._catch_types, field('name', $._identifier)),
+      ),
       ')',
-      $.block
+      field('body', $._statement_or_block),
     ),
 
-    finally_clause: $ => seq('finally', $.block),
+    _catch_types: $ => sepBy1('|', field('type', $.type)),
 
-    if_statement: $ => prec.right(seq(
-      'if',
-      '(',
-      $.simple_expression,
-      ')',
-      choice($.block, $.expression_statement, $.assignment),  // braces or single statement
-      repeat($.else_if_clause),
-      optional($.else_clause)
-    )),
+    // Not in the strict syntax, but still common in nf-core code.
+    finally_clause: $ => seq('finally', field('body', $._statement_or_block)),
 
-    // C-style / Groovy for-in loops:
-    //   for (item in items) { ... }
+    // Not in the strict syntax, but still common in nf-core code.
     for_statement: $ => seq(
       'for',
       '(',
-      $.identifier,
+      optional(field('type', $.type)),
+      field('name', $._identifier),
       'in',
-      $.simple_expression,
+      field('iterable', $._expression),
       ')',
-      $.block
+      field('body', $._statement_or_block),
     ),
 
-    else_if_clause: $ => seq(
-      'else',
-      'if',
+    return_statement: $ => prec.right(seq('return', optional($._expression))),
+
+    throw_statement: $ => seq('throw', $._expression),
+
+    assert_statement: $ => seq(
+      'assert',
+      field('condition', $._expression),
+      optional(seq(':', field('message', $._expression))),
+    ),
+
+    variable_declaration: $ => choice(
+      seq(
+        'def',
+        field('name', $._identifier),
+        optional(seq(':', field('type', $.type))),
+        optional(seq('=', field('value', $._expression))),
+      ),
+      seq('def', field('pattern', $.destructuring_pattern), '=', field('value', $._expression)),
+      prec.dynamic(1, seq(
+        'def',
+        field('type', $.type),
+        field('name', $._identifier),
+        optional(seq('=', field('value', $._expression))),
+      )),
+      // ANTLR requires a capitalized class name here, which tree-sitter cannot
+      // check, so without an initializer `path reads` stays a command call.
+      prec.dynamic(-2, seq(
+        field('type', $.type),
+        field('name', $._identifier),
+        optional(seq('=', field('value', $._expression))),
+      )),
+    ),
+
+    // (a, b) or (a: String, b: Integer)
+    destructuring_pattern: $ => seq(
       '(',
-      $.simple_expression,
+      $._name_type_pair,
+      repeat1(seq(',', $._name_type_pair)),
       ')',
-      $.block
     ),
 
-    else_clause: $ => seq(
-      'else',
-      $.block
+    _name_type_pair: $ => seq(
+      field('name', $._identifier),
+      optional(seq(':', field('type', $.type))),
     ),
 
-    // Statements are terminator-separated so a bare RHS on one line does not
-    // absorb the next line's identifier as a command_expression
-    // (x = a \n y = b must not read as x = (a y) = b).
-    block: $ => seq(
-      '{',
-      repeat(seq(choice(
-        $.expression_statement,
-        $.variable_declaration,
-        $.assignment,
-        $.if_statement,
-        $.for_statement,
-        $.return_statement,
-        $.assert_statement,
-        $.exit_statement,
-        $.try_statement
-      ), optional($._terminator))),
-      '}'
+    assignment: $ => seq(
+      field('left', choice($._expression, $.destructuring_pattern)),
+      field('operator', choice(...ASSIGNMENT_OPERATORS)),
+      field('right', $._expression),
     ),
 
-    // return, return expr — valid in functions and closures.
-    return_statement: $ => prec.right(seq('return', optional($.simple_expression))),
+    expression_statement: $ => choice($._expression, $.command_expression),
 
-    // exit code / exit code, message / exit(code, message) — up to two args,
-    // with or without parens (exit is otherwise a keyword now).
-    exit_statement: $ => prec.right(seq(
-      'exit',
-      choice(
-        seq('(', commaSep($.simple_expression), ')'),
-        seq($.simple_expression, optional(seq(',', $.simple_expression)))
-      )
+    // A call without parentheses, only valid as a statement and only when the
+    // callee is a name or a property: println "x", log.info "x", path x, emit: y
+    command_expression: $ => prec.dynamic(-1, seq(
+      field('function', choice($._identifier, $.member_expression)),
+      field('arguments', alias($._command_arguments, $.argument_list)),
     )),
 
-    simple_statement: $ => choice(
-      $.simple_expression,
-      ';'
-    ),
+    _command_arguments: $ => commaSep1($._argument),
 
-    // EXPRESSION HIERARCHY - COMPREHENSIVE NEXTFLOW EXPRESSIONS
-    // =========================================================
-
-    // Main expression entry point - handles all Nextflow expression types
-    // Ordered roughly by frequency of use in typical workflows
-    simple_expression: $ => choice(
-      $.ternary_expression,                   // Conditional: cond ? a : b
-      $.binary_expression,                    // Arithmetic, comparison: x + y, a == b
-      $.unary_expression,                     // Negation: !flag
-      $.index_expression,                     // Subscript: list[0]
-      $.parenthesized_expression,             // Grouping: (expr)
-      $.pipe_expression,                      // Channel ops: ch | map { }
-      $.command_expression,                   // No-paren calls: println "hello"
-      $.function_call,                        // Function calls: fn(args)
-      $.method_call,                          // Object methods: obj.method()
-      $.string_method_call,                   // """...""".stripIndent()
-      $.property_expression,                  // (expr).name, 7.GB
-      $.cast_expression,                      // Coercion: x as int
-      $.constructor_call,                     // new Type(args)
-      $.env_function,                         // Environment: env('VAR')
-      $.list,                                 // Lists: [1, 2, 3]
-      $.map,                                  // Maps: [key: value]
-      $.channel_expression,                   // Channel factories: Channel.of()
-      $.interpolated_string,                  // GStrings: "Hello $name"
-      $.interpolated_triple_quoted_string,    // Multi-line GStrings
-      $.slashy_string,                        // Regex: /pattern/
-      $.triple_quoted_string,                 // Literal multi-line: '''...'''
-      $.process_output,                       // Process outputs: PROCESS.out
-      $.identifier,                           // Variables: varName
-      $.string_literal,                       // Plain strings: "text"
-      $.integer_literal,                      // Numbers: 42
-      $.float_literal,                        // Floats: 0.8
-      $.boolean_literal,                      // Booleans: true, false
-      $.dotted_identifier                     // Properties: obj.prop.field
-    ),
-
-    // BINARY EXPRESSIONS - PRECEDENCE LEVEL 1 (LOWEST)
-    // =================================================
-
-    // Binary operations with left associativity
-    // Precedence groups (highest to lowest within binary expressions):
-    // 1. Arithmetic: **, *, /, %, +, -
-    // 2. Comparison: ==, !=, <, >, <=, >=
-    // 3. Pattern matching: =~, !~ (regex operators)
-    // 4. Range: .., ..< (Groovy range operators)
-    // 5. Logical: &&, || (short-circuiting)
-    binary_expression: $ => prec.left(3, seq(
-      field('left', choice(
-        $.identifier,
-        $.string_literal,
-        $.integer_literal,
-        $.boolean_literal,
-        $.dotted_identifier,
-        $.interpolated_string,
-        $.parenthesized_expression,
-        $.binary_expression,
-        $.unary_expression,
-        $.index_expression,
-        $.method_call,
-        $.property_expression,
-        $.function_call,
-        $.list,
-        $.map,
-        $.float_literal,
-        $.cast_expression,
-        $.process_output
-      )),
-      field('operator', choice(
-        '+', '-', '*', '/', '%', '**',        // Arithmetic operators
-        '==', '!=', '<', '>', '<=', '>=',     // Comparison operators
-        '&&', '||',                           // Logical operators
-        '..', '..<',                          // Range operators (Groovy)
-        '=~', '!~', '==~',                    // Pattern matching (regex)
-        '?:',                                 // Elvis operator: x ?: default
-        '<=>',                                // Spaceship comparison
-        '<<',                                 // List append / left shift
-        '&', '^',                             // Bitwise and/xor (not | — pipe op)
-        'in', seq('!', 'in'),                 // Membership: x in [1,2], x !in [1,2]
-        'instanceof', seq('!', 'instanceof')  // Type check: x instanceof List
-      )),
-      field('right', choice(
-        $.identifier,
-        $.string_literal,
-        $.integer_literal,
-        $.boolean_literal,
-        $.dotted_identifier,
-        $.interpolated_string,
-        $.parenthesized_expression,
-        $.binary_expression,
-        $.unary_expression,
-        $.index_expression,
-        $.method_call,
-        $.property_expression,
-        $.function_call,
-        $.list,
-        $.map,
-        $.float_literal,
-        $.slashy_string,
-        $.cast_expression,
-        $.process_output
-      ))
-    )),
-
-    // Groovy coercion: (task.cpus * 0.9) as int, x as List
-    cast_expression: $ => prec.left(2, seq(
-      $.simple_expression,
-      'as',
-      choice($.identifier, $.dotted_identifier)
-    )),
-
-    // Constructor call: new groovy.yaml.YamlBuilder(), new File(path)
-    constructor_call: $ => prec(8, seq(
-      'new',
-      choice($.identifier, $.dotted_identifier),
-      '(',
-      commaSep(choice($.option_entry, $.simple_expression)),
-      ')'
-    )),
-
-    // Conditional (ternary) expression: cond ? a : b
-    // Right-associative so nested ternaries chain: a ? x : b ? y : z
-    ternary_expression: $ => prec.right(1, seq(
-      field('condition', $.simple_expression),
-      '?',
-      field('consequence', $.simple_expression),
+    labeled_statement: $ => seq(
+      field('label', $._identifier),
       ':',
-      field('alternative', $.simple_expression)
-    )),
-
-    // Logical negation: !flag
-    // Unary: !flag (logical not), ~/regex/ (Groovy bitwiseNegate → Pattern),
-    // -x / +x (numeric sign).
-    unary_expression: $ => prec(5, seq(choice('!', '~', '-', '+'), $.simple_expression)),
-
-    // Subscript access: list[0], map['key']
-    index_expression: $ => prec(6, seq(
-      choice($.identifier, $.dotted_identifier, $.method_call, $.function_call, $.list, $.index_expression, $.parenthesized_expression, $.property_expression, $.interpolated_string),
-      '[',
-      $.simple_expression,
-      ']'
-    )),
-
-    // Parenthesized expressions
-    parenthesized_expression: $ => seq('(', $.simple_expression, ')'),
-
-    // List literals
-    list: $ => seq(
-      '[',
-      commaSep($.simple_expression),
-      ']'
+      choice($.labeled_statement, $._statement),
     ),
 
-    // Map literals
+    // -- expressions
+
+    _expression: $ => choice(
+      $._identifier,
+      $.integer_literal,
+      $.float_literal,
+      $.boolean_literal,
+      $.null_literal,
+      $.string,
+      $.slashy_string,
+      $.parenthesized_expression,
+      $.list,
+      $.map,
+      $.closure,
+      $.new_expression,
+      $.member_expression,
+      $.call_expression,
+      $.index_expression,
+      $.unary_expression,
+      $.binary_expression,
+      $.cast_expression,
+      $.instanceof_expression,
+      $.ternary_expression,
+      $.elvis_expression,
+    ),
+
+    // Nextflow keywords that are also valid names (ANTLR's `identifier` rule),
+    // e.g. `workflow.onComplete { }` or `input = ...` in a script prelude.
+    _identifier: $ => choice(
+      $.identifier,
+      prec(-1, alias(choice(...CONTEXTUAL_KEYWORDS), $.identifier)),
+    ),
+
+    parenthesized_expression: $ => seq('(', $._expression, ')'),
+
+    list: $ => seq('[', optional(seq(commaSep1($._expression), optional(','))), ']'),
+
     map: $ => seq(
       '[',
-      choice(
-        ':',                        // Empty map: [:]
-        commaSep($.map_entry)       // Normal map: [key: value, ...]
-      ),
-      ']'
+      choice(':', seq(commaSep1($.map_entry), optional(','))),
+      ']',
     ),
 
     map_entry: $ => seq(
-      // (expr) is a computed/dynamic key: [(key): value]
-      choice($.identifier, $.string_literal, $.interpolated_string, $.parenthesized_expression),
+      field('key', choice(
+        $._identifier,
+        $.string,
+        $.integer_literal,
+        $.float_literal,
+        $.boolean_literal,
+        $.null_literal,
+        $.parenthesized_expression,
+      )),
       ':',
-      $.simple_expression
+      field('value', $._expression),
     ),
 
-    // CHANNEL OPERATIONS - NEXTFLOW DATA FLOW SYSTEM
-    // ==============================================
-
-    // Channel expressions create data streams for workflow processing
-    // Channels are the fundamental data structure for connecting processes
-    channel_expression: $ => choice(
-      $.channel_from,       // Channel.from(list) - create from collection
-      $.channel_from_list,  // Channel.fromList(list) - explicit list input
-      $.channel_value,      // Channel.value(item) - singleton channel
-      $.channel_of,         // Channel.of(items) - modern factory method
-      $.channel_factory     // Channel.<anyFactory>(args) - fromPath, fromFilePairs, empty, ...
-    ),
-
-    // Generic channel factory: Channel.fromPath('*.txt'), Channel.empty(), ...
-    // Catch-all for factories without a dedicated rule above; keyword
-    // extraction (word rule) ensures the specific rules win for their names.
-    channel_factory: $ => seq(
-      'Channel',
-      '.',
-      $.identifier,
-      '(',
-      commaSep($.simple_expression),
-      ')'
-    ),
-
-    // Legacy channel factory: Channel.from([1,2,3])
-    // Deprecated in favor of Channel.of() but still widely used
-    channel_from: $ => seq(
-      'Channel',
-      '.',
-      'from',
-      '(',
-      commaSep($.simple_expression),
-      ')'
-    ),
-
-    // Channel fromList: Channel.fromList([1,2,3])
-    // Explicit list-based channel creation
-    channel_from_list: $ => seq(
-      'Channel',
-      '.',
-      'fromList',
-      '(',
-      $.list,
-      ')'
-    ),
-
-    // Value channel: Channel.value("hello")
-    // Creates a singleton channel that emits the same value to all processes
-    channel_value: $ => seq(
-      'Channel',
-      '.',
-      'value',
-      '(',
-      $.simple_expression,
-      ')'
-    ),
-
-    // Modern channel factory: Channel.of(1, 2, 3)
-    // Preferred method for creating channels from multiple items
-    channel_of: $ => seq(
-      'Channel',
-      '.',
-      'of',
-      '(',
-      commaSep($.simple_expression),
-      ')'
-    ),
-
-    // PIPE EXPRESSIONS - PRECEDENCE LEVEL 2
-    // =====================================
-
-    // Pipe operations transform channels using functional programming patterns
-    // Higher precedence than binary expressions to ensure correct parsing:
-    //   Channel.of(1,2,3) | map { it * 2 } | filter { it > 2 }
-    //
-    // CRITICAL: Precedence level 2 ensures pipes bind tighter than arithmetic:
-    //   x + ch | map { it } is parsed as x + (ch | map { it })
-    pipe_expression: $ => prec.left(2, seq(
-      choice(
-        $.pipe_expression,          // chaining: a | map | combine | view
-        $.channel_expression,       // Channel.of() | map
-        $.parenthesized_expression, // (expr) | map
-        $.list,                     // [1,2,3] | map
-        $.map,                      // [a:1] | map
-        $.identifier,               // myChannel | map
-        $.string_literal,           // "data" | map
-        $.integer_literal,          // 42 | map
-        $.boolean_literal,          // true | map
-        $.dotted_identifier         // obj.channel | map
-      ),
-      '|',                         // Pipe operator
-      $.pipe_operation
-    )),
-
-    // Pipe operations - extensible for new Nextflow operators
-    pipe_operation: $ => choice(
-      $.map_operation,       // map { transformation }
-      $.operator_closure,    // multiMap { }, branch { }, filter { }
-      $.function_call,       // ch | ifEmpty(null), ch | groupTuple(by: 0)
-      $.identifier           // ch | view, ch | flatten
-    ),
-
-    // A channel operator taking a closure with no parens: multiMap { ... }.
-    operator_closure: $ => seq($.identifier, $.closure),
-
-    // Map operation: transforms each channel item
-    // Examples:
-    //   | map { it.toUpperCase() }        - transform each item
-    //   | map { x -> x * 2 }              - named parameter
-    //   | map { it -> [it, it + ".txt"] } - create tuples
-    map_operation: $ => seq(
-      'map',
-      $.closure
-    ),
-
-    // GROOVY CLOSURES - FUNCTIONAL PROGRAMMING CONSTRUCTS
-    // ===================================================
-
-    // Closure syntax: { param -> expression } or { expression }
-    // Used extensively in Nextflow for channel operations and process definitions
-    // Examples:
-    //   { it * 2 }           - implicit 'it' parameter
-    //   { x -> x.reverse }   - explicit parameter
-    //   { a, b -> a + b }    - multiple parameters
-    //   { x ->               - multi-statement closure
-    //     println x
-    //     return x * 2
-    //   }
     closure: $ => seq(
       '{',
+      optional($._sep),
       optional(seq(
-        commaSep1($.closure_parameter),  // Parameter list: a, b, c
-        '->'                             // Arrow separator
+        optional(field('parameters', alias(commaSep1($.parameter), $.parameters))),
+        '->',
+        optional($._sep),
       )),
-      $.closure_block,            // Always use block structure
-      '}'
+      optional($._statements),
+      '}',
     ),
 
-    // Closure parameters: name, or typed (Path p, String x).
-    closure_parameter: $ => choice(
-      alias($.identifier, 'parameter'),
-      seq(choice($.identifier, $.dotted_identifier), alias($.identifier, 'parameter'))
+    new_expression: $ => seq(
+      'new',
+      field('type', $.type),
+      field('arguments', $.argument_list),
     ),
 
-    // Block statements inside closure (no braces, closure provides them)
-    closure_block: $ => alias(repeat1(seq(choice(
-      $.expression_statement,
-      $.variable_declaration,
-      $.assignment,
-      $.if_statement,
-      $.for_statement,
-      $.return_statement,
-      $.assert_statement,
-      $.label_statement,
-      $.exit_statement,
-      $.try_statement
-    ), optional($._terminator))), 'block'),
-
-    // Labeled statement: multiMap/branch emit labels — db: [meta, db]
-    label_statement: $ => prec.dynamic(1, seq(
-      $.identifier,
-      ':',
-      $.simple_expression
+    member_expression: $ => prec(PREC.postfix, seq(
+      field('object', $._expression),
+      field('operator', choice('.', '?.', '*.')),
+      field('property', choice($._identifier, $.string)),
     )),
 
-    // Command expressions for no-paren function calls (higher precedence),
-    // incl. a trailing closure: multiMapCriteria { ... }, println "x".
-    command_expression: $ => prec(1, seq(
-      $.identifier,
+    call_expression: $ => prec.right(PREC.postfix, seq(
+      field('function', $._expression),
       choice(
-        $.interpolated_string,
-        $.string_literal,
-        $.triple_quoted_string,              // error """..."""
-        $.interpolated_triple_quoted_string, // error """...${x}"""
-        $.identifier,
-        $.integer_literal,
-        $.closure
-      )
-    )),
-
-    // Function calls with parentheses (high precedence)
-    // Named args (key: value) appear in path(x, stageAs: 'y', arity: '1..*')
-    // and Groovy map-style calls, so args are option_entry or simple_expression.
-    function_call: $ => prec(4, seq(
-      $.identifier,
-      '(',
-      commaSep(choice($.option_entry, $.simple_expression)),
-      ')'
-    )),
-
-    // Method calls on objects (collection.method)
-    // The navigation path (a.b.c) is inlined rather than a reduced
-    // dotted_identifier receiver, so the parser can defer the
-    // dotted-chain-vs-method-call decision until it sees '(' or '{'.
-    method_call: $ => prec(7, seq(
-      choice(
-        $.identifier,                // Simple case: obj.method()
-        $.list,                      // List method calls: [1,2,3].each { }
-        $.interpolated_string,       // String method calls: "hello".toUpperCase()
-        $.parenthesized_expression,  // Parenthesized expressions: (expr).method()
-        $.channel_expression,        // Chained factories: Channel.fromPath(x).ifEmpty(y)
-        $.method_call,               // Chained methods: x.a().b()
-        $.function_call,             // Call results: foo().bar()
-        $.constructor_call,          // new X().parseText(...)
-        $.index_expression,          // Subscript receivers: list[0].name()
-        $.property_expression,       // Property receivers: (expr).name.endsWith(y)
-        $.process_output             // PROCESS.out.ch.join(...)
+        seq(field('arguments', $.argument_list), optional(field('closure', $.closure))),
+        field('closure', $.closure),
       ),
-      // Navigation path with optional safe-navigation (?.) and spread (*.)
-      repeat(seq(choice('.', '?.', '*.'), $.identifier)),
-      choice('.', '?.', '*.'),
-      $.identifier,
-      choice(
-        // foo(args), foo(args) { closure } (Groovy trailing closure), foo { }
-        seq('(', commaSep(choice($.option_entry, $.simple_expression)), ')', optional($.closure)),
-        $.closure
-      )
     )),
 
-    // Method call whose receiver is a triple-quoted string:
-    //   """...""".stripIndent(), """...""".stripIndent(true).trim()
-    // A dedicated rule requiring at least one `.method` so a *bare* triple
-    // string (a process script body) never matches this and stays
-    // script_content / interpolated_triple_quoted_string.
-    string_method_call: $ => prec(7, seq(
-      choice($.triple_quoted_string, $.interpolated_triple_quoted_string),
-      repeat1(seq(
-        choice('.', '?.'),
-        $.identifier,
-        // Call required (like method_call) so an empty () binds here instead
-        // of being read as a separate parenthesized_expression.
-        '(', commaSep(choice($.option_entry, $.simple_expression)), ')'
-      ))
+    index_expression: $ => prec(PREC.postfix, seq(
+      field('object', $._expression),
+      '[',
+      field('index', commaSep1($._expression)),
+      ']',
     )),
 
-    // Environment function (strict syntax)
-    env_function: $ => seq(
-      'env',
+    argument_list: $ => seq(
       '(',
-      $.simple_expression,
-      ')'
+      optional(seq(commaSep1($._argument), optional(','))),
+      ')',
     ),
 
-    // Property chains a.b.c, with optional safe navigation: task.ext?.args
-    dotted_identifier: $ => prec(7, seq(
-      $.identifier,
-      repeat1(seq(choice('.', '?.'), $.identifier))
+    _argument: $ => choice($._expression, $.named_argument),
+
+    named_argument: $ => seq(
+      field('name', choice($._identifier, $.string)),
+      ':',
+      field('value', $._expression),
+    ),
+
+    unary_expression: $ => choice(
+      prec(PREC.not, seq(field('operator', choice('!', '~')), field('operand', $._expression))),
+      prec(PREC.sign, seq(field('operator', choice('+', '-')), field('operand', $._expression))),
+    ),
+
+    binary_expression: $ => {
+      const table = [
+        [prec.left, PREC.power, '**'],
+        [prec.left, PREC.multiplicative, choice('*', '/', '%')],
+        [prec.left, PREC.additive, choice('+', '-')],
+        [prec.left, PREC.shift, choice('<<', '>>', '>>>', '..', '..<')],
+        [prec.left, PREC.relational, choice('<', '>', '<=', '>=', 'in', '!in')],
+        [prec.left, PREC.equality, choice('==', '!=', '<=>')],
+        [prec.left, PREC.regex, choice('=~', '==~')],
+        [prec.left, PREC.bitand, '&'],
+        [prec.left, PREC.xor, '^'],
+        [prec.left, PREC.bitor, '|'],
+        [prec.left, PREC.and, '&&'],
+        [prec.left, PREC.or, '||'],
+      ];
+      return choice(...table.map(([assoc, level, operator]) => assoc(level, seq(
+        field('left', $._expression),
+        // @ts-ignore
+        field('operator', operator),
+        field('right', $._expression),
+      ))));
+    },
+
+    cast_expression: $ => prec.left(PREC.relational, seq(
+      field('value', $._expression),
+      'as',
+      field('type', $.type),
     )),
 
-    // Property access on a non-identifier receiver: (expr).name, x[0].name,
-    // and memory-unit literals 7.GB / 280.MB (property on an integer literal;
-    // float_literal needs a digit after '.', so 7.GB is unambiguous).
-    property_expression: $ => prec(6, seq(
-      choice($.parenthesized_expression, $.index_expression, $.method_call, $.function_call, $.integer_literal),
-      '.',
-      $.identifier
+    instanceof_expression: $ => prec.left(PREC.relational, seq(
+      field('left', $._expression),
+      field('operator', choice('instanceof', '!instanceof')),
+      field('right', $.type),
     )),
 
-    // STRING LITERALS & INTERPOLATION SYSTEM
-    // ======================================
-
-    // Plain string literals (no interpolation) - SINGLE QUOTES ONLY
-    // Note: In Groovy/Nextflow, double-quoted strings are always GStrings (interpolated_string)
-    // Single quotes: 'literal text' (never interpolated)
-    string_literal: $ => token(seq("'", repeat(choice(/[^'\\]/, /\\./)), "'")),
-
-    // GSTRING INTERPOLATION - PRECEDENCE LEVEL 10 (HIGHEST)
-    // =====================================================
-
-    // Interpolated strings (GString) - Nextflow's template strings
-    // Examples:
-    //   "Hello $name"           - Variable interpolation
-    //   "Result: ${x + y}"      - Expression interpolation
-    //   "$obj.property"         - Property access
-    //   "File: $params.input"   - Nested property access
-    interpolated_string: $ => seq(
-      '"',
-      repeat(choice(
-        $.string_content,       // Plain text content (moved first)
-        $.escape_sequence,      // Escaped characters: \n, \t, etc.
-        $.interpolation         // $var or ${expr} patterns
-      )),
-      '"'
-    ),
-
-    // String interpolation patterns - supports both forms:
-    // 1. ${expression} - Full expression interpolation (can contain any Nextflow expression)
-    // 2. $variable     - Direct variable interpolation (faster, common case)
-    // 3. $obj.prop     - Property chain interpolation (supports dot notation)
-    interpolation: $ => seq(
-      '$',
-      choice(
-        seq('{', $.simple_expression, '}'),  // ${complex.expression + 1}
-        $.identifier  // Simplified: just $var (no dot notation for now)
-      )
-    ),
-
-    // String content between interpolations - excludes $, ", \.
-    // token(prec(1, ...)) so a `//` inside a string (e.g. sed 's/.$//') is
-    // string content, not a line_comment extra that would eat the closing ".
-    string_content: $ => token(prec(1, /[^$"\\]+/)),
-
-    // Escape sequences in strings - supports common escapes + Unicode
-    // Examples: \n, \t, \", \\, \u0041 (for 'A')
-    escape_sequence: $ => token(prec(1, seq(
-      '\\',
-      choice(
-        /u[0-9a-fA-F]{4}/,       // Unicode escape sequences
-        /[\s\S]/                 // Any other single char (lenient, Groovy-style)
-      )
-    ))),
-
-    // Slashy strings for regex patterns (Groovy feature)
-    // Example: /pattern[a-z]+/
-    // Note: No interpolation in strict syntax mode for security
-    // Slashy strings (regex): /pattern/. Single token so its delimiters don't
-    // collide with the division operator or string escape tokens. The first
-    // body char excludes `*` so `/*...*/` stays a block comment, and excludes
-    // `/` so `//` stays a line comment; `\` escapes the next char (incl. `/`).
-    slashy_string: $ => token(seq(
-      '/',
-      choice(/[^/*\n\\]/, /\\./),
-      repeat(choice(/[^/\n\\]/, /\\./)),
-      '/'
+    ternary_expression: $ => prec.right(PREC.ternary, seq(
+      field('condition', $._expression),
+      '?',
+      field('consequence', $._expression),
+      ':',
+      field('alternative', $._expression),
     )),
 
-    // Multi-line interpolated strings (heredoc with interpolation)
-    // Examples:
-    //   """
-    //   Hello $name,
-    //   Your result is ${calculation}
-    //   """
-    interpolated_triple_quoted_string: $ => seq(
-      '"""',
-      repeat(choice(
-        $.triple_string_content,
-        $.escape_sequence,
-        $.interpolation,
-        // A lone/doubled " that triple_string_content can't absorb because it
-        // abuts an interpolation, e.g. "${task.process}": inside """...""".
-        // Maximal munch still prefers the 3-char """ closer.
-        $._triple_quote_char
-      )),
-      '"""'
+    elvis_expression: $ => prec.right(PREC.ternary, seq(
+      field('left', $._expression),
+      '?:',
+      field('right', $._expression),
+    )),
+
+    // -- types
+
+    // String, java.nio.file.Path, List<Map<String,?>>, Path?, String[]
+    type: $ => seq(
+      $._type_name,
+      optional('?'),
+      repeat(seq('[', ']')),
     ),
 
-    _triple_quote_char: $ => token(prec(-2, /""?/)),
+    // Precedence only on the continuations, so `.` and `<` extend the type
+    // while `String x` stays ambiguous (declaration vs command call) for GLR.
+    _type_name: $ => seq(
+      $._identifier,
+      repeat(prec(1, seq('.', $._identifier))),
+      optional(prec(1, $.type_arguments)),
+    ),
 
-    // Content chunks inside """...""": anything except interpolation ($),
-    // backslash (escape) and the closing """, but a lone or doubled " is fine.
-    // prec(1) so `//` inside the string beats the line_comment extra (the
-    // regex cannot absorb the 3-quote closer, so this is safe).
-    triple_string_content: $ => token(prec(1, /([^$"\\]|"[^"$\\]|""[^"$\\])+/)),
+    type_arguments: $ => seq('<', commaSep1(choice($.type, '?')), '>'),
 
-    // Plain triple-single-quoted strings (never interpolated): '''literal'''.
-    // Triple-DOUBLE-quoted """...""" always route through
-    // interpolated_triple_quoted_string (which handles no-interpolation
-    // content too) so there is exactly one rule for """ — removing the
-    // overlap that made """...""".stripIndent() ambiguous.
-    triple_quoted_string: $ => seq("'''", /([^']|'[^']|''[^'])*/, "'''"),
+    // -- literals
 
-    // PRIMITIVE LITERALS & TOKENS
-    // ===========================
+    // ANTLR also allows `$` in names; here it would break GString lexing
+    // (`"$a$b"` is two interpolations).
+    identifier: _ => /[\p{L}_][\p{L}\p{Nd}_]*/,
 
-    // Integer literals - supports decimal numbers
-    // Regex: \d+ matches one or more digits: 0, 42, 1234
-    // Future enhancement: support hex (0xFF), octal (0777), binary (0b1010)
-    integer_literal: $ => /\d+/,
+    integer_literal: _ => token(choice(
+      /0[xX][0-9a-fA-F](_*[0-9a-fA-F])*[lLiIgG]?/,
+      /0[bB][01](_*[01])*[lLiIgG]?/,
+      /\d(_*\d)*[lLiIgG]?/,
+    )),
 
-    // Float literals: 0.8, 1.5e3, 2.0f (longest-match beats integer_literal;
-    // does not match ranges like 1..10 since a digit must follow the dot)
-    float_literal: $ => /\d+\.\d+([eE][+-]?\d+)?[fFdD]?/,
+    float_literal: _ => token(choice(
+      /\d(_*\d)*\.\d(_*\d)*([eE][+-]?\d+)?[fFdDgG]?/,
+      /\.\d(_*\d)*([eE][+-]?\d+)?[fFdDgG]?/,
+      /\d(_*\d)*[eE][+-]?\d+[fFdDgG]?/,
+      /\d(_*\d)*[fFdD]/,
+    )),
 
-    // Boolean literals - standard true/false keywords
-    boolean_literal: $ => choice('true', 'false'),
+    boolean_literal: _ => choice('true', 'false'),
 
-    // Identifier pattern - standard programming language identifiers
-    // Regex: [a-zA-Z_][a-zA-Z0-9_]*
-    // - Must start with letter or underscore: a, _var, MyClass
-    // - Can contain letters, digits, underscores: var1, my_variable, CLASS_NAME
-    identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
+    null_literal: _ => 'null',
 
-    // LEGACY ALIASES - COMPATIBILITY WITH TEST EXPECTATIONS
-    // =====================================================
-    // These aliases maintain compatibility with existing test corpus
-    // that expects generic 'string', 'number', 'boolean' node types
+    // -- strings
 
-    // Generic string alias (for backwards compatibility)
     string: $ => choice(
-      seq("'", /[^']*/, "'"),  // Single quoted: 'text'
-      seq('"', /[^"]*/, '"')   // Double quoted: "text" (no interpolation)
+      seq(
+        '\'',
+        repeat(choice(alias($._sq_content, $.string_content), $.escape_sequence)),
+        '\'',
+      ),
+      seq(
+        '"',
+        repeat(choice(alias($._dq_content, $.string_content), $.escape_sequence, $.interpolation)),
+        '"',
+      ),
+      seq(
+        '\'\'\'',
+        repeat(choice(
+          alias($._tsq_content, $.string_content),
+          alias($._tsq_quote, $.string_content),
+          $.escape_sequence,
+        )),
+        '\'\'\'',
+      ),
+      seq(
+        '"""',
+        repeat(choice(
+          alias($._tdq_content, $.string_content),
+          alias($._tdq_quote, $.string_content),
+          $.escape_sequence,
+          $.interpolation,
+        )),
+        '"""',
+      ),
     ),
 
-    // Generic number alias
-    number: $ => /\d+/,
+    // prec(1) so `//` inside a string is content, not a comment.
+    _sq_content: _ => token.immediate(prec(1, /[^'\\\n]+/)),
+    _dq_content: _ => token.immediate(prec(1, /[^"\\$\n]+/)),
+    _tsq_content: _ => token.immediate(prec(1, /([^'\\]|'[^'\\]|''[^'\\])+/)),
+    _tdq_content: _ => token.immediate(prec(1, /([^"\\$]|"[^"\\$]|""[^"\\$])+/)),
+    // A lone or doubled quote right before an escape, interpolation, or the
+    // closing delimiter, which the content tokens above cannot absorb.
+    _tsq_quote: _ => token.immediate(/''?/),
+    _tdq_quote: _ => token.immediate(/""?/),
 
-    // Generic boolean alias
-    boolean: $ => choice('true', 'false'),
+    escape_sequence: _ => token.immediate(seq(
+      '\\',
+      choice(/u[0-9a-fA-F]{4}/, /[0-7]{1,3}/, /[^u0-7]/),
+    )),
 
-    // COMMENT SYNTAX
-    // ==============
+    interpolation: $ => choice(
+      seq(token.immediate('${'), $._expression, '}'),
+      seq(
+        token.immediate('$'),
+        alias($._gstring_identifier, $.identifier),
+        repeat(seq(alias($._gstring_path_dot, '.'), alias($._gstring_identifier, $.identifier))),
+      ),
+    ),
 
-    // Line comments: // comment text until end of line
-    // Regex: /.*/  matches any characters until newline
-    line_comment: $ => token(seq('//', /.*/)),
+    _gstring_identifier: _ => token.immediate(prec(2, /[\p{L}_][\p{L}\p{Nd}_]*/)),
 
-    // Block comments: /* comment text */ (can span multiple lines)
-    // Complex regex explanation: /[^*]*\*+([^/*][^*]*\*+)*/
-    // - [^*]*: any chars except *
-    // - \*+: one or more * characters
-    // - ([^/*][^*]*\*+)*: zero or more groups of:
-    //   - [^/*]: char that's not / or *
-    //   - [^*]*: any chars except *
-    //   - \*+: one or more *
-    // This prevents premature termination on */ inside strings
-    block_comment: $ => token(seq('/*', /[^*]*\*+([^/*][^*]*\*+)*/, '/'))
+    // /pattern/, no interpolation (as in the strict syntax). The first
+    // character cannot be `*` or `/`, which start comments.
+    slashy_string: _ => token(seq(
+      '/',
+      choice(/[^/*\\]/, /\\[\s\S]/),
+      repeat(choice(/[^/\\]/, /\\[\s\S]/)),
+      '/',
+    )),
 
-  }
+    line_comment: _ => token(seq('//', /[^\n]*/)),
+
+    block_comment: _ => token(seq('/*', /[^*]*\*+([^/*][^*]*\*+)*/, '/')),
+  },
 });
 
-// HELPER FUNCTIONS - REUSABLE GRAMMAR PATTERNS
-// ============================================
-
-// Comma-separated list with at least one element (required comma separation)
-// Usage: commaSep1($.identifier) -> "a, b, c" or "a, b, c," (trailing comma allowed)
-// Pattern: rule (, rule)* ,?
-// Examples:
-//   - Function parameters: func(a, b, c)
-//   - Include items: include { proc1, proc2, proc3 }
-//   - Destructuring: def (x, y, z) = ...
-function commaSep1(rule) {
+/**
+ * `{ entry (sep entry)* }` with optional leading/trailing separators.
+ *
+ * @param {GrammarSymbols<string>} $
+ * @param {RuleOrLiteral} entry
+ */
+function body($, entry) {
   return seq(
-    rule,                    // First required element
-    repeat(seq(',', rule)),  // Zero or more: , element
-    optional(',')            // Optional trailing comma (Groovy style)
+    '{',
+    optional($._sep),
+    optional(seq(sepBy1($._sep, entry), optional($._sep))),
+    '}',
   );
 }
 
-// Comma-separated list with zero or more elements (optional comma separation)
-// Usage: commaSep($.simple_expression) -> "" or "a" or "a, b, c"
-// Pattern: (rule (, rule)* ,?)?
-// Examples:
-//   - Function arguments: func() or func(a) or func(a, b)
-//   - List contents: [] or [1] or [1, 2, 3]
-//   - Channel.of contents: Channel.of() or Channel.of(x, y)
-function commaSep(rule) {
-  return optional(commaSep1(rule));  // Make the entire comma-separated list optional
+/**
+ * A process/workflow/agent body: leading statements (directives, or an
+ * implicit script/main body), then labeled sections in any order.
+ *
+ * @param {GrammarSymbols<string>} $
+ * @param {RuleOrLiteral[]} sections
+ */
+function sectionedBody($, sections) {
+  return seq(
+    '{',
+    optional($._sep),
+    optional(seq(sepBy1($._sep, $._statement), optional($._sep))),
+    repeat(choice(...sections)),
+    '}',
+  );
+}
+
+/**
+ * `label: entry (sep entry)*`, owning its trailing separator so the next
+ * label can follow.
+ *
+ * Section keywords are also valid names, so `output:` after an input could
+ * be read as a typed input `output: <type>`. The dynamic precedence makes
+ * the reading with more sections win.
+ *
+ * @param {GrammarSymbols<string>} $
+ * @param {RuleOrLiteral} label
+ * @param {RuleOrLiteral} entry
+ */
+function section($, label, entry) {
+  return prec.dynamic(1, seq(
+    label,
+    ':',
+    optional($._sep),
+    optional(seq(sepBy1($._sep, entry), optional($._sep))),
+  ));
+}
+
+/**
+ * @param {RuleOrLiteral} separator
+ * @param {RuleOrLiteral} rule
+ */
+function sepBy1(separator, rule) {
+  return seq(rule, repeat(seq(separator, rule)));
+}
+
+/**
+ * @param {RuleOrLiteral} rule
+ */
+function commaSep1(rule) {
+  return sepBy1(',', rule);
 }
