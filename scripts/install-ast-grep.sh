@@ -116,8 +116,12 @@ install_library() {
     fi
     rm -f "$dest"
 
-    echo -e "   ${YELLOW}No prebuilt library for v$VERSION, building locally${NC}"
-    if (cd "$SRC" && npm ci --silent && npx tree-sitter build --output "$dest"); then
+    # Run the pinned CLI without installing the project's own dependencies,
+    # which older releases could not install cleanly.
+    local cli
+    cli=$(sed -n 's/.*"tree-sitter-cli": *"\([^"]*\)".*/\1/p' "$SRC/package.json")
+    echo -e "   ${YELLOW}No prebuilt library for v$VERSION, building with tree-sitter-cli@$cli${NC}"
+    if (cd "$SRC" && npx --yes "tree-sitter-cli@$cli" build --output "$dest"); then
         return 0
     fi
 
