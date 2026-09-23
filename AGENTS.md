@@ -1,58 +1,51 @@
 ---
-purpose: Map the repo's testing layers and their docs for agents
+purpose: Development workflow and testing map for agents working on the grammar
 applies_to: whole repository
-entrypoint: CLAUDE.md for grammar workflow; this file for test-layer routing
-verification: npx tree-sitter-cli test && scripts/check_injections.sh
-update_when: test layers, query files, or check scripts change
+entrypoint: follow "Grammar change workflow" for any grammar.js or scanner.c edit
+verification: npm test
+update_when: the workflow, test layers, or toolchain change
 ---
 # tree-sitter-nextflow — agent guide
 
-Tree-sitter grammar for Nextflow (`.nf`, `.config`). Detailed development
-workflow lives in `CLAUDE.md`; this file maps the **testing layers** and where
-each is documented and verified.
+Tree-sitter grammar for the Nextflow strict syntax (`.nf`, `.config`). Non-strict constructs (`while`, `switch`, classes) are out of scope; see `ROADMAP.md` for the scope guard and remaining work.
+
+## Toolchain
+
+Run `npm ci` once, then always invoke the CLI as `npx tree-sitter`. It runs the version pinned in `package.json`. A global `tree-sitter` at a different version rewrites `src/tree_sitter/*` and the parser metadata, which shows up as unrelated churn in the diff.
+
+## Grammar change workflow
+
+1. Edit `grammar.js`. Newline-sensitive statement termination lives in the external scanner `src/scanner.c`; its header comment explains when a newline ends a statement.
+2. Run `npx tree-sitter generate`. Everything else under `src/` is generated output.
+3. Add or update corpus tests in `test/corpus/<area>/`. `npx tree-sitter test -u` rewrites expectations to the current output (it refuses trees with ERROR or MISSING); review that diff as carefully as the grammar diff.
+4. Done when `npm test` passes and the commit contains `grammar.js`, the regenerated `src/`, and the tests together. CI regenerates the parser and fails if the committed `src/` differs.
+
+For changes that could affect real-world parsing, also check the parse rate over nf-core/modules with `scripts/parse_rate.py` (instructions in `ROADMAP.md`, "The metric"). It loads a compiled library; build one with `npx tree-sitter build --output lib/<platform>/libnextflow.<ext>`.
+
+## Debugging
+
+```bash
+echo 'x = [1, 2]' | npx tree-sitter parse          # inspect a tree
+npx tree-sitter parse file.nf | grep -E 'ERROR|MISSING'
+npx tree-sitter test --file-name process_definition.txt
+npx tree-sitter playground                        # interactive, needs `npx tree-sitter build --wasm`
+```
+
+When a construct is ambiguous, check how the official grammar handles it: the [Nextflow ANTLR grammar](https://github.com/nextflow-io/nextflow/tree/master/modules/nf-lang/src/main/antlr) is the language spec, and the [TextMate grammar](https://github.com/nextflow-io/vscode-language-nextflow/tree/main/syntaxes) shows what editors highlight today.
 
 ## Testing layers
 
-Tree-sitter features are tested at different layers with different tools.
-Know which layer you are changing before picking a test.
+`npm test` runs every layer below except end-to-end fontification. Details for each live in `test/AGENTS.md`; query-specific rules live in `queries/AGENTS.md`.
 
-| Layer | What it verifies | Where | Docs |
-|---|---|---|---|
-| Parsing | grammar.js produces the right syntax tree | `test/corpus/*.txt` via `tree-sitter test` | [Writing Tests](https://tree-sitter.github.io/tree-sitter/creating-parsers/5-writing-tests.html) |
-| Highlighting | `queries/highlights.scm` captures | `test/highlight/*.nf` assertion comments via `tree-sitter test` | [Syntax Highlighting — Unit Testing](https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#unit-testing) |
-| Tags | `queries/tags.scm` captures | `test/tags/*.nf` assertion comments via `tree-sitter test` | [Code Navigation — Unit Testing](https://tree-sitter.github.io/tree-sitter/4-code-navigation.html#unit-testing) |
-| Injection | `queries/injections.scm` capture ranges | `scripts/check_injections.sh` golden test | [Syntax Highlighting — Language Injection](https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#language-injection) |
-| End-to-end fontification | bash actually highlighted inside script bodies | consumer editors; ERT tests in the `nextflow-mode` repo | — |
+| Layer | What it verifies | Where |
+|---|---|---|
+| Parsing | `grammar.js` produces the right tree | `test/corpus/**/*.txt` |
+| Highlighting | `queries/highlights.scm` captures | `test/highlight/*.nf` |
+| Tags | `queries/tags.scm` captures | `test/tags/*.nf` |
+| Injection | `queries/injections.scm` capture ranges | `scripts/check_injections.sh` (golden file in `test/injection/`) |
+| End-to-end fontification | bash highlighted inside script bodies | consumer editors, e.g. the ERT tests in `nextflow-mode` |
 
-**Why injection has its own layer:** `tree-sitter test` highlight assertions
-check the host-language layer only — the test subcommand loads just this
-grammar, so `#set! injection.language "bash"` never resolves and injected
-captures are invisible to assertions. Do NOT add `test/highlight` cases
-asserting bash captures inside script bodies; they can only pass by accident.
-Use `scripts/check_injections.sh` (capture ranges) plus a consumer editor
-test (real fontification) instead.
+## Bindings and distribution
 
-## Quick commands
-
-```bash
-npx tree-sitter-cli test                     # corpus + highlight + tags
-npx tree-sitter-cli test --file-name X.txt   # one corpus file
-scripts/check_injections.sh                  # injection query golden test
-scripts/check_injections.sh --update         # re-pin after intended change
-npx tree-sitter-cli parse file.nf            # inspect a syntax tree
-npx tree-sitter-cli query queries/injections.scm file.nf  # inspect captures
-```
-
-`tree-sitter highlight file.nf` resolves injections for manual inspection,
-but only when a `tree-sitter-bash` checkout is discoverable via the
-`parser-directories` in `~/.config/tree-sitter/config.json`
-(check with `tree-sitter dump-languages`).
-
-## Invariants
-
-- `src/parser.c` and friends are generated — never hand-edit; run
-  `tree-sitter generate` after touching `grammar.js`.
-- Query files reference node names from `grammar.js`; verify with
-  `tree-sitter parse` before writing captures, don't guess.
-- After grammar changes: `tree-sitter test` must keep 96/96 parses and
-  `scripts/check_injections.sh` must pass (or be intentionally re-pinned).
+- Bindings: Rust (`cargo test`), Python (`pytest bindings/python/tests` after `pip install ".[core]"`), and C (`make`). There is no Node binding; `package.json` only pins the CLI. Nothing is published to a package registry.
+- ast-grep support is `sgconfig.yml`, `rules/`, `outline/`, and `docs/ast-grep/`. The parser libraries it loads are not committed: `lib/` is ignored, `scripts/install-ast-grep.sh` downloads them from the GitHub release, and a `v*` tag builds and attaches them. Release steps are in `CONTRIBUTING.md`.

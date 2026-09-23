@@ -2,230 +2,49 @@
 
 Nextflow grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter).
 
-> **Target**: Nextflow Strict Syntax (v2 Parser) - `NXF_SYNTAX_PARSER=v2`
->
-> This grammar is designed to support Nextflow's [strict syntax mode](https://nextflow.io/docs/latest/strict-syntax.html), focusing on the cleaner, more consistent v2 parser syntax patterns.
+Targets Nextflow's [strict syntax](https://nextflow.io/docs/latest/strict-syntax.html) (`NXF_SYNTAX_PARSER=v2`). Non-strict constructs (`while`, `switch`, classes) are out of scope.
 
 ## Status
 
-- **Parse rate:** 100% error-free over the pinned nf-core/modules corpus
-  (2077/2077 files), measured by `scripts/parse_rate.py`.
-- **Corpus tests:** 96 passing (`tree-sitter test`).
-- **Bindings:** Node.js, Rust, C, and Python.
+- **Parse rate:** 100% error-free over the pinned nf-core/modules corpus (2077/2077 files), measured by `scripts/parse_rate.py`.
+- **Bindings:** Rust, Python, and C, built from source. Nothing is published to a package registry yet.
 
-See [`ROADMAP.md`](ROADMAP.md) for the parity roadmap and remaining work, and
-[`CHANGELOG.md`](CHANGELOG.md) for release history.
+See [`ROADMAP.md`](ROADMAP.md) for the parity roadmap and remaining work, and [`CHANGELOG.md`](CHANGELOG.md) for release history.
 
 ## Features
 
-- **Core Nextflow syntax:** process, workflow, and function definitions,
-  variable declarations, includes, and parameters.
-- **DSL2:** channel factories and operators, chained/piped channel operations,
-  `take:`/`main:`/`emit:` workflow sections.
-- **Process bodies:** directives, `input:`/`output:`/`when:` sections, and
-  `script:`/`shell:`/`exec:`/`stub:` blocks.
-- **Expressions:** binary/unary operators, casts, ranges, lists, maps, closures
-  (including typed parameters), safe navigation (`?.`), and spread (`*.`).
-- **Strings:** single/double/triple-quoted strings, GString interpolation, and
-  slashy-string regexes.
-- **Control flow:** `if`/`else`, `for`-in loops, `try`/`catch`/`finally`,
-  `assert`, and `workflow.onComplete`/`onError` event handlers.
+- **Core Nextflow syntax:** process, workflow, and function definitions, variable declarations, includes, and parameters.
+- **DSL2:** channel factories and operators, chained/piped channel operations, `take:`/`main:`/`emit:` workflow sections.
+- **Process bodies:** directives, `input:`/`output:`/`when:` sections, and `script:`/`shell:`/`exec:`/`stub:` blocks.
+- **Expressions:** binary/unary operators, casts, ranges, lists, maps, closures (including typed parameters), safe navigation (`?.`), and spread (`*.`).
+- **Strings:** single/double/triple-quoted strings, GString interpolation, and slashy-string regexes.
+- **Control flow:** `if`/`else`, `for`-in loops, `try`/`catch`/`finally`, `assert`, and `workflow.onComplete`/`onError` event handlers.
 - **Language injection:** Bash/shell highlighting inside script blocks.
 
-> **Scope:** the grammar targets the Nextflow strict syntax only. Non-strict
-> constructs (`while`, `switch`, classes) are intentionally out of scope.
-
 ## Installation
-
-### Python
-
-Published to PyPI on each tagged release:
-
-```bash
-pip install tree-sitter-nextflow
-```
-
-### From source (Node.js, Rust, C)
 
 The Rust, Python, and C bindings are built from source:
 
 ```bash
 git clone https://github.com/nextflow-io/tree-sitter-nextflow.git
-cd tree-sitter-nextflow
-npm ci        # installs the pinned tree-sitter CLI
-npm test
 ```
 
 - **Python:** `pip install .`
-- **Rust:** add a path/git dependency on this repo in `Cargo.toml`.
+- **Rust:** add a path or git dependency on this repo in `Cargo.toml`.
 - **C:** `make` builds the shared library.
 
-## AST-grep Integration
+## ast-grep
 
-This grammar includes full [ast-grep](https://ast-grep.github.io/) support for advanced Nextflow code analysis, linting, and refactoring.
-
-### Quick Install
-
-Install ast-grep support with a single command:
+The repo includes an [ast-grep](https://ast-grep.github.io/) setup for searching, linting, and outlining Nextflow code by syntax tree:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nextflow-io/tree-sitter-nextflow/main/scripts/install-ast-grep.sh | bash
-```
-
-For global installation:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/nextflow-io/tree-sitter-nextflow/main/scripts/install-ast-grep.sh | bash -s -- --global
-```
-
-### Installation
-
-#### Option 1: Automated Installation (Recommended)
-
-Use the installation script to set up ast-grep for your project:
-
-```bash
-# Clone or download the repository
-git clone https://github.com/nextflow-io/tree-sitter-nextflow.git
-cd tree-sitter-nextflow
-
-# Run the installation script
-./scripts/install-ast-grep.sh
-
-# Or install globally
-./scripts/install-ast-grep.sh --global
-```
-
-The script will:
-
-- Detect your platform (macOS, Linux)
-- Download the parser library from the matching GitHub release into `lib/`,
-  or build it locally if there is no prebuilt one
-- Copy `sgconfig.yml` to your project or `~/.config/ast-grep/`
-
-#### Option 2: Manual Installation
-
-If you prefer manual setup or need a custom configuration:
-
-```bash
-# 1. Copy sgconfig.yml to your Nextflow project
-cp path/to/tree-sitter-nextflow/sgconfig.yml .
-
-# 2. Update libraryPath if needed (for global install)
-# Edit sgconfig.yml and use absolute paths to lib/ directory
-```
-
-#### Platform Support
-
-Each GitHub release has prebuilt parser libraries for macOS (arm64, x64) and
-Linux (x64, arm64). For other platforms, build the library yourself:
-
-```bash
-npm ci
-npx tree-sitter build --output libnextflow.so
-```
-
-### Quick Start
-
-Once installed, ast-grep works seamlessly with Nextflow files:
-
-```bash
-# Search for process definitions
-ast-grep -l nextflow -p 'process $NAME { $$$ }' .
-
-# Run built-in rules
-ast-grep scan
-
-# Outline a file (ast-grep >= 0.44.0)
-ast-grep outline --lang nextflow \
-  --outline-rules outline/nextflow.yml --no-default-outline-rules main.nf
-
-# Find deprecated Channel.from() usage
 ast-grep -l nextflow -p 'Channel.from($$$)' .
 ```
 
-### Configuration
-
-The project includes `sgconfig.yml` with platform-specific parser libraries:
-
-- **Custom Language**: Nextflow with platform detection
-- **File Extensions**: `.nf`, `.config`
-- **expandoChar**: `_` — an internal detail so the parser can tokenize patterns (Nextflow uses `$` for string interpolation). You still write metavariables as `$VAR` / `$$$`; ast-grep maps `$`↔`_` for you.
-
-### Built-in Rules
-
-The `rules/` directory includes linting rules for:
-
-- **Process naming conventions**: Enforce UPPERCASE or camelCase naming
-- **Channel operations**: Detect deprecated patterns (Channel.from, into, separate)
-- **DSL2 best practices**: Workflow structure, tuple inputs, named emits
-- **String interpolation**: Single vs double quotes, GString usage
-
-### Pattern Examples
-
-```bash
-# Find all process definitions
-ast-grep -l nextflow -p 'process $NAME { $$$ }'
-
-# Find workflows with take/main/emit structure
-ast-grep -l nextflow -p 'workflow $NAME { take: $$$ main: $$$ emit: $$$ }'
-
-# Find deprecated Channel.from() (flagged by rules)
-ast-grep -l nextflow -p 'Channel.from($$$)'
-
-# Search for hardcoded paths
-ast-grep -l nextflow -p 'path("/$$$")'
-```
-
-See [`docs/ast-grep/`](docs/ast-grep/) for the full setup guide, pattern
-library, and `ast-grep outline` documentation.
-
-### Custom Rules
-
-Create YAML files in `rules/` directory:
-
-```yaml
-id: my-custom-rule
-language: nextflow
-message: Custom rule message
-severity: warning
-rule:
-  pattern: process $NAME { $$$ }
-```
-
-See [ast-grep rule documentation](https://ast-grep.github.io/guide/rule-config.html) for details.
-
-### Benefits
-
-- **Code Search**: Fast semantic search across Nextflow codebases
-- **Refactoring**: Automated migrations (e.g., DSL1 → DSL2)
-- **Linting**: Enforce coding standards and best practices
-- **CI/CD**: Integrate rules into continuous integration pipelines
+See [`docs/ast-grep/`](docs/ast-grep/) for setup, the bundled lint rules, and the pattern library.
 
 ## References
 
 - [Nextflow ANTLR grammar](https://github.com/nextflow-io/nextflow/tree/master/modules/nf-lang/src/main/antlr)
 - [Nextflow TextMate grammar](https://github.com/nextflow-io/vscode-language-nextflow/tree/main/syntaxes)
 - [AST-grep Custom Languages](https://ast-grep.github.io/advanced/custom-language.html)
-
-## Contributing
-
-Contributions are welcome. Grammar changes go in `grammar.js`. Run
-`npm ci` once to install the pinned tree-sitter CLI, then
-`npx tree-sitter generate && npm test` before opening a PR, and add corpus
-tests under `test/corpus/`. Commit the regenerated `src/` with the grammar
-change; CI fails if they drift apart. See [`ROADMAP.md`](ROADMAP.md) for priorities and
-[`CLAUDE.md`](CLAUDE.md) for the development workflow.
-
-### Releasing
-
-1. `npx tree-sitter version X.Y.Z` bumps the version in every manifest.
-2. `npx tree-sitter generate`, since the parser embeds the version.
-3. Update `CHANGELOG.md`, commit, then tag and push `vX.Y.Z`.
-
-The tag push builds the ast-grep parser libraries and attaches them to the
-GitHub release.
-
-## License
-
-[MIT](LICENSE) © Edmund Miller
