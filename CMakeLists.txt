@@ -3,13 +3,13 @@ cmake_minimum_required(VERSION 3.13)
 project(tree-sitter-nextflow
         VERSION "0.3.0"
         DESCRIPTION "A parser for Nextflow from scratch"
-        HOMEPAGE_URL "https://github.com/edmundmiller/tree-sitter-nextflow"
+        HOMEPAGE_URL "https://github.com/nextflow-io/tree-sitter-nextflow"
         LANGUAGES C)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(TREE_SITTER_REUSE_ALLOCATOR "Reuse the library allocator" OFF)
 
-set(TREE_SITTER_ABI_VERSION 14 CACHE STRING "Tree-sitter ABI version")
+set(TREE_SITTER_ABI_VERSION 15 CACHE STRING "Tree-sitter ABI version")
 if(NOT ${TREE_SITTER_ABI_VERSION} MATCHES "^[0-9]+$")
     unset(TREE_SITTER_ABI_VERSION CACHE)
     message(FATAL_ERROR "TREE_SITTER_ABI_VERSION must be an integer")

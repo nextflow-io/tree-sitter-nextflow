@@ -3,7 +3,7 @@ $(error Windows is not supported)
 endif
 
 LANGUAGE_NAME := tree-sitter-nextflow
-HOMEPAGE_URL := https://github.com/edmundmiller/tree-sitter-nextflow
+HOMEPAGE_URL := https://github.com/nextflow-io/tree-sitter-nextflow
 VERSION := 0.3.0
 
 # repository
