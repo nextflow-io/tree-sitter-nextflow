@@ -9,8 +9,7 @@ Nextflow grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter).
 ## Status
 
 - **Parse rate:** 100% error-free over the pinned nf-core/modules corpus (2077/2077 files), measured by `scripts/parse_rate.py`.
-- **Corpus tests:** 96 passing (`tree-sitter test`).
-- **Bindings:** Node.js, Rust, C, and Python.
+- **Bindings:** Rust, Python, and C, built from source. Nothing is published to a package registry yet.
 
 See [`ROADMAP.md`](ROADMAP.md) for the parity roadmap and remaining work, and [`CHANGELOG.md`](CHANGELOG.md) for release history.
 
@@ -27,16 +26,6 @@ See [`ROADMAP.md`](ROADMAP.md) for the parity roadmap and remaining work, and [`
 > **Scope:** the grammar targets the Nextflow strict syntax only. Non-strict constructs (`while`, `switch`, classes) are intentionally out of scope.
 
 ## Installation
-
-### Python
-
-Published to PyPI on each tagged release:
-
-```bash
-pip install tree-sitter-nextflow
-```
-
-### From source (Node.js, Rust, C)
 
 The Rust, Python, and C bindings are built from source:
 
@@ -198,7 +187,7 @@ See [ast-grep rule documentation](https://ast-grep.github.io/guide/rule-config.h
 
 ## Contributing
 
-Contributions are welcome. Grammar changes go in `grammar.js`. Run `npm ci` once to install the pinned tree-sitter CLI, then `npx tree-sitter generate && npm test` before opening a PR, and add corpus tests under `test/corpus/`. Commit the regenerated `src/` with the grammar change; CI fails if they drift apart. See [`ROADMAP.md`](ROADMAP.md) for priorities and [`CLAUDE.md`](CLAUDE.md) for the development workflow.
+Contributions are welcome. Grammar changes go in `grammar.js`. Run `npm ci` once to install the pinned tree-sitter CLI, then `npx tree-sitter generate && npm test` before opening a PR, and add corpus tests under `test/corpus/`. Commit the regenerated `src/` with the grammar change; CI fails if they drift apart. See [`ROADMAP.md`](ROADMAP.md) for priorities and [`AGENTS.md`](AGENTS.md) for the development workflow and test layers.
 
 ### Releasing
 

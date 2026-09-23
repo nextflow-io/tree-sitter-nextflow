@@ -7,9 +7,8 @@
       "WebFetch(domain:tree-sitter.github.io)",
       "WebFetch(domain:ast-grep.github.io)",
       "WebFetch(domain:nextflow.io)",
-      "Bash(echo:* | tree-sitter parse:*)",
-      "Bash(tree-sitter:*)",
-      "Bash(:* | tree-sitter parse:*)"
+      "Bash(npx tree-sitter:*)",
+      "Bash(npm test)"
     ],
     "deny": [],
     "ask": []
