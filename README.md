@@ -184,7 +184,3 @@ See [ast-grep rule documentation](https://ast-grep.github.io/guide/rule-config.h
 - [Nextflow ANTLR grammar](https://github.com/nextflow-io/nextflow/tree/master/modules/nf-lang/src/main/antlr)
 - [Nextflow TextMate grammar](https://github.com/nextflow-io/vscode-language-nextflow/tree/main/syntaxes)
 - [AST-grep Custom Languages](https://ast-grep.github.io/advanced/custom-language.html)
-
-## Contributing
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the development workflow and release steps.
