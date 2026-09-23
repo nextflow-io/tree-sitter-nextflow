@@ -101,7 +101,11 @@ jobs:
       - name: Smoke-test outline rules against freshly built parser
         run: |
           cat > /tmp/smoke.nf <<'NF'
-          include { FASTQC, MULTIQC as QC } from './modules/qc'
+          include { FASTQC; MULTIQC as QC } from './modules/qc'
+
+          def helper() {
+            1
+          }
 
           process ALIGN {
             script:
@@ -120,7 +124,7 @@ jobs:
             --outline-rules outline/nextflow.yml \
             --no-default-outline-rules --items all --json=compact /tmp/smoke.nf)
           echo "$out"
-          for sym in FASTQC MULTIQC ALIGN RNASEQ main; do
+          for sym in FASTQC MULTIQC helper ALIGN RNASEQ main; do
             echo "$out" | grep -q "\"name\":\"$sym\"" || { echo "✗ outline missing $sym" >&2; exit 1; }
           done
           echo "✓ outline extracted all expected symbols"
