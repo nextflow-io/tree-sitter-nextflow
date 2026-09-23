@@ -6,20 +6,21 @@ Targets Nextflow's [strict syntax](https://nextflow.io/docs/latest/strict-syntax
 
 ## Status
 
-- **Parse rate:** 100% error-free over the pinned nf-core/modules corpus (2077/2077 files), measured by `scripts/parse_rate.py`.
+- **Parse rate:** 100% error-free over nf-core/modules (2208/2208 files), measured by `scripts/parse_rate.py`.
 - **Bindings:** Rust, Python, and C, built from source. Nothing is published to a package registry yet.
 
 See [`ROADMAP.md`](ROADMAP.md) for the parity roadmap and remaining work, and [`CHANGELOG.md`](CHANGELOG.md) for release history.
 
 ## Features
 
-- **Core Nextflow syntax:** process, workflow, and function definitions, variable declarations, includes, and parameters.
-- **DSL2:** channel factories and operators, chained/piped channel operations, `take:`/`main:`/`emit:` workflow sections.
-- **Process bodies:** directives, `input:`/`output:`/`when:` sections, and `script:`/`shell:`/`exec:`/`stub:` blocks.
-- **Expressions:** binary/unary operators, casts, ranges, lists, maps, closures (including typed parameters), safe navigation (`?.`), and spread (`*.`).
-- **Strings:** single/double/triple-quoted strings, GString interpolation, and slashy-string regexes.
-- **Control flow:** `if`/`else`, `for`-in loops, `try`/`catch`/`finally`, `assert`, and `workflow.onComplete`/`onError` event handlers.
-- **Language injection:** Bash/shell highlighting inside script blocks.
+The grammar mirrors the official [Nextflow ANTLR grammar](https://github.com/nextflow-io/nextflow/tree/master/modules/nf-lang/src/main/antlr), including:
+
+- **Declarations:** processes, workflows, functions, includes, `params` blocks, records, enums, the `output` block, and feature flags.
+- **Process and workflow sections:** typed and legacy inputs and outputs, `stage:`, `topic:`, `when:`, `script:`/`shell:`/`exec:`/`stub:`, and `take:`/`main:`/`emit:`/`publish:`/`onComplete:`/`onError:`.
+- **Types:** `name: Type` annotations, generics, nullable types, and return types.
+- **Expressions:** Nextflow's operator precedence, closures, calls with and without parentheses, safe navigation (`?.`), spread (`*.`), and channel pipes.
+- **Strings:** all four quote styles, GString interpolation, and slashy strings.
+- **Language injection:** bash highlighting inside process scripts.
 
 ## Installation
 

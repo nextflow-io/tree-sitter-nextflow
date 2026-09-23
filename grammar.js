@@ -65,22 +65,24 @@ module.exports = grammar({
 
   supertypes: $ => [$._statement, $._expression],
 
+  // Each of these is resolved by GLR plus `prec.dynamic`; see AGENTS.md,
+  // "Grammar design". Static precedence here would pre-empt GLR.
   conflicts: $ => [
-    // `Foo x = ...` / `Foo f() {}` (legacy typed declaration) vs a command call `Foo x`.
+    // `String x = ...` / `String f() {}` (legacy typed declaration) vs a
+    // command call `String x`, index `String[0]`, or expression.
     [$._expression, $._type_name],
     [$._expression, $.parameter],
-    // `path("x"), emit: y`: a command whose first argument is parenthesized,
-    // vs the call `path("x")`. Dynamic precedence prefers the call.
-    [$._expression, $.command_expression],
+    [$.command_expression, $._type_name],
     [$.command_expression, $._expression, $._type_name],
-    [$.type],
-    [$.take_section],
-    [$.main_section],
-    [$.emit_section],
-    [$.publish_section],
-    [$.on_complete_section],
-    [$.on_error_section],
     [$.variable_declaration, $._type_name],
+    // `path("x"), emit: y` (command with a parenthesized first argument) vs
+    // the call `path("x")`.
+    [$._expression, $.command_expression],
+    // `x instanceof List ? a : b`: nullable type vs ternary; `x as Foo.bar`.
+    [$.type],
+    [$._type_name],
+    // A section keyword after an entry: the next section, or an entry that
+    // uses the keyword as a name (`input = ...`, `output: Path`).
     [$.input_section],
     [$.stage_section],
     [$.output_section],
@@ -88,8 +90,12 @@ module.exports = grammar({
     [$.script_section],
     [$.stub_section],
     [$.prompt_section],
-    [$.command_expression, $._type_name],
-    [$._type_name],
+    [$.take_section],
+    [$.main_section],
+    [$.emit_section],
+    [$.publish_section],
+    [$.on_complete_section],
+    [$.on_error_section],
   ],
 
   rules: {

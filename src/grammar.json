@@ -6389,8 +6389,8 @@
       "parameter"
     ],
     [
-      "_expression",
-      "command_expression"
+      "command_expression",
+      "_type_name"
     ],
     [
       "command_expression",
@@ -6398,28 +6398,17 @@
       "_type_name"
     ],
     [
+      "variable_declaration",
+      "_type_name"
+    ],
+    [
+      "_expression",
+      "command_expression"
+    ],
+    [
       "type"
     ],
     [
-      "take_section"
-    ],
-    [
-      "main_section"
-    ],
-    [
-      "emit_section"
-    ],
-    [
-      "publish_section"
-    ],
-    [
-      "on_complete_section"
-    ],
-    [
-      "on_error_section"
-    ],
-    [
-      "variable_declaration",
       "_type_name"
     ],
     [
@@ -6444,11 +6433,22 @@
       "prompt_section"
     ],
     [
-      "command_expression",
-      "_type_name"
+      "take_section"
     ],
     [
-      "_type_name"
+      "main_section"
+    ],
+    [
+      "emit_section"
+    ],
+    [
+      "publish_section"
+    ],
+    [
+      "on_complete_section"
+    ],
+    [
+      "on_error_section"
     ]
   ],
   "precedences": [],

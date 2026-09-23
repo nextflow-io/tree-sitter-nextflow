@@ -7,7 +7,7 @@ update_when: a test directory is added, removed, or changes semantics
 ---
 # test/ — one directory per testing layer
 
-- `corpus/` — **parsing** tests (grammar.js changes). tree-sitter's own format: name, input, expected S-expression, separated by `===`/`---`. Docs: https://tree-sitter.github.io/tree-sitter/creating-parsers/5-writing-tests.html Run: `npx tree-sitter test` (or `--file-name X.txt`). Update expectations after intended grammar changes: `npx tree-sitter test -u` (refuses trees containing ERROR/MISSING).
+- `corpus/` — **parsing** tests (grammar.js changes). `corpus/spec/` holds one area per file (declarations, process, workflow, statements, expressions, literals), each test written from a `ScriptParser.g4` rule; add parity tests there. tree-sitter's own format: name, input, expected S-expression, separated by `===`/`---`. Docs: https://tree-sitter.github.io/tree-sitter/creating-parsers/5-writing-tests.html Run: `npx tree-sitter test` (or `--file-name X.txt`). Update expectations after intended grammar changes: `npx tree-sitter test -u` (refuses trees containing ERROR/MISSING).
 
 - `highlight/` — **highlights.scm** tests. Normal `.nf` files with assertion comments: `// ^ capture.name` checks the column above, `// <- capture.name` checks the comment's own column, `!name` negates. Docs: https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#unit-testing LIMITATION: assertions see only host-language captures — never assert injected-bash captures here (see `../injection/`).
 

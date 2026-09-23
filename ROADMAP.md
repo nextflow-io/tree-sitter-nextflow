@@ -2,7 +2,7 @@
 
 Goal: tree-sitter-nextflow parses everything the official Nextflow compiler's strict syntax accepts, so downstream tooling (ast-grep lint rules in nf-core/tools, editors, outlines) can rely on the AST instead of regex.
 
-**Scope guard:** strict syntax only. `while` loops, `switch`, classes, and top-level arbitrary statements are *not* goals — the strict syntax removes them. Exceptions parsed because real-world nf-core code still ships them: `try`/`catch`/`finally` and `for`-in loops (both deprecated by the 26.04 strict syntax, but present in the corpus).
+**Scope guard:** strict syntax only. `while` loops, `switch` and classes are not goals, since the strict syntax removes them. `finally` and `for`-in loops are parsed anyway because nf-core code still has them.
 
 ## The metric
 
@@ -42,67 +42,23 @@ NEXTFLOW_TS_LIB=lib/<platform>/libnextflow.<ext> \
 | 2026-07-03 | 99.3% (2056/2070)             | method calls on triple strings ("""…""".stripIndent()); """ unified to one rule |
 | 2026-07-03 | 99.4% (2058/2070)             | lenient string escapes (\\ + any char)     |
 | 2026-07-03 | 99.5% (2059/2070)             | whitespace in section markers (stub :)      |
-| 2026-07-03 | **99.6% (2062/2070)**         | ; terminates before } / after comment; typed function defs (String f(String a){}) |
+| 2026-07-03 | 99.6% (2062/2070)             | ; terminates before } / after comment; typed function defs (String f(String a){}) |
+|## Status
 
-## Remaining failures (8 files, 0.4%) — categorised
+The grammar mirrors `ScriptParser.g4` (see `grammar.js`). Every audit probe that Nextflow accepts parses, nf-core/modules parses fully, and the `.nf` files of rnaseq, sarek, methylseq and flexlmm parse fully. The script grammar also parses all 618 nf-core `.config` files error-free, as script-shaped trees.
 
-Each was attempted and reverted with the measured cost; these are genuine LR/lexer limits or non-idiomatic source:
+A file counts only if it has **zero** ERROR nodes. That is the bar nf-core/tools uses to trust structural matching over regex fallback (`nf_core/astgrep.py::find_matches`).
 
-- **`|` as boolean-or in conditions** (4): `if (a == b | c == d)`. Adding `|` as a binary operator reaches 99.7% but deterministically reparses every channel pipe `ch | map` as a `binary_expression` instead of `pipe_expression` (2 corpus tests fail) — `binary_expression`'s static precedence wins and `prec.dynamic` does not apply (no real GLR conflict). Breaking the core channel-op node that lint rules read is not worth 4 files whose source should use `||`.
-- **exotic / conflict-prone single-file syntax** (4):
-  - `( cond ? """a""" : "" ) << """b"""` as a process script body — a binary expression *producing* the script string (rungx).
-  - IIFE `{ … }()` — adding a closure-call rule introduces an unresolved grammar conflict for one file (scan).
-  - `stdout emit: x` without a comma — comma-optional `emit_declaration` conflicts with `input_declaration` (download).
-  - `log.debug "msg"` — a dotted-receiver no-paren command; a dedicated rule regressed other files (subsample).
+Deliberate differences from ANTLR:
 
-**Resolved since the prior 12/18**: `"""…""".stripIndent()` cluster (~7 files, via one `"""` rule + `string_method_call`); try/catch/finally; chained pipes; destructuring assignment; index on parenthesized/interpolated expressions; lenient escapes; `;` terminating before `}` and after an inline comment; typed function definitions (`String f(String a){}`); `stub :` whitespace.
+- Accepted though Nextflow rejects them: `for`-in loops and `finally` (nf-core code still has them), out-of-order sections, and processes without a script section (useful while editing).
+- ANTLR requires a capitalized class name in `Type name` declarations. Tree-sitter cannot check that, so without an initializer `path reads` is read as a command call, and `String x` is too.
+- Section keywords are also valid names (`input = ...` in a script prelude). GLR resolves the ambiguity, preferring the reading with more sections.
+- Names cannot contain `$` after the first character, since that would break GString lexing.
 
-Known structural (error-free, not counted as failures): with terminators in workflow sections, an LALR reduction can place a trailing `take:` identifier or a second `main:` statement at `workflow_body` level rather than nested in the section. All leaf nodes are present; a section-greedy restructure would fix the nesting.
+## Remaining work
 
-A file counts only if it has **zero** ERROR nodes — that is the bar nf-core/tools uses to trust structural matching over regex fallback (`nf_core/astgrep.py::find_matches`).
-
-## Phase 1 — burn down the measured failures (ordered by impact)
-
-**Done (commit 300cfc6, 50.0% → 66.4%):** float literals; single/double-quoted string escapes incl. `\$` and `\'`; `assert cond : message` (incl. in script preludes); `==~`; interpolated map keys; braceless `if` bodies; chained subscripts; single-qualifier outputs with named options (`path "x", emit: y`); `option_entry`/`option_value` so option values don't include `command_expression`.
-
-**Done — newline-sensitive statement termination (external scanner).** `src/scanner.c` emits a `_terminator` token at newlines/`;` where the parser state allows a statement to end (`valid_symbols`), so continuations inside `(...)`/`[...]` and mid-expression fall through as whitespace for free. A one-character lookahead suppresses the terminator when the next line begins a continuation (`.`, `?`, `:`, `,`, closing bracket, or the `else` keyword), and comment lines are folded into the terminator run so a comment between two statements yields one terminator, not two. Process bodies are now parsed in three ordered phases (directives → input/output/when → script/stub) and each declaration self-terminates, which removes the directive-vs-input and directive-vs-prelude-assignment ambiguities the terminator exposed. This took 66.4% → 76.1% and unblocked multi-line inputs, multi-statement script preludes, and processes with both `script:` and `stub:` sections.
-
-**After the scanner, remaining measured failures:**
-
-1. **Numeric method chains**: confirm `(task.memory.mega * 0.8).intValue()` and property/method chains on parenthesized receivers all parse.
-2. **Slashy-string edge cases**: `==~ /.+\.fa|.../` alternation patterns.
-3. **Subworkflow `emit:` with named entries** (verify post-scanner).
-4. **Map/expression polish**: maps as binary operands (`meta + [k: v]` — done for binary operands, verify in all positions), safe navigation `?.`, spread `*.`.
-
-Re-run the harness after each item; the table above gets a new row per PR.
-
-## Phase 2 — strict-syntax constructs not yet in the grammar
-
-Driven by the [Nextflow syntax reference](https://nextflow.io/docs/latest/reference/syntax.html) and the nf-core lint checks that need them:
-
-- **Function definitions**: top-level `def name(args) { ... }` (needed by subworkflow/module lint on lib code; old queries referenced a `function_declaration` node that never existed).
-- **Workflow output block**: `output { ... }` with publish targets (25.04+), `publish:` section in workflows.
-- **Params block with types**: `params { input: Path ... }` (25.10+ static types preview; 26.04 target), typed `take:` declarations.
-- **Enum declarations**.
-- **Type annotations**: `def foo(x: Path) -> Path` per the static-types work.
-- **nextflow.config as a first-class dialect**: profiles/scoped blocks, `includeConfig`, dynamic directives with closures. Unlocks migrating `nextflow_config` — the largest regex-based lint check in nf-core/tools.
-- **Named fields** on process/workflow/definition nodes (`name:`, `body:`) so queries and outline rules stop matching by position (tags.scm/highlights.scm currently note this gap).
-
-## Phase 3 — conformance + infrastructure
-
-- **Official test corpus import**: mirror the parser test cases from `nextflow-io/nextflow` (nf-lang) / the language-server as tree-sitter corpus tests, so parity is tested against the reference implementation, not anecdotes.
-- **CI parse-rate job**: run `scripts/parse_rate.py` against a pinned nf-core/modules SHA; fail the build if the rate regresses; badge in README.
-- **Publish the Python wheel to PyPI** (cibuildwheel workflow exists in a branch) so nf-core/tools can depend on it properly.
-- **Highlight/tags cleanup**: done — all `test/highlight/*.nf` and `test/tags/*.nf` assertions pass. Remaining: add field-based queries once Phase 2 lands fields.
-
-## Consumer pipeline (nf-core/tools lint rules waiting on grammar)
-
-| lint check                     | needs                                    |
-| ------------------------------ | ---------------------------------------- |
-| module `main_nf` when/sections | nothing — ready now                      |
-| module `main_nf` input/output  | Phase 1 item 2 (bare qualifier options)  |
-| subworkflow `main_nf` structure| Phase 2 emit/take polish                 |
-| `nextflow_config`              | Phase 2 config dialect                   |
-| `pipeline_todos` (done)        | shipped                                  |
-| `system_exit` (done)           | shipped                                  |
-| `pipeline_if_empty_null` (done)| shipped                                  |
+- **Config dialect**: a second grammar mirroring `ConfigParser.g4`, so `.config` files get config nodes (assignments, blocks, selectors, `includeConfig`) instead of calls and closures. Unlocks migrating `nextflow_config`, the largest regex-based lint check in nf-core/tools.
+- **Official test corpus import**: mirror the nf-lang parser tests as tree-sitter corpus tests.
+- **CI parse-rate job**: run `scripts/parse_rate.py` against a pinned nf-core/modules SHA and fail on regressions.
+- **Publish the Python wheel to PyPI** so nf-core/tools can depend on it properly.

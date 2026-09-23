@@ -28,16 +28,19 @@ Fixing these renames most nodes anyway, so the grammar is rewritten from scratch
 
 ## Steps
 
-1. [ ] PLAN.md (this file).
-2. [ ] Rewrite `grammar.js` and `src/scanner.c` for the script grammar: declarations, statements, expressions, strings, literals, types.
-3. [ ] Turn the audit probes into corpus tests and rewrite the existing corpus. Check each corpus input with `nextflow lint`; drop or fix inputs Nextflow rejects.
-4. [ ] Rewrite `queries/` (highlights, tags, injections, locals if cheap) and their tests.
-5. [ ] Update `rules/`, `outline/`, `docs/ast-grep/` for the new node names.
-6. [ ] Parse rate over nf-core/modules and a few pipelines (rnaseq, sarek, methylseq). Triage failures against `nextflow lint`.
-7. [ ] Config dialect: a second grammar (`nextflow_config`) in this repo mirroring `ConfigParser.g4`, and drop `config` from the script grammar's file types.
-8. [ ] Docs: CHANGELOG (0.4.0, breaking), ROADMAP, README, AGENTS.md, queries/AGENTS.md, test/AGENTS.md.
-9. [ ] Delete PLAN.md, open the PR.
+1. [x] PLAN.md (this file).
+2. [x] Rewrite `grammar.js` and `src/scanner.c` for the script grammar.
+3. [x] Corpus: the old corpus is regenerated (its 28 skipped tests now pass), and `test/corpus/spec/` adds 51 tests from the audit probes. `nextflow lint` and the new parser agree on every old corpus input except deliberate leniencies (processes without a script, `finally`).
+4. [x] Queries rewritten for the new node names; injections now capture content for every string kind.
+5. [x] ast-grep rules, outline and docs updated. Two rules were broken before the rewrite and are fixed.
+6. [x] Parse rate: nf-core/modules 2208/2208, pipeline `.nf` files 143/144 (the failure is an untracked scratch file with invalid syntax), nf-core `.config` files 618/618.
+7. [ ] Config dialect: **moved to a follow-up PR.** The script grammar already parses every nf-core config file error-free, so a config grammar changes tree shape, not coverage, and it adds a second parser to every binding and a second ast-grep library.
+8. [x] Docs: CHANGELOG, ROADMAP, README, AGENTS.md, queries/AGENTS.md, test/AGENTS.md.
+9. [ ] Delete PLAN.md before merging.
 
 ## Known limits
 
-Record them here as they come up.
+- `String x` and `path reads` are both command calls; ANTLR tells them apart by capitalization, which tree-sitter cannot check. With an initializer (`String x = "a"`) it is a declaration.
+- A statement inside a section cannot start with that body's section keyword *and* a colon (`output: Path` right after `input:` entries reads as the next section). Plain names work: `input = ...` in a script prelude parses.
+- Names cannot contain `$` after the first character.
+- The parser is about the same size as before (3.9 MB `parser.c`), with GLR at the points listed in AGENTS.md.
