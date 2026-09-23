@@ -4,6 +4,7 @@
 Parses every *.nf file under the given directories and reports the share that
 parse without ERROR/MISSING nodes, plus the most common failing constructs
 (clustered by error-context signature) so grammar work can be prioritised.
+Exits non-zero if any file fails.
 
 Usage:
     pip install ast-grep-py
@@ -63,7 +64,8 @@ def main(dirs):
     for sig, count in sigs.most_common(25):
         print(f"{count:5}  {sig}")
         print(f"       e.g. {examples[sig]}")
+    return failed
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:] or ["."])
+    sys.exit(1 if main(sys.argv[1:] or ["."]) else 0)

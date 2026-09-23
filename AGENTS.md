@@ -7,7 +7,7 @@ update_when: the workflow, test layers, or toolchain change
 ---
 # tree-sitter-nextflow — agent guide
 
-Tree-sitter grammar for the Nextflow strict syntax (`.nf`, `.config`). Non-strict constructs (`while`, `switch`, classes) are out of scope; see `ROADMAP.md` for the scope guard and remaining work.
+Tree-sitter grammar for the Nextflow strict syntax (`.nf`, `.config`). Non-strict constructs (`while`, `switch`, classes) are out of scope.
 
 ## Toolchain
 
@@ -20,7 +20,7 @@ Run `npm ci` once, then always invoke the CLI as `npx tree-sitter`. It runs the 
 3. Add or update corpus tests in `test/corpus/<area>/`. `npx tree-sitter test -u` rewrites expectations to the current output (it refuses trees with ERROR or MISSING); review that diff as carefully as the grammar diff.
 4. Done when `npm test` passes and the commit contains `grammar.js`, the regenerated `src/`, and the tests together. CI regenerates the parser and fails if the committed `src/` differs.
 
-For changes that could affect real-world parsing, also check the parse rate over nf-core/modules with `scripts/parse_rate.py` (instructions in `ROADMAP.md`, "The metric"). It loads a compiled library; build one with `npx tree-sitter build --output lib/<platform>/libnextflow.<ext>`. A quicker check is `npx tree-sitter parse --paths <file-list> -q -s`.
+For changes that could affect real-world parsing, also check that nf-core/modules still parses fully: run the manual **Parse rate** workflow, or `scripts/parse_rate.py` locally (usage in its docstring; build the library it loads with `npx tree-sitter build --output lib/<platform>/libnextflow.<ext>`). A quicker check is `npx tree-sitter parse --paths <file-list> -q -s`.
 
 ## Grammar design
 
@@ -35,6 +35,13 @@ Where tree-sitter cannot decide with one token of lookahead, the grammar declare
 - **Declaration vs command:** `String x = "a"` is a declaration, but `path reads` must stay a command. ANTLR checks for a capitalized class name; here a declaration without `def` or an initializer loses (dynamic precedence -2).
 
 Static `prec` resolves a conflict at generate time, before GLR can run, so adding static precedence to these rules breaks them.
+
+Deliberate differences from ANTLR:
+
+- Accepted though Nextflow rejects them: `for`-in loops and `finally` (nf-core code still has them), sections in any order, and processes without a script section (useful while editing).
+- `String x` without an initializer is a command call, as above.
+- Names may start with `$` (`$slurm` executor scopes in config) but cannot contain it later, since that would break GString lexing.
+- `.config` files parse with this grammar. Config blocks come out as calls with closures, and selectors (`withName: FOO { }`) as labeled statements.
 
 ## Debugging
 

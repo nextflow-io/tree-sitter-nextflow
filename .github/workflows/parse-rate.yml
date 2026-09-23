@@ -1,0 +1,42 @@
+# Parses every .nf file in nf-core/modules and fails if any file has an
+# ERROR node. Run it by hand before a release or after a risky grammar change.
+
+name: Parse rate
+
+on:
+  workflow_dispatch:
+    inputs:
+      modules_ref:
+        description: nf-core/modules commit or branch to parse
+        default: cc89790b9b42878b874dd38cdba1ab2a75a89424
+
+jobs:
+  parse-rate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: nf-core/modules
+          ref: ${{ inputs.modules_ref }}
+          path: nf-core-modules
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: npm ci
+
+      - run: npx tree-sitter build --output libnextflow.so
+
+      - run: pip install ast-grep-py
+
+      - name: Parse nf-core/modules
+        env:
+          NEXTFLOW_TS_LIB: libnextflow.so
+        run: python scripts/parse_rate.py nf-core-modules/modules nf-core-modules/subworkflows
