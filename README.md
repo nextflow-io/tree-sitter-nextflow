@@ -1,5 +1,7 @@
 # tree-sitter-nextflow
 
+[![Parse rate](https://github.com/nextflow-io/tree-sitter-nextflow/actions/workflows/parse-rate.yml/badge.svg?branch=main)](https://github.com/nextflow-io/tree-sitter-nextflow/actions/workflows/parse-rate.yml)
+
 Nextflow grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter). Mirrors the official [Nextflow ANTLR grammar](https://github.com/nextflow-io/nextflow/tree/master/modules/nf-lang/src/main/antlr).
 
 ## Installation

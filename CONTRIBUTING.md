@@ -11,7 +11,7 @@ Contributions are welcome. See [`AGENTS.md`](AGENTS.md) for the full development
 
 Commit the regenerated `src/` in the same commit as the grammar change. CI regenerates the parser and fails if they drift apart.
 
-For changes that could affect real-world code, run the **Parse rate** workflow from the Actions tab. It parses every `.nf` file in nf-core/modules at a pinned commit and fails if any file has a syntax error.
+For changes that could affect real-world code, run the **Parse rate** workflow from the Actions tab (it also runs on every push to `main`). It parses every `.nf` file in nf-core/modules at a pinned commit and fails if any file has a syntax error.
 
 ## Releasing
 
