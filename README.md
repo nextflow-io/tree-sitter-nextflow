@@ -196,7 +196,3 @@ Contributions are welcome. Grammar changes go in `grammar.js`. Run `npm ci` once
 3. Update `CHANGELOG.md`, commit, then tag and push `vX.Y.Z`.
 
 The tag push builds the ast-grep parser libraries and attaches them to the GitHub release.
-
-## License
-
-[MIT](LICENSE) © Edmund Miller
