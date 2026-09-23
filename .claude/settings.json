@@ -1,8 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "mcp__Context7__resolve-library-id",
-      "mcp__Context7__get-library-docs",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:tree-sitter.github.io)",
       "WebFetch(domain:ast-grep.github.io)",

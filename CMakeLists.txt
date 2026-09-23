@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 
 project(tree-sitter-nextflow
         VERSION "0.3.0"
-        DESCRIPTION "A parser for Nextflow from scratch"
+        DESCRIPTION "Nextflow grammar for tree-sitter"
         HOMEPAGE_URL "https://github.com/nextflow-io/tree-sitter-nextflow"
         LANGUAGES C)
 

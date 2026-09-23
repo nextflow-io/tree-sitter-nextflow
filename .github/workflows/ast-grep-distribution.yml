@@ -8,7 +8,7 @@ name: ast-grep distribution
 
 on:
   push:
-    branches: [main, ast-grep-distribution]
+    branches: [main]
     tags: ['v*']
     paths:
       - grammar.js
@@ -16,7 +16,6 @@ on:
       - sgconfig.yml
       - rules/**
       - outline/**
-      - lib/**
       - scripts/install-ast-grep.sh
       - .github/workflows/ast-grep-distribution.yml
   pull_request:
@@ -26,7 +25,6 @@ on:
       - sgconfig.yml
       - rules/**
       - outline/**
-      - lib/**
       - scripts/install-ast-grep.sh
       - .github/workflows/ast-grep-distribution.yml
   workflow_dispatch:
