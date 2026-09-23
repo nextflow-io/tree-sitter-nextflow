@@ -14,15 +14,14 @@ structurally (by AST, not text).
 | Path                         | Purpose                                                        |
 | ---------------------------- | -------------------------------------------------------------- |
 | `sgconfig.yml`               | Registers `nextflow` as an ast-grep custom language            |
-| `lib/<platform>/libnextflow.*` | Prebuilt tree-sitter parser libraries                        |
+| `lib/<platform>/libnextflow.*` | Parser library, downloaded by the installer                  |
 | `rules/`                     | Starter `scan` rules (linting / deprecations)                  |
 | `outline/nextflow.yml`       | `ast-grep outline` extractor rules                             |
 | `scripts/install-ast-grep.sh` | Installer that wires the above into your project or `~/.config` |
 
-Prebuilt parser libraries are provided for **macOS arm64**
-(`lib/macos-arm64/libnextflow.dylib`) and **Linux x64**
-(`lib/linux-x64/libnextflow.so`) and are built/verified in CI
-(`.github/workflows/ast-grep-distribution.yml`).
+Each GitHub release has prebuilt parser libraries for macOS (arm64, x64) and
+Linux (x64, arm64), built and verified by
+`.github/workflows/ast-grep-distribution.yml`.
 
 ## Setup
 
@@ -58,15 +57,17 @@ cd tree-sitter-nextflow
 ./scripts/install-ast-grep.sh --global   # ~/.config/ast-grep/
 ```
 
-The installer detects your platform, verifies the matching prebuilt parser
-library in `lib/`, and copies `sgconfig.yml` into place.
+The installer detects your platform, downloads the matching parser library
+from the GitHub release for the checked-out version into `lib/`, and copies
+`sgconfig.yml` into place. If no prebuilt library exists, it builds one with the
+pinned tree-sitter CLI (needs Node.js and a C compiler).
 
 **Manual:**
 
 ```bash
 cp path/to/tree-sitter-nextflow/sgconfig.yml .
-# For a global install, edit sgconfig.yml so libraryPath points at absolute
-# paths under the cloned lib/ directory.
+# Download libnextflow-<platform>.<ext> from the GitHub release into lib/<platform>/.
+# For a global install, edit sgconfig.yml so libraryPath uses absolute paths.
 ```
 
 ### 3. Other platforms
@@ -74,9 +75,8 @@ cp path/to/tree-sitter-nextflow/sgconfig.yml .
 If no prebuilt library matches your platform, build one yourself:
 
 ```bash
-npm install -g tree-sitter-cli
-tree-sitter generate
-tree-sitter build --output libnextflow.so   # or .dylib on macOS
+npm ci
+npx tree-sitter build --output libnextflow.so   # or .dylib on macOS
 ```
 
 Then point `sgconfig.yml`'s `libraryPath` at the result.
