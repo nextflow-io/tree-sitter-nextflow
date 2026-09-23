@@ -694,9 +694,10 @@ module.exports = grammar({
 
     // -- literals
 
-    // ANTLR also allows `$` in names; here it would break GString lexing
+    // A leading `$` is allowed (`$slurm` executor scopes in config). ANTLR
+    // also allows `$` later in a name; here that would break GString lexing
     // (`"$a$b"` is two interpolations).
-    identifier: _ => /[\p{L}_][\p{L}\p{Nd}_]*/,
+    identifier: _ => /\$?[\p{L}_][\p{L}\p{Nd}_]*/,
 
     integer_literal: _ => token(choice(
       /0[xX][0-9a-fA-F](_*[0-9a-fA-F])*[lLiIgG]?/,

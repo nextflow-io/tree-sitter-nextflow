@@ -5883,7 +5883,7 @@
     },
     "identifier": {
       "type": "PATTERN",
-      "value": "[\\p{L}_][\\p{L}\\p{Nd}_]*"
+      "value": "\\$?[\\p{L}_][\\p{L}\\p{Nd}_]*"
     },
     "integer_literal": {
       "type": "TOKEN",
