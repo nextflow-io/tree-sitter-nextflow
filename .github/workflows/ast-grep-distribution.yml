@@ -125,6 +125,17 @@ jobs:
           done
           echo "✓ outline extracted all expected symbols"
 
+      - name: Smoke-test the curl installer against the latest release
+        # ponytail: v0.3.0's sgconfig.yml only lists these two platforms. Remove
+        # this guard once v0.3.1 (four-platform sgconfig + release assets) ships.
+        if: matrix.triple == 'aarch64-apple-darwin' || matrix.triple == 'x86_64-unknown-linux-gnu'
+        run: |
+          mkdir -p /tmp/install && cd /tmp/install
+          bash < "$GITHUB_WORKSPACE/scripts/install-ast-grep.sh"
+          printf 'workflow {\n  Channel.from(1)\n}\n' > t.nf
+          ast-grep scan t.nf | grep -q deprecated-channel-from
+          echo "✓ installer set up a working scan"
+
       - name: Name release asset
         run: cp "${{ matrix.libdir }}/${{ matrix.libname }}" "${{ matrix.asset }}"
 
