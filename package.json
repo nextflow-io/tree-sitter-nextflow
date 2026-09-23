@@ -1,6 +1,7 @@
 {
   "name": "tree-sitter-nextflow",
   "version": "0.3.0",
+  "private": true,
   "description": "Nextflow grammar for tree-sitter",
   "repository": "https://github.com/nextflow-io/tree-sitter-nextflow",
   "license": "MIT",
@@ -15,50 +16,19 @@
       "email": "bentshermann@gmail.com"
     }
   ],
-  "main": "bindings/node",
-  "types": "bindings/node",
   "keywords": [
     "incremental",
     "parsing",
     "tree-sitter",
     "nextflow"
   ],
-  "files": [
-    "grammar.js",
-    "tree-sitter.json",
-    "binding.gyp",
-    "prebuilds/**",
-    "bindings/node/*",
-    "queries/*",
-    "src/**",
-    "*.wasm",
-    "sgconfig.yml",
-    "rules/*.yml",
-    "outline/*.yml",
-    "scripts/install-ast-grep.sh",
-    "docs/ast-grep/*.md"
-  ],
-  "dependencies": {
-    "node-addon-api": "^8.2.1",
-    "node-gyp-build": "^4.8.2"
-  },
   "devDependencies": {
-    "prebuildify": "^6.0.1",
     "tree-sitter-cli": "^0.26.10"
   },
-  "peerDependencies": {
-    "tree-sitter": "^0.25.0"
-  },
-  "peerDependenciesMeta": {
-    "tree-sitter": {
-      "optional": true
-    }
-  },
   "scripts": {
-    "install": "node-gyp-build",
     "prestart": "tree-sitter build --wasm",
     "start": "tree-sitter playground",
-    "test": "node --test bindings/node/*_test.js",
+    "test": "tree-sitter test && scripts/check_injections.sh",
     "outline": "ast-grep outline --lang nextflow --outline-rules outline/nextflow.yml --no-default-outline-rules"
   }
 }
