@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tree-sitter CLI
+        run: npm ci
+
+      - name: Check generated parser is up to date
+        run: |
+          npx tree-sitter generate
+          git diff --exit-code src/ || {
+            echo "::error::src/ is stale. Run 'npx tree-sitter generate' and commit the result."
+            exit 1
+          }
+
+      - name: Test grammar and queries
+        run: npm test
+
+      - name: Test Rust binding
+        run: cargo test
+
+      - name: Test Python binding
+        run: |
+          pip install ".[core]" pytest
+          pytest bindings/python/tests
