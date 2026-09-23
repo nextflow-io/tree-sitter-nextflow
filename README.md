@@ -187,12 +187,4 @@ See [ast-grep rule documentation](https://ast-grep.github.io/guide/rule-config.h
 
 ## Contributing
 
-Contributions are welcome. Grammar changes go in `grammar.js`. Run `npm ci` once to install the pinned tree-sitter CLI, then `npx tree-sitter generate && npm test` before opening a PR, and add corpus tests under `test/corpus/`. Commit the regenerated `src/` with the grammar change; CI fails if they drift apart. See [`ROADMAP.md`](ROADMAP.md) for priorities and [`AGENTS.md`](AGENTS.md) for the development workflow and test layers.
-
-### Releasing
-
-1. `npx tree-sitter version X.Y.Z` bumps the version in every manifest.
-2. `npx tree-sitter generate`, since the parser embeds the version.
-3. Update `CHANGELOG.md`, commit, then tag and push `vX.Y.Z`.
-
-The tag push builds the ast-grep parser libraries and attaches them to the GitHub release.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the development workflow and release steps.

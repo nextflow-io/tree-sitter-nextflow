@@ -48,4 +48,4 @@ When a construct is ambiguous, check how the official grammar handles it: the [N
 ## Bindings and distribution
 
 - Bindings: Rust (`cargo test`), Python (`pytest bindings/python/tests` after `pip install ".[core]"`), and C (`make`). There is no Node binding; `package.json` only pins the CLI. Nothing is published to a package registry.
-- ast-grep support is `sgconfig.yml`, `rules/`, `outline/`, and `docs/ast-grep/`. The parser libraries it loads are not committed: `lib/` is ignored, `scripts/install-ast-grep.sh` downloads them from the GitHub release, and a `v*` tag builds and attaches them. Release steps are in the README.
+- ast-grep support is `sgconfig.yml`, `rules/`, `outline/`, and `docs/ast-grep/`. The parser libraries it loads are not committed: `lib/` is ignored, `scripts/install-ast-grep.sh` downloads them from the GitHub release, and a `v*` tag builds and attaches them. Release steps are in `CONTRIBUTING.md`.
