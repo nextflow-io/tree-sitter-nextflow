@@ -1,0 +1,1662 @@
+==================
+Operator precedence
+==================
+
+a = 1 + 2 * 3
+b = !x && y || z
+c = -2 ** 2
+d = a == b && c != d
+e = x << 1 + 2
+f = 1..n - 1
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (binary_expression
+        (integer_literal)
+        (integer_literal))))
+  (assignment
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (unary_expression
+          (identifier))
+        (identifier))
+      (identifier)))
+  (assignment
+    (identifier)
+    (unary_expression
+      (binary_expression
+        (integer_literal)
+        (integer_literal))))
+  (assignment
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (identifier)
+        (identifier))
+      (binary_expression
+        (identifier)
+        (identifier))))
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (binary_expression
+        (integer_literal)
+        (integer_literal))))
+  (assignment
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (binary_expression
+        (identifier)
+        (integer_literal)))))
+
+==================
+Bitwise and regex operators
+==================
+
+a = x & y ^ z | w
+b = name =~ /^foo/
+c = name ==~ /^foo$/
+d = x >> 2
+e = x >>> 2
+f = x <=> y
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (binary_expression
+          (identifier)
+          (identifier))
+        (identifier))
+      (identifier)))
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (slashy_string)))
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (slashy_string)))
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (integer_literal)))
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (integer_literal)))
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier))))
+
+==================
+Relational, membership and type checks
+==================
+
+a = x in [1, 2]
+b = x !in [1, 2]
+c = x instanceof List ? x : [x]
+d = x !instanceof Map<String,?>
+e = x as Integer
+f = x as List<String>
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (list
+        (integer_literal)
+        (integer_literal))))
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (list
+        (integer_literal)
+        (integer_literal))))
+  (assignment
+    (identifier)
+    (ternary_expression
+      (instanceof_expression
+        (identifier)
+        (type
+          (identifier)))
+      (identifier)
+      (list
+        (identifier))))
+  (assignment
+    (identifier)
+    (instanceof_expression
+      (identifier)
+      (type
+        (identifier)
+        (type_arguments
+          (type
+            (identifier))))))
+  (assignment
+    (identifier)
+    (cast_expression
+      (identifier)
+      (type
+        (identifier))))
+  (assignment
+    (identifier)
+    (cast_expression
+      (identifier)
+      (type
+        (identifier)
+        (type_arguments
+          (type
+            (identifier)))))))
+
+==================
+Ternary and elvis
+==================
+
+a = x ? y : z ? w : v
+b = x ?: y ?: z
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (ternary_expression
+      (identifier)
+      (identifier)
+      (ternary_expression
+        (identifier)
+        (identifier)
+        (identifier))))
+  (assignment
+    (identifier)
+    (elvis_expression
+      (identifier)
+      (elvis_expression
+        (identifier)
+        (identifier)))))
+
+==================
+Closures as values
+==================
+
+add = { a, b -> a + b }
+f({ it })
+fs = [{ v -> v }, { -> 1 }]
+g = { String a, def b, c = 1 -> a }
+h = { a: Integer, b: String = 'x' -> a }
+i = {
+  meta, reads ->
+  [meta, reads]
+}
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (closure
+      (parameters
+        (parameter
+          (identifier))
+        (parameter
+          (identifier)))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (identifier)))))
+  (expression_statement
+    (call_expression
+      (identifier)
+      (argument_list
+        (closure
+          (expression_statement
+            (identifier))))))
+  (assignment
+    (identifier)
+    (list
+      (closure
+        (parameters
+          (parameter
+            (identifier)))
+        (expression_statement
+          (identifier)))
+      (closure
+        (expression_statement
+          (integer_literal)))))
+  (assignment
+    (identifier)
+    (closure
+      (parameters
+        (parameter
+          (type
+            (identifier))
+          (identifier))
+        (parameter
+          (identifier))
+        (parameter
+          (identifier)
+          (integer_literal)))
+      (expression_statement
+        (identifier))))
+  (assignment
+    (identifier)
+    (closure
+      (parameters
+        (parameter
+          (identifier)
+          (type
+            (identifier)))
+        (parameter
+          (identifier)
+          (type
+            (identifier))
+          (string
+            (string_content))))
+      (expression_statement
+        (identifier))))
+  (assignment
+    (identifier)
+    (closure
+      (parameters
+        (parameter
+          (identifier))
+        (parameter
+          (identifier)))
+      (expression_statement
+        (list
+          (identifier)
+          (identifier))))))
+
+==================
+Calls, properties and indexes
+==================
+
+a = foo(1, key: 'v')
+b = foo(1) { v -> v }
+c = foo(key: 1) { v -> v }
+d = foo { v -> v }.bar()
+e = files*.name
+f = obj?.method()?.prop
+g = obj."dynamic-name"
+h = list[0][1]
+i = matrix[1, 2]
+j = 'abc'.size()
+k = """x""".stripIndent()
+l = 7.GB
+m = new java.util.ArrayList<String>()
+n = obj.in + obj.output
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (call_expression
+      (identifier)
+      (argument_list
+        (integer_literal)
+        (named_argument
+          (identifier)
+          (string
+            (string_content))))))
+  (assignment
+    (identifier)
+    (call_expression
+      (identifier)
+      (argument_list
+        (integer_literal))
+      (closure
+        (parameters
+          (parameter
+            (identifier)))
+        (expression_statement
+          (identifier)))))
+  (assignment
+    (identifier)
+    (call_expression
+      (identifier)
+      (argument_list
+        (named_argument
+          (identifier)
+          (integer_literal)))
+      (closure
+        (parameters
+          (parameter
+            (identifier)))
+        (expression_statement
+          (identifier)))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (call_expression
+          (identifier)
+          (closure
+            (parameters
+              (parameter
+                (identifier)))
+            (expression_statement
+              (identifier))))
+        (identifier))
+      (argument_list)))
+  (assignment
+    (identifier)
+    (member_expression
+      (identifier)
+      (identifier)))
+  (assignment
+    (identifier)
+    (member_expression
+      (call_expression
+        (member_expression
+          (identifier)
+          (identifier))
+        (argument_list))
+      (identifier)))
+  (assignment
+    (identifier)
+    (member_expression
+      (identifier)
+      (string
+        (string_content))))
+  (assignment
+    (identifier)
+    (index_expression
+      (index_expression
+        (identifier)
+        (integer_literal))
+      (integer_literal)))
+  (assignment
+    (identifier)
+    (index_expression
+      (identifier)
+      (integer_literal)
+      (integer_literal)))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (string
+          (string_content))
+        (identifier))
+      (argument_list)))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (string
+          (string_content))
+        (identifier))
+      (argument_list)))
+  (assignment
+    (identifier)
+    (member_expression
+      (integer_literal)
+      (identifier)))
+  (assignment
+    (identifier)
+    (new_expression
+      (type
+        (identifier)
+        (identifier)
+        (identifier)
+        (type_arguments
+          (type
+            (identifier))))
+      (argument_list)))
+  (assignment
+    (identifier)
+    (binary_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (member_expression
+        (identifier)
+        (identifier)))))
+
+==================
+Command calls
+==================
+
+println "a", "b"
+foo key: 1, other: 2
+log.info "message"
+foo x, y
+path("x"), emit: out
+
+---
+
+(source_file
+  (expression_statement
+    (command_expression
+      (identifier)
+      (argument_list
+        (string
+          (string_content))
+        (string
+          (string_content)))))
+  (expression_statement
+    (command_expression
+      (identifier)
+      (argument_list
+        (named_argument
+          (identifier)
+          (integer_literal))
+        (named_argument
+          (identifier)
+          (integer_literal)))))
+  (expression_statement
+    (command_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (string
+          (string_content)))))
+  (expression_statement
+    (command_expression
+      (identifier)
+      (argument_list
+        (identifier)
+        (identifier))))
+  (expression_statement
+    (command_expression
+      (identifier)
+      (argument_list
+        (parenthesized_expression
+          (string
+            (string_content)))
+        (named_argument
+          (identifier)
+          (identifier))))))
+
+==================
+Calls preferred over commands
+==================
+
+foo -1
+foo [1]
+foo (x)
+foo { x }
+
+---
+
+(source_file
+  (expression_statement
+    (binary_expression
+      (identifier)
+      (integer_literal)))
+  (expression_statement
+    (index_expression
+      (identifier)
+      (integer_literal)))
+  (expression_statement
+    (call_expression
+      (identifier)
+      (argument_list
+        (identifier))))
+  (expression_statement
+    (call_expression
+      (identifier)
+      (closure
+        (expression_statement
+          (identifier))))))
+
+==================
+Labeled statements in closures
+==================
+
+ch.branch { v ->
+  big: v > 10
+  small: true
+}
+ch.multiMap { v ->
+  a: b: v
+}
+
+---
+
+(source_file
+  (expression_statement
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (closure
+        (parameters
+          (parameter
+            (identifier)))
+        (labeled_statement
+          (identifier)
+          (expression_statement
+            (binary_expression
+              (identifier)
+              (integer_literal))))
+        (labeled_statement
+          (identifier)
+          (expression_statement
+            (boolean_literal))))))
+  (expression_statement
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (closure
+        (parameters
+          (parameter
+            (identifier)))
+        (labeled_statement
+          (identifier)
+          (labeled_statement
+            (identifier)
+            (expression_statement
+              (identifier))))))))
+
+==================
+Lists and maps
+==================
+
+a = []
+b = [:]
+c = [1, 2,]
+d = [a: 1, 'b': 2, "c": 3, 4: 5, (key): 6, true: 7, in: 8]
+e = [
+  x: [
+    y: 1
+  ]
+]
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (list))
+  (assignment
+    (identifier)
+    (map))
+  (assignment
+    (identifier)
+    (list
+      (integer_literal)
+      (integer_literal)))
+  (assignment
+    (identifier)
+    (map
+      (map_entry
+        (identifier)
+        (integer_literal))
+      (map_entry
+        (string
+          (string_content))
+        (integer_literal))
+      (map_entry
+        (string
+          (string_content))
+        (integer_literal))
+      (map_entry
+        (integer_literal)
+        (integer_literal))
+      (map_entry
+        (parenthesized_expression
+          (identifier))
+        (integer_literal))
+      (map_entry
+        (boolean_literal)
+        (integer_literal))
+      (map_entry
+        (identifier)
+        (integer_literal))))
+  (assignment
+    (identifier)
+    (map
+      (map_entry
+        (identifier)
+        (map
+          (map_entry
+            (identifier)
+            (integer_literal)))))))
+
+==================
+Basic arithmetic operators
+==================
+
+def a = 2 + 2
+def b = 10 - 5
+def c = 4 * 3
+def d = 15 / 3
+def e = 10 % 3
+def f = 2 ** 3
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal))))
+
+==================
+Comparison operators
+==================
+
+def eq = x == y
+def neq = x != y
+def lt = x < y
+def gt = x > y
+def lte = x <= y
+def gte = x >= y
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier))))
+
+==================
+Logical operators
+==================
+
+def and = a && b
+def or = a || b
+def complex = (x > 0) && (y < 10)
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (parenthesized_expression
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (parenthesized_expression
+        (binary_expression
+          (identifier)
+          (integer_literal))))))
+
+==================
+Range operators
+==================
+
+def inclusive = 1..5
+def exclusive = 1..<5
+def var_range = start..end
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier))))
+
+==================
+Operator precedence with parentheses
+==================
+
+def compound1 = a + b * c
+def compound2 = (a + b) * c
+def compound3 = x > 0 && y < 10 || z == 0
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (identifier)
+      (binary_expression
+        (identifier)
+        (identifier))))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (parenthesized_expression
+        (binary_expression
+          (identifier)
+          (identifier)))
+      (identifier)))
+  (variable_declaration
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (binary_expression
+          (identifier)
+          (integer_literal))
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (binary_expression
+        (identifier)
+        (integer_literal)))))
+
+==================
+Negated membership operator
+==================
+
+x = a !in b
+
+---
+
+(source_file
+  (assignment
+    left: (identifier)
+    right: (binary_expression
+      left: (identifier)
+      right: (identifier))))
+
+==================
+Bitwise-negate slashy pattern in subtraction
+==================
+
+def i = fasta - ~/\.gz$/
+
+---
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    value: (binary_expression
+      left: (identifier)
+      right: (unary_expression
+        operand: (slashy_string)))))
+
+==================
+Complex maps and lists
+==================
+
+params {
+    tools = [
+        fastqc: [
+            cpus: 2,
+            memory: '4 GB'
+        ],
+        bwa: [
+            cpus: 8,
+            memory: '16 GB'
+        ]
+    ]
+}
+
+list = [[1,2], [3,4], [5,6]]
+
+---
+
+(source_file
+  (params_definition
+    (param_declaration
+      (identifier)
+      (map
+        (map_entry
+          (identifier)
+          (map
+            (map_entry
+              (identifier)
+              (integer_literal))
+            (map_entry
+              (identifier)
+              (string
+                (string_content)))))
+        (map_entry
+          (identifier)
+          (map
+            (map_entry
+              (identifier)
+              (integer_literal))
+            (map_entry
+              (identifier)
+              (string
+                (string_content))))))))
+  (assignment
+    (identifier)
+    (list
+      (list
+        (integer_literal)
+        (integer_literal))
+      (list
+        (integer_literal)
+        (integer_literal))
+      (list
+        (integer_literal)
+        (integer_literal)))))
+
+==================
+Ranges
+==================
+
+range1 = 1..10
+range2 = 1..<10
+range3 = 'a'..'z'
+range4 = 10..1
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
+  (assignment
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal)))
+  (assignment
+    (identifier)
+    (binary_expression
+      (string
+        (string_content))
+      (string
+        (string_content))))
+  (assignment
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal))))
+
+==================
+Sets
+==================
+
+set1 = [1,2,3,4] as Set
+set2 = ['a','b','c'] as Set
+
+combined = set1 + set2
+intersection = set1.intersect(set2)
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (cast_expression
+      (list
+        (integer_literal)
+        (integer_literal)
+        (integer_literal)
+        (integer_literal))
+      (type
+        (identifier))))
+  (assignment
+    (identifier)
+    (cast_expression
+      (list
+        (string
+          (string_content))
+        (string
+          (string_content))
+        (string
+          (string_content)))
+      (type
+        (identifier))))
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier)))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (identifier)))))
+
+==================
+Channel operators
+==================
+
+ch1 = Channel.from(1,2,3)
+ch2 = Channel.from(4,5,6)
+
+result = ch1
+    .mix(ch2)
+    .map { it * 2 }
+    .filter { it > 5 }
+    .collect()
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (integer_literal)
+        (integer_literal)
+        (integer_literal))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (integer_literal)
+        (integer_literal)
+        (integer_literal))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (call_expression
+          (member_expression
+            (call_expression
+              (member_expression
+                (call_expression
+                  (member_expression
+                    (identifier)
+                    (identifier))
+                  (argument_list
+                    (identifier)))
+                (identifier))
+              (closure
+                (expression_statement
+                  (binary_expression
+                    (identifier)
+                    (integer_literal)))))
+            (identifier))
+          (closure
+            (expression_statement
+              (binary_expression
+                (identifier)
+                (integer_literal)))))
+        (identifier))
+      (argument_list))))
+
+==================
+Math operations
+==================
+
+x = 1 + 2 * 3
+y = Math.pow(2, 3)
+z = Math.round(3.14)
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (binary_expression
+        (integer_literal)
+        (integer_literal))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (integer_literal)
+        (integer_literal))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (float_literal)))))
+
+==================
+Regular expressions
+==================
+
+pattern = ~/foo.*/
+if( "foo bar" =~ pattern ) {
+    println "match"
+}
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (unary_expression
+      (slashy_string)))
+  (if_statement
+    (binary_expression
+      (string
+        (string_content))
+      (identifier))
+    (block
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))
+
+==================
+Regex match with slashy string operand
+==================
+
+def matcher = args =~ /-j\s+(\S+)/
+
+---
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    value: (binary_expression
+      left: (identifier)
+      right: (slashy_string))))
+
+==================
+Cast expression with as
+==================
+
+def n = (task.cpus * 0.9) as int
+
+---
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    value: (cast_expression
+      value: (parenthesized_expression
+        (binary_expression
+          left: (member_expression
+            object: (identifier)
+            property: (identifier))
+          right: (float_literal)))
+      type: (type
+        (identifier)))))
+
+==================
+Single parameter closure
+==================
+
+def square = { x -> x * x }
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (closure
+      (parameters
+        (parameter
+          (identifier)))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (identifier))))))
+
+==================
+Multiple parameter closure
+==================
+
+def add = { a, b -> a + b }
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (closure
+      (parameters
+        (parameter
+          (identifier))
+        (parameter
+          (identifier)))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (identifier))))))
+
+==================
+Multi-line closure with statements
+==================
+
+def process = { v ->
+    println 'Hello!'
+    println "Processing value"
+    v * v
+}
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (closure
+      (parameters
+        (parameter
+          (identifier)))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (identifier))))))
+
+==================
+Closure with variable declarations
+==================
+
+def compute = { x, y ->
+    def result = x + y
+    result * 2
+}
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (closure
+      (parameters
+        (parameter
+          (identifier))
+        (parameter
+          (identifier)))
+      (variable_declaration
+        (identifier)
+        (binary_expression
+          (identifier)
+          (identifier)))
+      (expression_statement
+        (binary_expression
+          (identifier)
+          (integer_literal))))))
+
+==================
+Assert inside a closure and bare stdout tuple output
+==================
+
+process P {
+  output:
+  tuple val(meta), stdout, emit: gender
+  script:
+  input.collect{ f -> assert f.name != "x" : "same" }
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    name: (identifier)
+    (output_section
+      (expression_statement
+        (command_expression
+          function: (identifier)
+          arguments: (argument_list
+            (call_expression
+              function: (identifier)
+              arguments: (argument_list
+                (identifier)))
+            (identifier)
+            (named_argument
+              name: (identifier)
+              value: (identifier))))))
+    (script_section
+      (expression_statement
+        (call_expression
+          function: (member_expression
+            object: (identifier)
+            property: (identifier))
+          closure: (closure
+            parameters: (parameters
+              (parameter
+                name: (identifier)))
+            (assert_statement
+              condition: (binary_expression
+                left: (member_expression
+                  object: (identifier)
+                  property: (identifier))
+                right: (string
+                  (string_content)))
+              message: (string
+                (string_content))))))
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Bitwise operator and multiMap label statements
+==================
+
+workflow W {
+  main:
+  ch = a.multiMap { meta, db ->
+    db: [ meta, db ]
+  }
+  n = ix & 1
+}
+
+---
+
+(source_file
+  (workflow_definition
+    name: (identifier)
+    (main_section
+      (assignment
+        left: (identifier)
+        right: (call_expression
+          function: (member_expression
+            object: (identifier)
+            property: (identifier))
+          closure: (closure
+            parameters: (parameters
+              (parameter
+                name: (identifier))
+              (parameter
+                name: (identifier)))
+            (labeled_statement
+              label: (identifier)
+              (expression_statement
+                (list
+                  (identifier)
+                  (identifier)))))))
+      (assignment
+        left: (identifier)
+        right: (binary_expression
+          left: (identifier)
+          right: (integer_literal))))))
+
+==================
+Function declarations
+==================
+
+def square(x) {
+    return x * x
+}
+
+def greet(name, greeting = 'Hello') {
+    return "$greeting, $name!"
+}
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameters
+      (parameter
+        (identifier)))
+    (block
+      (return_statement
+        (binary_expression
+          (identifier)
+          (identifier)))))
+  (function_definition
+    (identifier)
+    (parameters
+      (parameter
+        (identifier))
+      (parameter
+        (identifier)
+        (string
+          (string_content))))
+    (block
+      (return_statement
+        (string
+          (interpolation
+            (identifier))
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content))))))
+
+==================
+Method calls
+==================
+
+result = [1,2,3].collect { it * 2 }
+filtered = [1,2,3,4].findAll { it % 2 == 0 }
+joined = ['a','b','c'].join('-')
+mapped = [1,2,3].collectEntries { [(it): it * 2] }
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (list
+          (integer_literal)
+          (integer_literal)
+          (integer_literal))
+        (identifier))
+      (closure
+        (expression_statement
+          (binary_expression
+            (identifier)
+            (integer_literal))))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (list
+          (integer_literal)
+          (integer_literal)
+          (integer_literal)
+          (integer_literal))
+        (identifier))
+      (closure
+        (expression_statement
+          (binary_expression
+            (binary_expression
+              (identifier)
+              (integer_literal))
+            (integer_literal))))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (list
+          (string
+            (string_content))
+          (string
+            (string_content))
+          (string
+            (string_content)))
+        (identifier))
+      (argument_list
+        (string
+          (string_content)))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (list
+          (integer_literal)
+          (integer_literal)
+          (integer_literal))
+        (identifier))
+      (closure
+        (expression_statement
+          (map
+            (map_entry
+              (parenthesized_expression
+                (identifier))
+              (binary_expression
+                (identifier)
+                (integer_literal)))))))))
+
+==================
+Complex closures
+==================
+
+transform = { x, y ->
+    def result = x * y
+    return result > 10 ? result : 0
+}
+
+numbers = [1,2,3,4]
+    .collect { it * 2 }
+    .findAll { it > 4 }
+    .each { println it }
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (closure
+      (parameters
+        (parameter
+          (identifier))
+        (parameter
+          (identifier)))
+      (variable_declaration
+        (identifier)
+        (binary_expression
+          (identifier)
+          (identifier)))
+      (return_statement
+        (ternary_expression
+          (binary_expression
+            (identifier)
+            (integer_literal))
+          (identifier)
+          (integer_literal)))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (call_expression
+          (member_expression
+            (call_expression
+              (member_expression
+                (list
+                  (integer_literal)
+                  (integer_literal)
+                  (integer_literal)
+                  (integer_literal))
+                (identifier))
+              (closure
+                (expression_statement
+                  (binary_expression
+                    (identifier)
+                    (integer_literal)))))
+            (identifier))
+          (closure
+            (expression_statement
+              (binary_expression
+                (identifier)
+                (integer_literal)))))
+        (identifier))
+      (closure
+        (expression_statement
+          (command_expression
+            (identifier)
+            (argument_list
+              (identifier))))))))
+
+==================
+Constructor call with new
+==================
+
+def y = new groovy.yaml.YamlBuilder()
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (new_expression
+      (type
+        (identifier)
+        (identifier)
+        (identifier))
+      (argument_list))))
+
+==================
+Top-level function definition with return
+==================
+
+def mergeMaps(meta, meta2) {
+  return meta + meta2
+}
+
+---
+
+(source_file
+  (function_definition
+    name: (identifier)
+    parameters: (parameters
+      (parameter
+        name: (identifier))
+      (parameter
+        name: (identifier)))
+    body: (block
+      (return_statement
+        (binary_expression
+          left: (identifier)
+          right: (identifier))))))
+
+==================
+Method call named argument and safe navigation
+==================
+
+x = ch.combine(ch_map, by: 0)
+y = args?.contains('j')
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (identifier)
+        (named_argument
+          (identifier)
+          (integer_literal)))))
+  (assignment
+    (identifier)
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (string
+          (string_content))))))
+
+==================
+Trailing closure after parenthesised args, and cast as binary operand
+==================
+
+def a = s.replaceAll(/x/) { m -> m }
+b = r.d as Float > 0
+
+---
+
+(source_file
+  (variable_declaration
+    name: (identifier)
+    value: (call_expression
+      function: (member_expression
+        object: (identifier)
+        property: (identifier))
+      arguments: (argument_list
+        (slashy_string))
+      closure: (closure
+        parameters: (parameters
+          (parameter
+            name: (identifier)))
+        (expression_statement
+          (identifier)))))
+  (assignment
+    left: (identifier)
+    right: (binary_expression
+      left: (cast_expression
+        value: (member_expression
+          object: (identifier)
+          property: (identifier))
+        type: (type
+          (identifier)))
+      right: (integer_literal))))

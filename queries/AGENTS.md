@@ -1,10 +1,3 @@
----
-purpose: Explain each query file, its consumer, and its test layer
-applies_to: queries/ directory
-entrypoint: match the file you are editing to its row below
-verification: npx tree-sitter test && scripts/check_injections.sh
-update_when: query files are added or their test coverage moves
----
 # queries/ — tree queries consumed by editors and the CLI
 
 | File | Purpose | Tested by | Docs |

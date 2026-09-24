@@ -46,7 +46,6 @@ curl -fsSL https://raw.githubusercontent.com/nextflow-io/tree-sitter-nextflow/ma
 
 ```bash
 git clone https://github.com/nextflow-io/tree-sitter-nextflow.git
-cd tree-sitter-nextflow
 cd path/to/your/project
 path/to/tree-sitter-nextflow/scripts/install-ast-grep.sh            # current directory
 path/to/tree-sitter-nextflow/scripts/install-ast-grep.sh --global   # ~/.config/ast-grep/

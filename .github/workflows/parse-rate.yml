@@ -9,26 +9,25 @@ on:
   workflow_dispatch:
     inputs:
       modules_ref:
-        description: nf-core/modules commit or branch to parse
-        default: cc89790b9b42878b874dd38cdba1ab2a75a89424
+        description: nf-core/modules commit or branch to parse (defaults to the pinned commit)
 
 jobs:
   parse-rate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: nf-core/modules
           ref: ${{ inputs.modules_ref || 'cc89790b9b42878b874dd38cdba1ab2a75a89424' }}
           path: nf-core-modules
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 

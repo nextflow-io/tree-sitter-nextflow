@@ -58,11 +58,11 @@ jobs:
             libname: libnextflow.so
             asset: libnextflow-linux-arm64.so
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install tree-sitter CLI
         run: npm ci
@@ -141,7 +141,7 @@ jobs:
       - name: Name release asset
         run: cp "${{ matrix.libdir }}/${{ matrix.libname }}" "${{ matrix.asset }}"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.asset }}
           path: ${{ matrix.asset }}
@@ -155,7 +155,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: assets
           merge-multiple: true

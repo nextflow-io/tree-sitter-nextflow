@@ -27,9 +27,19 @@ enum TokenType {
 };
 
 void *tree_sitter_nextflow_external_scanner_create(void) { return NULL; }
-void tree_sitter_nextflow_external_scanner_destroy(void *payload) {}
-unsigned tree_sitter_nextflow_external_scanner_serialize(void *payload, char *buffer) { return 0; }
-void tree_sitter_nextflow_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {}
+void tree_sitter_nextflow_external_scanner_destroy(void *payload) { (void)payload; }
+
+unsigned tree_sitter_nextflow_external_scanner_serialize(void *payload, char *buffer) {
+  (void)payload;
+  (void)buffer;
+  return 0;
+}
+
+void tree_sitter_nextflow_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
+  (void)payload;
+  (void)buffer;
+  (void)length;
+}
 
 static bool is_word_start(int32_t c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c > 0x7F;
@@ -171,6 +181,7 @@ static bool scan_terminator(TSLexer *lexer) {
 
 bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
                                                 const bool *valid_symbols) {
+  (void)payload;
   // Both valid at once only happens during error recovery.
   bool recovering = valid_symbols[TERMINATOR] && valid_symbols[GSTRING_PATH_DOT];
 
