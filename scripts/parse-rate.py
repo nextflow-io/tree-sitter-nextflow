@@ -8,8 +8,9 @@ Exits non-zero if any file fails.
 
 Usage:
     pip install ast-grep-py
-    export NEXTFLOW_TS_LIB=lib/macos-arm64/libnextflow.dylib  # or .so
-    python scripts/parse_rate.py path/to/nf-core-modules/modules [more dirs...]
+    npx tree-sitter build --output libnextflow.so  # .dylib on macOS
+    export NEXTFLOW_TS_LIB=libnextflow.so
+    python scripts/parse-rate.py path/to/nf-core-modules/modules [more dirs...]
 """
 
 import os
@@ -19,7 +20,7 @@ from pathlib import Path
 
 from ast_grep_py import SgRoot, register_dynamic_language
 
-LIB = os.environ.get("NEXTFLOW_TS_LIB", "lib/macos-arm64/libnextflow.dylib")
+LIB = os.environ.get("NEXTFLOW_TS_LIB") or sys.exit("NEXTFLOW_TS_LIB must point to the built parser library")
 
 register_dynamic_language(
     {
@@ -27,7 +28,7 @@ register_dynamic_language(
             "library_path": LIB,
             "language_symbol": "tree_sitter_nextflow",
             "expando_char": "_",
-            "extensions": ["nf", "config"],
+            "extensions": ["nf"],
         }
     }
 )

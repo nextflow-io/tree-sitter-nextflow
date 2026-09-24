@@ -7,7 +7,7 @@
 # script instead pins the exact capture ranges the injection query
 # produces on a fixture covering every pattern.
 #
-# Usage: scripts/check_injections.sh [--update]
+# Usage: scripts/check-injections.sh [--update]
 set -euo pipefail
 
 cd "$(dirname "$0")/.."

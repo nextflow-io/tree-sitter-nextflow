@@ -566,3 +566,539 @@ process FOO {
       (expression_statement
         (string
           (string_content))))))
+
+==================
+Process with input block
+==================
+
+process FASTQC {
+    input:
+    path reads;
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))))
+
+==================
+Process with output block
+==================
+
+process FASTQC {
+    output:
+    path "fastqc_*";
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (output_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))
+
+==================
+Process with script block
+==================
+
+process FASTQC {
+    script:
+    """fastqc $reads"""
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))))))
+
+==================
+Complete process definition
+==================
+
+process FASTQC {
+    input:
+    path reads;
+
+    output:
+    path "fastqc_*";
+
+    script:
+    """fastqc $reads"""
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (output_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))))))
+
+==================
+When conditions
+==================
+
+process conditionalProcess {
+    when:
+    params.run_mode == 'full'
+
+    input:
+    val x
+
+    script:
+    """
+    echo $x
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (when_section
+      (binary_expression
+        (member_expression
+          (identifier)
+          (identifier))
+        (string
+          (string_content))))
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))))))
+
+==================
+Each qualifiers
+==================
+
+process eachExample {
+    input:
+    each x
+    each y
+
+    script:
+    """
+    echo "$x$y"
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (string_content)
+          (interpolation
+            (identifier))
+          (interpolation
+            (identifier))
+          (string_content))))))
+
+==================
+Dynamic directives
+==================
+
+process dynamicResources {
+    cpus { task.attempt * 2 }
+    memory { 6.GB * task.attempt }
+    time { 1.hour * task.attempt }
+
+    script:
+    """
+    echo "Using ${task.cpus} CPUs"
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (member_expression
+                (identifier)
+                (identifier))
+              (integer_literal))))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (member_expression
+                (integer_literal)
+                (identifier))
+              (member_expression
+                (identifier)
+                (identifier)))))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (closure
+          (expression_statement
+            (binary_expression
+              (member_expression
+                (integer_literal)
+                (identifier))
+              (member_expression
+                (identifier)
+                (identifier)))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (member_expression
+              (identifier)
+              (identifier)))
+          (string_content))))))
+
+==================
+Process with quoted env variables
+==================
+
+process my_task {
+    input:
+    env 'FOO'
+    env 'BAR'
+
+    script:
+    """
+    echo ${FOO}
+    echo ${BAR}
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content)))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content)
+          (interpolation
+            (identifier)))))))
+
+==================
+Environment variables with env function
+==================
+
+println("PWD = ${env('PWD')}")
+
+---
+
+(source_file
+  (expression_statement
+    (call_expression
+      (identifier)
+      (argument_list
+        (string
+          (string_content)
+          (interpolation
+            (call_expression
+              (identifier)
+              (argument_list
+                (string
+                  (string_content))))))))))
+
+==================
+Named arguments in path() call (stageAs, arity)
+==================
+
+process P {
+  input:
+  tuple val(meta), path(reads, arity: '1..*', stageAs: 'input/*')
+  script:
+  "echo hi"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (call_expression
+              (identifier)
+              (argument_list
+                (identifier)))
+            (call_expression
+              (identifier)
+              (argument_list
+                (identifier)
+                (named_argument
+                  (identifier)
+                  (string
+                    (string_content)))
+                (named_argument
+                  (identifier)
+                  (string
+                    (string_content)))))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Dynamic directive closure, memory-unit literal, and input named option
+==================
+
+process P {
+  memory { 7.GB * task.attempt }
+  input:
+  path ref, name: 'ref/*'
+  script:
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    name: (identifier)
+    (expression_statement
+      (call_expression
+        function: (identifier)
+        closure: (closure
+          (expression_statement
+            (binary_expression
+              left: (member_expression
+                object: (integer_literal)
+                property: (identifier))
+              right: (member_expression
+                object: (identifier)
+                property: (identifier)))))))
+    (input_section
+      (expression_statement
+        (command_expression
+          function: (identifier)
+          arguments: (argument_list
+            (identifier)
+            (named_argument
+              name: (identifier)
+              value: (string
+                (string_content)))))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Simple script block
+==================
+
+process SIMPLE {
+    script:
+    """
+    echo hello
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Shell script block
+==================
+
+process SHELL_TEST {
+    shell:
+    '''
+    echo world
+    '''
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Exec script block
+==================
+
+process EXEC_TEST {
+    exec:
+    """
+    echo exec
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Stub script block
+==================
+
+process STUB_TEST {
+    stub:
+    """
+    echo stub
+    """
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (stub_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Template directive as script body
+==================
+
+process P {
+  script:
+  template 'main.R'
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))
+
+==================
+Script string followed by a template call
+==================
+
+process P {
+  script:
+  """echo"""
+  template 'x.R'
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (script_section
+      (expression_statement
+        (string
+          (string_content)))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))))

@@ -28,7 +28,7 @@
   "scripts": {
     "prestart": "tree-sitter build --wasm",
     "start": "tree-sitter playground",
-    "test": "tree-sitter test && scripts/check_injections.sh",
+    "test": "tree-sitter test && scripts/check-injections.sh",
     "outline": "ast-grep outline --lang nextflow --outline-rules outline/nextflow.yml --no-default-outline-rules"
   }
 }
