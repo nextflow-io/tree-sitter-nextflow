@@ -40,4 +40,4 @@ jobs:
       - name: Parse nf-core/modules
         env:
           NEXTFLOW_TS_LIB: libnextflow.so
-        run: python scripts/parse_rate.py nf-core-modules/modules nf-core-modules/subworkflows
+        run: python scripts/parse-rate.py nf-core-modules/modules nf-core-modules/subworkflows

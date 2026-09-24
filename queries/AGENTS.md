@@ -3,7 +3,7 @@
 | File | Purpose | Tested by | Docs |
 |---|---|---|---|
 | `highlights.scm` | syntax highlighting captures | `test/highlight/*.nf` | [Highlights](https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#highlights) |
-| `injections.scm` | bash injection into `script:`/`shell:`/`stub:` bodies | `scripts/check_injections.sh` + `test/injection/` | [Language Injection](https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#language-injection) |
+| `injections.scm` | bash injection into `script:`/`shell:`/`stub:` bodies | `scripts/check-injections.sh` + `test/injection/` | [Language Injection](https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#language-injection) |
 | `tags.scm` | code-navigation definitions/references | `test/tags/*.nf` | [Code Navigation](https://tree-sitter.github.io/tree-sitter/4-code-navigation.html) |
 
 Rules of thumb:

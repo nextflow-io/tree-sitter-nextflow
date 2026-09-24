@@ -20,7 +20,7 @@ Run `npm ci` once, then always invoke the CLI as `npx tree-sitter`. It runs the 
 3. Add or update corpus tests in `test/corpus/<area>.txt`. `npx tree-sitter test -u` rewrites expectations to the current output (it refuses trees with ERROR or MISSING); review that diff as carefully as the grammar diff.
 4. Done when `npm test` passes and the commit contains `grammar.js`, the regenerated `src/`, and the tests together. CI regenerates the parser and fails if the committed `src/` differs.
 
-For changes that could affect real-world parsing, also check that nf-core/modules still parses fully: run the **Parse rate** workflow (it also runs on every push to `main`), or `scripts/parse_rate.py` locally (usage in its docstring). A quicker check is `npx tree-sitter parse --paths <file-list> -q -s`.
+For changes that could affect real-world parsing, also check that nf-core/modules still parses fully: run the **Parse rate** workflow (it also runs on every push to `main`), or `scripts/parse-rate.py` locally (usage in its docstring). A quicker check is `npx tree-sitter parse --paths <file-list> -q -s`.
 
 ## Grammar design
 
@@ -63,7 +63,7 @@ When a construct is ambiguous, check how the official grammar handles it: the [N
 | Parsing | `grammar.js` produces the right tree | `test/corpus/*.txt` |
 | Highlighting | `queries/highlights.scm` captures | `test/highlight/*.nf` |
 | Tags | `queries/tags.scm` captures | `test/tags/*.nf` |
-| Injection | `queries/injections.scm` capture ranges | `scripts/check_injections.sh` (golden file in `test/injection/`) |
+| Injection | `queries/injections.scm` capture ranges | `scripts/check-injections.sh` (golden file in `test/injection/`) |
 | End-to-end fontification | bash highlighted inside script bodies | consumer editors, e.g. the ERT tests in `nextflow-mode` |
 
 ## Bindings and distribution

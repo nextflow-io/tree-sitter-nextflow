@@ -1,4 +1,4 @@
-// Fixture for scripts/check_injections.sh: every string kind as a script
+// Fixture for scripts/check-injections.sh: every string kind as a script
 // body, plus stub, implicit script, prelude, and exec (not injected) cases.
 // Keep in sync with expected.txt.
 

@@ -6,4 +6,4 @@
 
 - `tags/` — **tags.scm** tests. Same assertion-comment format as highlight, asserting `definition.*` / `reference.*` roles. Docs: https://tree-sitter.github.io/tree-sitter/4-code-navigation.html#unit-testing
 
-- `injection/` — **injections.scm** golden test (fixture + pinned `tree-sitter query` output). Run `scripts/check_injections.sh`; re-pin intended changes with `--update`.
+- `injection/` — **injections.scm** golden test (fixture + pinned `tree-sitter query` output). Run `scripts/check-injections.sh`; re-pin intended changes with `--update`.

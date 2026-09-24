@@ -10,7 +10,7 @@ Usage:
     pip install ast-grep-py
     npx tree-sitter build --output libnextflow.so  # .dylib on macOS
     export NEXTFLOW_TS_LIB=libnextflow.so
-    python scripts/parse_rate.py path/to/nf-core-modules/modules [more dirs...]
+    python scripts/parse-rate.py path/to/nf-core-modules/modules [more dirs...]
 """
 
 import os
