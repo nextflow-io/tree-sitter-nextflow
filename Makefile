@@ -5,7 +5,7 @@ endif
 LANGUAGE_NAME := tree-sitter-nextflow
 HOMEPAGE_URL := https://github.com/nextflow-io/tree-sitter-nextflow
 DESCRIPTION := Nextflow grammar for tree-sitter
-VERSION := 0.3.0
+VERSION := 0.4.0
 
 # repository
 SRC_DIR := src

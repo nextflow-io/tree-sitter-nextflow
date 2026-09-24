@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-23
+
 The grammar is rewritten from scratch to mirror the official Nextflow grammar (`ScriptParser.g4` in nextflow-io/nextflow). Most node names change, so queries, ast-grep rules and anything else that matches on the tree need updating.
 
 ### Changed
@@ -95,7 +97,8 @@ First public release. The grammar parses the Nextflow strict syntax (the v2 pars
 - Bumped `tree-sitter-cli` to `^0.26.10` (#23).
 - Restructured the repository layout (#15).
 
-[Unreleased]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/nextflow-io/tree-sitter-nextflow/releases/tag/v0.1.0
