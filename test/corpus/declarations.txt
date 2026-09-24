@@ -23,7 +23,7 @@ Include with newline and semicolon separators
 include {
   FOO
   BAR as BAZ; QUX
-} from './modules/foo' 
+} from './modules/foo'
 
 ---
 
