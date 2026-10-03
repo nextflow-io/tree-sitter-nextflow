@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Agents (`docs/agent.mdx`, a preview in Nextflow 26.10): agent directives (`model`, `instruction`, `tools`, ...) are highlighted like process directives, `ast-grep outline` lists `agent` definitions, and corpus tests cover the documented agent syntax and the `agent` config scope.
+
 ## [0.4.0] - 2026-09-23
 
 The grammar is rewritten from scratch to mirror the official Nextflow grammar (`ScriptParser.g4` in nextflow-io/nextflow). Most node names change, so queries, ast-grep rules and anything else that matches on the tree need updating.

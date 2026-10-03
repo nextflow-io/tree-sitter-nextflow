@@ -28,12 +28,13 @@ Useful flags: `--json` for machine-readable output, `--items imports|exports|all
 | Nextflow construct                | AST node              | `symbolType` | Notes                          |
 | --------------------------------- | --------------------- | ------------ | ------------------------------ |
 | `process FOO { ... }`             | `process_definition`  | `function`   | name = process name            |
+| `agent FOO { ... }`               | `agent_definition`    | `function`   | name = agent name              |
 | `workflow FOO { ... }`            | `workflow_definition` | `function`   | named / reusable subworkflow   |
 | `workflow { ... }`                | `workflow_definition` | `function`   | entry workflow, named `main`   |
 | `def helper(x) { ... }`           | `function_definition` | `function`   | name = function name           |
 | `include { FOO } from './m'`      | `include_item`        | `module`     | one per symbol, `isImport`     |
 
-Process and workflow definitions share `symbolType: function`; they are distinguished by the `astKind` field in the output (`process_definition` vs `workflow_definition`).
+Process, agent and workflow definitions share `symbolType: function`; they are distinguished by the `astKind` field in the output (`process_definition`, `agent_definition` or `workflow_definition`).
 
 The `symbolType` values come from a fixed LSP-derived enum, so they are approximations of Nextflow concepts rather than exact names. The rules are data-driven — edit `outline/nextflow.yml` to adjust the mapping.
 
@@ -44,4 +45,4 @@ The `symbolType` values come from a fixed LSP-derived enum, so they are approxim
 Grammar-specific notes:
 
 - For aliased imports (`FOO as BAR`), the extracted name is the original name (`FOO`).
-- A process or workflow whose body fails to parse will not be extracted. Outline reflects whatever the grammar parses successfully.
+- A process, agent or workflow whose body fails to parse will not be extracted. Outline reflects whatever the grammar parses successfully.

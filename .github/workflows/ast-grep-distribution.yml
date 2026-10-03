@@ -110,6 +110,11 @@ jobs:
             """echo hi"""
           }
 
+          agent SUMMARIZE {
+            prompt:
+            "Summarize"
+          }
+
           workflow RNASEQ {
             x = 1
           }
@@ -122,7 +127,7 @@ jobs:
             --outline-rules outline/nextflow.yml \
             --no-default-outline-rules --items all --json=compact /tmp/smoke.nf)
           echo "$out"
-          for sym in FASTQC MULTIQC helper ALIGN RNASEQ main; do
+          for sym in FASTQC MULTIQC helper ALIGN SUMMARIZE RNASEQ main; do
             echo "$out" | grep -q "\"name\":\"$sym\"" || { echo "✗ outline missing $sym" >&2; exit 1; }
           done
           echo "✓ outline extracted all expected symbols"
