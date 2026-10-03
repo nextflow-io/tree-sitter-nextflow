@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Agents (`docs/agent.mdx`, a preview in Nextflow 26.10): agent directives (`model`, `instruction`, `tools`, ...) are highlighted like process directives, `ast-grep outline` lists `agent` definitions, and corpus tests cover the documented agent syntax and the `agent` config scope.
+- Corpus tests for pipeline composition in Nextflow 26.10 (`include { params as P; workflow as RNASEQ }`) and for publish targets as a map.
 
 ## [0.4.0] - 2026-09-23
 
