@@ -20,6 +20,12 @@
 // closing bracket, or one of the words `as`, `in`, `instanceof`, `else`,
 // `catch`, `finally`. A line starting with `+`, `-`, `!`, `(`, `[` or `{`
 // starts a new statement, as in ANTLR.
+//
+// A backslash before a newline is a line continuation, which the scanner
+// skips like inline space before it looks for a newline (the grammar also
+// skips it as an extra where no terminator is possible). As in ANTLR, the
+// escape consumes exactly one newline: the statement continues onto the next
+// line, unless that line is blank or starts with `;`.
 
 enum TokenType {
   TERMINATOR,
@@ -102,9 +108,24 @@ static bool continues_statement(TSLexer *lexer) {
   return false;
 }
 
-static bool scan_terminator(TSLexer *lexer) {
-  while (is_inline_space(lexer->lookahead)) {
+// Skips inline spaces and line continuations (`\` + newline). Returns false
+// at a `\` that no newline follows.
+static bool skip_inline_space(TSLexer *lexer) {
+  for (;;) {
+    while (is_inline_space(lexer->lookahead)) {
+      lexer->advance(lexer, true);
+    }
+    if (lexer->lookahead != '\\') return true;
     lexer->advance(lexer, true);
+    if (lexer->lookahead == '\r') lexer->advance(lexer, true);
+    if (lexer->lookahead != '\n') return false;
+    lexer->advance(lexer, true);
+  }
+}
+
+static bool scan_terminator(TSLexer *lexer) {
+  if (!skip_inline_space(lexer)) {
+    return false;
   }
 
   if (lexer->lookahead != '\n' && lexer->lookahead != ';') {
