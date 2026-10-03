@@ -157,3 +157,70 @@ process {
             (identifier))
           (string
             (string_content)))))))
+
+==================
+Agent scope
+==================
+
+agent.runner = 'langchain4j'
+
+agent {
+    runner = 'pi'
+    apiKey = secrets.LLM_KEY
+    rpc.remoteHost = 'nextflow-driver.default.svc'
+
+    withName: '!critic' { maxRetries = 3 }
+    withLabel: 'reasoning' {
+        model = 'openai/gpt-5'
+    }
+}
+
+---
+
+(source_file
+  (assignment
+    (member_expression
+      (identifier)
+      (identifier))
+    (string
+      (string_content)))
+  (expression_statement
+    (call_expression
+      (identifier)
+      (closure
+        (assignment
+          (identifier)
+          (string
+            (string_content)))
+        (assignment
+          (identifier)
+          (member_expression
+            (identifier)
+            (identifier)))
+        (assignment
+          (member_expression
+            (identifier)
+            (identifier))
+          (string
+            (string_content)))
+        (labeled_statement
+          (identifier)
+          (expression_statement
+            (call_expression
+              (string
+                (string_content))
+              (closure
+                (assignment
+                  (identifier)
+                  (integer_literal))))))
+        (labeled_statement
+          (identifier)
+          (expression_statement
+            (call_expression
+              (string
+                (string_content))
+              (closure
+                (assignment
+                  (identifier)
+                  (string
+                    (string_content)))))))))))

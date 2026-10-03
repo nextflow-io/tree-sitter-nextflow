@@ -22,6 +22,16 @@ workflow MAIN {
     EXAMPLE.out
 }
 
+agent SUMMARIZE {
+//    ^ definition.function
+    input:
+    text: String
+    output:
+    summary: String
+    prompt:
+    "Summarize: ${text}"
+}
+
 def helper(x, y) {
 //  ^ definition.function
     return x + y

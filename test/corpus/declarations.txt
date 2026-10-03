@@ -292,51 +292,6 @@ def Map<String,Integer> counts() {
         (map)))))
 
 ==================
-Agent
-==================
-
-agent SUMMARIZE {
-  model 'claude'
-
-  input:
-  text: String
-
-  output:
-  summary: String
-
-  prompt:
-  "Summarize: ${text}"
-}
-
----
-
-(source_file
-  (agent_definition
-    (identifier)
-    (expression_statement
-      (command_expression
-        (identifier)
-        (argument_list
-          (string
-            (string_content)))))
-    (input_section
-      (process_input
-        (identifier)
-        (type
-          (identifier))))
-    (output_section
-      (process_output
-        (identifier)
-        (type
-          (identifier))))
-    (prompt_section
-      (expression_statement
-        (string
-          (string_content)
-          (interpolation
-            (identifier)))))))
-
-==================
 Shebang declaration
 ==================
 
