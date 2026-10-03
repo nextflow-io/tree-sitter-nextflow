@@ -59,7 +59,10 @@ module.exports = grammar({
     $._gstring_path_dot,
   ],
 
-  extras: $ => [/\s/, $.line_comment, $.block_comment],
+  // A backslash before a newline is a line continuation, which the ANTLR lexer
+  // skips like whitespace (`WS : ([ \t]+ | LineEscape+) -> skip`). Unlike in
+  // ANTLR, a lone `\` at the very end of a file is skipped, not an error.
+  extras: $ => [/\s/, /\\\r?\n/, $.line_comment, $.block_comment],
 
   word: $ => $.identifier,
 
