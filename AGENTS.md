@@ -40,6 +40,7 @@ Deliberate differences from ANTLR:
 
 - Accepted though Nextflow rejects them: `for`-in loops and `finally` (nf-core code still has them), sections in any order, and processes without a script section (useful while editing).
 - `String x` without an initializer is a command call, as above.
+- Slashy strings follow ScriptLexer.g4's `isRegexAllowed()` by asking whether a division is valid at the `/` (the scanner lexes `slashy_string`), so `dir / "x"` and `println /abc/` are divisions, as in Nextflow. Two approximations remain: after a `)` that cannot end an expression (`if (x) /a/.matcher(s)`) this grammar reads a slashy string where Nextflow reads a division and rejects the code; and a line starting with `/` always continues the previous statement as a division, where Nextflow starts a slashy string if a closing `/` follows (so its own `a\n  / b` breaks when another `/` appears later in the file).
 - Names may start with `$` (`$slurm` executor scopes in config) but cannot contain it later, since that would break GString lexing.
 - `.config` files parse with this grammar. Config blocks come out as calls with closures, and selectors (`withName: FOO { }`) as labeled statements.
 

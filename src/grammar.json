@@ -6283,51 +6283,6 @@
         }
       }
     },
-    "slashy_string": {
-      "type": "TOKEN",
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "STRING",
-            "value": "/"
-          },
-          {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "PATTERN",
-                "value": "[^/*\\\\]"
-              },
-              {
-                "type": "PATTERN",
-                "value": "\\\\[\\s\\S]"
-              }
-            ]
-          },
-          {
-            "type": "REPEAT",
-            "content": {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "PATTERN",
-                  "value": "[^/\\\\]"
-                },
-                {
-                  "type": "PATTERN",
-                  "value": "\\\\[\\s\\S]"
-                }
-              ]
-            }
-          },
-          {
-            "type": "STRING",
-            "value": "/"
-          }
-        ]
-      }
-    },
     "line_comment": {
       "type": "TOKEN",
       "content": {
@@ -6460,6 +6415,14 @@
     {
       "type": "SYMBOL",
       "name": "_gstring_path_dot"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "slashy_string"
+    },
+    {
+      "type": "STRING",
+      "value": "/"
     }
   ],
   "inline": [],

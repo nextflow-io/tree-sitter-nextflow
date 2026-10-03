@@ -653,3 +653,81 @@ Interpolation with binary expression
         (binary_expression
           (identifier)
           (identifier))))))
+
+==================
+Slashy strings where a division cannot start
+==================
+
+def a = /x\/y/
+foo(/a/, /b/)
+ok = s =~ /x/ && s ==~ /^y$/
+l = [/a/, /b/]
+m = [k: /a/]
+return /abc/
+{
+  /abc/.matcher(s)
+}
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (slashy_string))
+  (expression_statement
+    (call_expression
+      (identifier)
+      (argument_list
+        (slashy_string)
+        (slashy_string))))
+  (assignment
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (identifier)
+        (slashy_string))
+      (binary_expression
+        (identifier)
+        (slashy_string))))
+  (assignment
+    (identifier)
+    (list
+      (slashy_string)
+      (slashy_string)))
+  (assignment
+    (identifier)
+    (map
+      (map_entry
+        (identifier)
+        (slashy_string))))
+  (return_statement
+    (slashy_string))
+  (expression_statement
+    (closure
+      (expression_statement
+        (call_expression
+          (member_expression
+            (slashy_string)
+            (identifier))
+          (argument_list
+            (identifier)))))))
+
+==================
+Slash after a name is division, as in ScriptLexer.g4
+==================
+
+x /= 2
+y = a /* c */ / b
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (integer_literal))
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (block_comment)
+      (identifier))))

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- A division after a name at the start of a statement (`dir / "sample.bam"`) no longer lexes as a slashy string running to the next `/` in the file. Slashy strings are now lexed by the scanner and, as in Nextflow's lexer, only start where a division cannot, so `println /abc/` is a division too.
+
 ## [0.4.0] - 2026-09-23
 
 The grammar is rewritten from scratch to mirror the official Nextflow grammar (`ScriptParser.g4` in nextflow-io/nextflow). Most node names change, so queries, ast-grep rules and anything else that matches on the tree need updating.
