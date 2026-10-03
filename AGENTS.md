@@ -31,7 +31,7 @@ For changes that could affect real-world parsing, also check that nf-core/module
 Where tree-sitter cannot decide with one token of lookahead, the grammar declares a conflict and lets GLR keep both readings, then `prec.dynamic` picks one:
 
 - **Command vs call:** `path("x"), emit: y` is a command whose first argument is parenthesized; `path("x")` alone is a call. `command_expression` has dynamic precedence -1.
-- **Section vs entry:** section keywords are also names (`CONTEXTUAL_KEYWORDS`), so `output:` after an input could be a typed input `output: <type>`. Sections have dynamic precedence 1, so the reading with more sections wins.
+- **Section vs entry:** section keywords are also names (`CONTEXTUAL_KEYWORDS`), so `output:` after an input could be a typed input `output: <type>`. Sections have dynamic precedence 2, so the reading with more sections wins. Typed entries (`process_input`, `process_output`, `workflow_take`, `workflow_emit`) have dynamic precedence 1 to beat a bare expression, which is why sections need 2. Keep the entry precedence dynamic: a static one reduces `val` in `val shell` before GLR can try the command reading, and `shell` then starts a section.
 - **Declaration vs command:** `String x = "a"` is a declaration, but `path reads` must stay a command. ANTLR checks for a capitalized class name; here a declaration without `def` or an initializer loses (dynamic precedence -2).
 
 Static `prec` resolves a conflict at generate time, before GLR can run, so adding static precedence to these rules breaks them.

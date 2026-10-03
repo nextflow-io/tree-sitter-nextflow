@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- A command whose last argument is a section keyword, at the end of a line, parses as a command in input, output, take and emit sections (`val shell`, `val output`, `path script`, `foo emit`). It used to end the section at the command name and start a broken section at the keyword (nextflow-io/nextflow `tests/eval-out.nf`).
+
 ## [0.4.0] - 2026-09-23
 
 The grammar is rewritten from scratch to mirror the official Nextflow grammar (`ScriptParser.g4` in nextflow-io/nextflow). Most node names change, so queries, ast-grep rules and anything else that matches on the tree need updating.

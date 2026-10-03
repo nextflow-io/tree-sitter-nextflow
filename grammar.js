@@ -96,6 +96,17 @@ module.exports = grammar({
     [$.publish_section],
     [$.on_complete_section],
     [$.on_error_section],
+    // A name in an input/output/take/emit section: a typed entry (`x`,
+    // `x: Path`) or a statement. With a section keyword after it, `val shell`
+    // is a command, not `val` followed by a `shell:` section.
+    [$._expression, $.process_input],
+    [$._expression, $.process_output],
+    [$._expression, $.workflow_take],
+    [$._expression, $.workflow_emit],
+    [$.process_input, $.command_expression, $._expression, $._type_name],
+    [$.process_output, $.command_expression, $._expression, $._type_name],
+    [$.workflow_take, $.command_expression, $._expression, $._type_name],
+    [$.workflow_emit, $.command_expression, $._expression, $._type_name],
   ],
 
   rules: {
@@ -230,7 +241,7 @@ module.exports = grammar({
       alias($._legacy_tuple_input, $.expression_statement),
     )),
 
-    process_input: $ => prec(1, seq(
+    process_input: $ => prec.dynamic(1, seq(
       field('name', $._identifier),
       optional(seq(':', field('type', $.type))),
     )),
@@ -261,7 +272,7 @@ module.exports = grammar({
 
     output_section: $ => section($, 'output', choice($.process_output, $._statement)),
 
-    process_output: $ => prec(1, seq(
+    process_output: $ => prec.dynamic(1, seq(
       field('name', $._identifier),
       optional(seq(':', field('type', $.type))),
       optional(seq('=', field('value', $._expression))),
@@ -269,7 +280,7 @@ module.exports = grammar({
 
     topic_section: $ => section($, 'topic', $._statement),
 
-    when_section: $ => prec.dynamic(1, seq(
+    when_section: $ => prec.dynamic(2, seq(
       'when',
       ':',
       optional($._sep),
@@ -308,7 +319,7 @@ module.exports = grammar({
 
     take_section: $ => section($, 'take', choice($.workflow_take, $._statement)),
 
-    workflow_take: $ => prec(1, seq(
+    workflow_take: $ => prec.dynamic(1, seq(
       field('name', $._identifier),
       optional(seq(':', field('type', $.type))),
     )),
@@ -317,7 +328,7 @@ module.exports = grammar({
 
     emit_section: $ => section($, 'emit', choice($.workflow_emit, $._statement)),
 
-    workflow_emit: $ => prec(1, seq(
+    workflow_emit: $ => prec.dynamic(1, seq(
       field('name', $._identifier),
       optional(seq(':', field('type', $.type))),
       optional(seq('=', field('value', $._expression))),
@@ -835,14 +846,15 @@ function sectionedBody($, sections) {
  *
  * Section keywords are also valid names, so `output:` after an input could
  * be read as a typed input `output: <type>`. The dynamic precedence makes
- * the reading with more sections win.
+ * the reading with more sections win. It is 2 so that it outweighs the
+ * typed entry (dynamic precedence 1) that the other reading gains.
  *
  * @param {GrammarSymbols<string>} $
  * @param {RuleOrLiteral} label
  * @param {RuleOrLiteral} entry
  */
 function section($, label, entry) {
-  return prec.dynamic(1, seq(
+  return prec.dynamic(2, seq(
     label,
     ':',
     optional($._sep),
