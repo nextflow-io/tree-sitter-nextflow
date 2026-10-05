@@ -263,10 +263,12 @@ bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
   if (valid_symbols[SLASHY_STRING] && !valid_symbols[SLASH]) {
     // Whitespace, newlines and line continuations, so `x = \` + newline +
     // `/abc/` is still a slashy string.
-    while (skip_inline_space(lexer) && lexer->lookahead == '\n') {
+    // A `\` without a newline after it is not skipped (ANTLR rejects it).
+    bool ok;
+    while ((ok = skip_inline_space(lexer)) && lexer->lookahead == '\n') {
       lexer->advance(lexer, true);
     }
-    if (lexer->lookahead == '/') {
+    if (ok && lexer->lookahead == '/') {
       return scan_slashy_string(lexer);
     }
   }

@@ -756,3 +756,12 @@ y = a \
     (binary_expression
       (identifier)
       (identifier))))
+
+==================
+Backslash without a newline before a slashy string
+:error
+==================
+
+x = \/a/
+
+---
