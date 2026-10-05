@@ -28,22 +28,22 @@ on:
         description: PR branch to merge main into (default every open PR)
         required: false
 
-permissions:
-  actions: write
-  contents: write
-  pull-requests: read
-
 concurrency:
   group: resolve-conflicts
 
 jobs:
   resolve:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      has_merges: ${{ steps.bundle.outputs.has_merges }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          token: ${{ secrets.RESOLVE_CONFLICTS_TOKEN || github.token }}
+          persist-credentials: false
 
       - uses: actions/setup-node@v7
         with:
@@ -53,11 +53,20 @@ jobs:
       - name: Install tree-sitter CLI
         run: npm ci
 
-      - name: Merge main into conflicting PRs
+      - name: List eligible PR branches
         env:
           GH_TOKEN: ${{ github.token }}
           PR_BRANCH: ${{ inputs.branch }}
-          DISPATCH_CI: ${{ secrets.RESOLVE_CONFLICTS_TOKEN == '' }}
+        run: |
+          gh pr list --base main --state open --limit 100 \
+            --json headRefName,isCrossRepository \
+            --jq '.[] | select(.isCrossRepository | not) | .headRefName' > "$RUNNER_TEMP/branches"
+          if [[ -n "$PR_BRANCH" ]]; then
+            grep -Fx -- "$PR_BRANCH" "$RUNNER_TEMP/branches" > "$RUNNER_TEMP/selected"
+            mv "$RUNNER_TEMP/selected" "$RUNNER_TEMP/branches"
+          fi
+
+      - name: Merge main into conflicting PRs
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -65,36 +74,79 @@ jobs:
           # Run this commit's copy of the scripts: a PR branch may predate them.
           cp scripts/merge-main.sh scripts/resolve-changelog.py "$RUNNER_TEMP/"
 
-          if [[ -n "$PR_BRANCH" ]]; then
-            branches=$PR_BRANCH
-          else
-            # The default token cannot push to a fork, so skip those.
-            branches=$(gh pr list --base main --state open --limit 100 \
-              --json headRefName,isCrossRepository \
-              --jq '.[] | select(.isCrossRepository | not) | .headRefName')
-          fi
-
-          for branch in $branches; do
+          while IFS= read -r branch; do
             echo "::group::$branch"
             git checkout --quiet -B "$branch" "origin/$branch"
             status=0
             "$RUNNER_TEMP/merge-main.sh" --if-conflicted origin/main || status=$?
             case $status in
-              0)
-                if git push origin "HEAD:$branch"; then
-                  if [[ "$DISPATCH_CI" == true ]]; then
-                    gh workflow run ci.yml --ref "$branch"
-                    gh workflow run ast-grep-distribution.yml --ref "$branch"
-                  fi
-                  echo "- \`$branch\`: merged main and regenerated \`src/\`" >> "$GITHUB_STEP_SUMMARY"
-                else
-                  echo "::warning::$branch: push failed (the branch moved, or main changed .github/workflows/)"
-                fi
-                ;;
+              0) git update-ref "refs/heads/ready/$branch" HEAD ;;
               2) echo "- \`$branch\`: conflicts need a person" >> "$GITHUB_STEP_SUMMARY" ;;
               3) ;;
               *) echo "::warning::$branch: tests fail after merging main; branch left unchanged" ;;
             esac
             git reset --quiet --hard
             echo "::endgroup::"
-          done
+          done < "$RUNNER_TEMP/branches"
+
+      - name: Bundle tested merges
+        id: bundle
+        run: |
+          if [[ -n "$(git for-each-ref refs/heads/ready/)" ]]; then
+            git bundle create "$RUNNER_TEMP/merges.bundle" --branches=ready/
+            echo 'has_merges=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: steps.bundle.outputs.has_merges == 'true'
+        with:
+          name: tested-merges
+          path: ${{ runner.temp }}/merges.bundle
+          retention-days: 1
+
+  push:
+    needs: resolve
+    if: needs.resolve.outputs.has_merges == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: tested-merges
+          path: ${{ runner.temp }}
+
+      - name: Push tested merges
+        env:
+          GH_TOKEN: ${{ secrets.RESOLVE_CONFLICTS_TOKEN || github.token }}
+          DISPATCH_CI: ${{ secrets.RESOLVE_CONFLICTS_TOKEN == '' }}
+        run: |
+          gh auth setup-git
+          git fetch "$RUNNER_TEMP/merges.bundle" 'refs/heads/ready/*:refs/remotes/ready/*'
+          gh pr list --base main --state open --limit 100 \
+            --json headRefName,isCrossRepository \
+            --jq '.[] | select(.isCrossRepository | not) | .headRefName' > "$RUNNER_TEMP/branches"
+          while IFS= read -r branch; do
+            sha=$(git rev-parse "refs/remotes/ready/$branch")
+            # Only push to a currently open same-repository PR branch. The
+            # checkout containing PR code ran in a different, read-only job.
+            grep -Fxq -- "$branch" "$RUNNER_TEMP/branches"
+            git merge-base --is-ancestor "origin/$branch" "$sha"
+            git merge-base --is-ancestor origin/main "$sha"
+            if git -c core.hooksPath=/dev/null push "https://github.com/${{ github.repository }}.git" "$sha:refs/heads/$branch"; then
+              if [[ "$DISPATCH_CI" == true ]]; then
+                gh workflow run ci.yml --ref "$branch"
+                gh workflow run ast-grep-distribution.yml --ref "$branch"
+              fi
+              echo "- \`$branch\`: merged main and regenerated \`src/\`" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning::$branch: push failed (the branch moved, or main changed .github/workflows/)"
+            fi
+          done < <(git for-each-ref --format='%(refname:strip=3)' refs/remotes/ready/)
