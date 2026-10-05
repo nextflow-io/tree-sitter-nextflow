@@ -1660,3 +1660,51 @@ b = r.d as Float > 0
         type: (type
           (identifier)))
       right: (integer_literal))))
+
+==================
+Division at statement start is not a slashy string
+==================
+
+workflow {
+  dir / "sample.bam"
+  file("/a")
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (expression_statement
+      (binary_expression
+        (identifier)
+        (string
+          (string_content))))
+    (expression_statement
+      (call_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content)))))))
+
+==================
+Division after a name across lines
+==================
+
+x = a
+  / b
+dir
+  / 'sample.bam'
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier)))
+  (expression_statement
+    (binary_expression
+      (identifier)
+      (string
+        (string_content)))))

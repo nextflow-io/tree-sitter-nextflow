@@ -26,10 +26,20 @@
 // skips it as an extra where no terminator is possible). As in ANTLR, the
 // escape consumes exactly one newline: the statement continues onto the next
 // line, unless that line is blank or starts with `;`.
+//
+// A slashy string (`/pattern/`) is lexed here too, to mirror ScriptLexer.g4's
+// `isRegexAllowed()`: ANTLR only starts a slashy string when the previous
+// token cannot end an expression (an identifier, literal, `)`, `]` or `}`).
+// The scanner cannot see the previous token, but the grammar lists '/' as an
+// external so we can ask whether a division is valid here, which is the same
+// question: `dir / "x"` is a division, `x = /a/` a slashy string. The
+// scanner never emits '/' itself; the internal lexer does.
 
 enum TokenType {
   TERMINATOR,
   GSTRING_PATH_DOT,
+  SLASHY_STRING,
+  SLASH,
 };
 
 void *tree_sitter_nextflow_external_scanner_create(void) { return NULL; }
@@ -123,11 +133,10 @@ static bool skip_inline_space(TSLexer *lexer) {
   }
 }
 
-static bool scan_terminator(TSLexer *lexer) {
-  if (!skip_inline_space(lexer)) {
-    return false;
-  }
-
+// At a newline or `;` (inline space and line continuations already skipped).
+// slash_valid says whether a division may follow, i.e. whether a line
+// starting with `/` can continue.
+static bool scan_terminator(TSLexer *lexer, bool slash_valid) {
   if (lexer->lookahead != '\n' && lexer->lookahead != ';') {
     return false;
   }
@@ -184,8 +193,13 @@ static bool scan_terminator(TSLexer *lexer) {
         lexer->advance(lexer, false);
       }
       if (lexer->lookahead == '/') lexer->advance(lexer, false);
-    } else {
+    } else if (slash_valid) {
       return false;  // a line starting with `/` continues (division)
+    } else {
+      // No division possible here, so the `/` starts a slashy string on a
+      // new statement.
+      lexer->result_symbol = TERMINATOR;
+      return true;
     }
     while (lexer->lookahead == '\n' || is_inline_space(lexer->lookahead)) {
       lexer->advance(lexer, false);
@@ -198,6 +212,27 @@ static bool scan_terminator(TSLexer *lexer) {
 
   lexer->result_symbol = TERMINATOR;
   return true;
+}
+
+// `/.../` at the lookahead. The first character cannot be `*` or `/`, which
+// start comments; a backslash escapes any character, including `/`.
+static bool scan_slashy_string(TSLexer *lexer) {
+  lexer->advance(lexer, false);
+  if (lexer->lookahead == '/' || lexer->lookahead == '*') return false;
+  while (!lexer->eof(lexer)) {
+    int32_t c = lexer->lookahead;
+    lexer->advance(lexer, false);
+    if (c == '/') {
+      lexer->mark_end(lexer);
+      lexer->result_symbol = SLASHY_STRING;
+      return true;
+    }
+    if (c == '\\') {
+      if (lexer->eof(lexer)) return false;
+      lexer->advance(lexer, false);
+    }
+  }
+  return false;
 }
 
 bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
@@ -217,7 +252,25 @@ bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
   }
 
   if (valid_symbols[TERMINATOR]) {
-    return scan_terminator(lexer);
+    if (!skip_inline_space(lexer)) {
+      return false;
+    }
+    if (lexer->lookahead == '\n' || lexer->lookahead == ';') {
+      return scan_terminator(lexer, valid_symbols[SLASH]);
+    }
+  }
+
+  if (valid_symbols[SLASHY_STRING] && !valid_symbols[SLASH]) {
+    // Whitespace, newlines and line continuations, so `x = \` + newline +
+    // `/abc/` is still a slashy string.
+    // A `\` without a newline after it is not skipped (ANTLR rejects it).
+    bool ok;
+    while ((ok = skip_inline_space(lexer)) && lexer->lookahead == '\n') {
+      lexer->advance(lexer, true);
+    }
+    if (ok && lexer->lookahead == '/') {
+      return scan_slashy_string(lexer);
+    }
   }
 
   return false;

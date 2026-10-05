@@ -57,6 +57,14 @@ module.exports = grammar({
     // A `.` inside a GString path (`"$a.b"`), emitted only when an identifier
     // follows, so `"$a."` and `"$a. b"` keep the dot as text.
     $._gstring_path_dot,
+    // `/pattern/`, no interpolation (as in the strict syntax). Lexed by the
+    // scanner so it can apply ScriptLexer.g4's `isRegexAllowed()`: a slashy
+    // string cannot start where a division could, i.e. right after a token
+    // that ends an expression (`dir / "x"` is a division, not a command
+    // argument). The scanner never emits '/'; listing it here only tells the
+    // scanner whether a division is valid at the current position.
+    $.slashy_string,
+    '/',
   ],
 
   // A backslash before a newline is a line continuation, which the ANTLR lexer
@@ -795,15 +803,6 @@ module.exports = grammar({
     ),
 
     _gstring_identifier: _ => token.immediate(prec(2, /[\p{L}_][\p{L}\p{Nd}_]*/)),
-
-    // /pattern/, no interpolation (as in the strict syntax). The first
-    // character cannot be `*` or `/`, which start comments.
-    slashy_string: _ => token(seq(
-      '/',
-      choice(/[^/*\\]/, /\\[\s\S]/),
-      repeat(choice(/[^/\\]/, /\\[\s\S]/)),
-      '/',
-    )),
 
     line_comment: _ => token(seq('//', /[^\n]*/)),
 
