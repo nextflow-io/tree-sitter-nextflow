@@ -24,9 +24,9 @@ CONFLICT = re.compile(
 )
 
 
-def parse(text):
+def parse(text, bare=False):
     """Return [(heading, [entry, ...]), ...] or None if text is not just entries."""
-    sections = []
+    sections = [("", [])] if bare else []
     for line in text.splitlines(keepends=True):
         if line.startswith("### "):
             sections.append((line.strip()[4:], []))
@@ -54,7 +54,8 @@ def combine(ours, theirs):
         merged[heading] += [e for e in entries if e not in merged[heading]]
     order.sort(key=lambda h: ORDER.index(h) if h in ORDER else len(ORDER))
     return "\n".join(
-        f"### {heading}\n\n" + "".join(merged[heading]) for heading in order
+        (f"### {heading}\n\n" if heading else "") + "".join(merged[heading])
+        for heading in order
     )
 
 
@@ -64,7 +65,14 @@ def main():
         text = f.read()
 
     def resolve(match):
-        ours, theirs = parse(match.group(1)), parse(match.group(2))
+        bare = not re.search(r"^### ", match.group(1) + match.group(2), re.MULTILINE)
+        if bare:
+            prefix = text[:match.start()]
+            releases = re.findall(r"^## .+$", prefix, re.MULTILINE)
+            if (not releases or releases[-1] != "## [Unreleased]"
+                    or prefix.rfind("\n### ") < prefix.rfind("\n## ")):
+                raise ValueError(match.group(0))
+        ours, theirs = parse(match.group(1), bare), parse(match.group(2), bare)
         if ours is None or theirs is None:
             raise ValueError(match.group(0))
         return combine(ours, theirs)
