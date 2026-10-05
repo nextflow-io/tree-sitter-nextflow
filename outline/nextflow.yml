@@ -32,6 +32,19 @@ rule:
     pattern: $NAME
 name: $NAME
 ---
+# Agent definitions: `agent FOO { ... }`
+id: nextflow-agent
+language: nextflow
+role: item
+symbolType: function
+rule:
+  kind: agent_definition
+  has:
+    field: name
+    kind: identifier
+    pattern: $NAME
+name: $NAME
+---
 # Named workflows: `workflow FOO { ... }` (reusable subworkflows)
 id: nextflow-workflow
 language: nextflow

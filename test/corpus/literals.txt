@@ -731,3 +731,28 @@ y = a /* c */ / b
       (identifier)
       (block_comment)
       (identifier))))
+
+==================
+Slashy string after a line continuation
+==================
+
+x = \
+  /abc/
+return \
+  /abc/
+y = a \
+  / b
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (slashy_string))
+  (return_statement
+    (slashy_string))
+  (assignment
+    (identifier)
+    (binary_expression
+      (identifier)
+      (identifier))))

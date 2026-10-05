@@ -21,6 +21,12 @@
 // `catch`, `finally`. A line starting with `+`, `-`, `!`, `(`, `[` or `{`
 // starts a new statement, as in ANTLR.
 //
+// A backslash before a newline is a line continuation, which the scanner
+// skips like inline space before it looks for a newline (the grammar also
+// skips it as an extra where no terminator is possible). As in ANTLR, the
+// escape consumes exactly one newline: the statement continues onto the next
+// line, unless that line is blank or starts with `;`.
+//
 // A slashy string (`/pattern/`) is lexed here too, to mirror ScriptLexer.g4's
 // `isRegexAllowed()`: ANTLR only starts a slashy string when the previous
 // token cannot end an expression (an identifier, literal, `)`, `]` or `}`).
@@ -112,8 +118,24 @@ static bool continues_statement(TSLexer *lexer) {
   return false;
 }
 
-// At a newline or `;` (inline space already skipped). slash_valid says whether
-// a division may follow, i.e. whether a line starting with `/` can continue.
+// Skips inline spaces and line continuations (`\` + newline). Returns false
+// at a `\` that no newline follows.
+static bool skip_inline_space(TSLexer *lexer) {
+  for (;;) {
+    while (is_inline_space(lexer->lookahead)) {
+      lexer->advance(lexer, true);
+    }
+    if (lexer->lookahead != '\\') return true;
+    lexer->advance(lexer, true);
+    if (lexer->lookahead == '\r') lexer->advance(lexer, true);
+    if (lexer->lookahead != '\n') return false;
+    lexer->advance(lexer, true);
+  }
+}
+
+// At a newline or `;` (inline space and line continuations already skipped).
+// slash_valid says whether a division may follow, i.e. whether a line
+// starting with `/` can continue.
 static bool scan_terminator(TSLexer *lexer, bool slash_valid) {
   if (lexer->lookahead != '\n' && lexer->lookahead != ';') {
     return false;
@@ -230,8 +252,8 @@ bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
   }
 
   if (valid_symbols[TERMINATOR]) {
-    while (is_inline_space(lexer->lookahead)) {
-      lexer->advance(lexer, true);
+    if (!skip_inline_space(lexer)) {
+      return false;
     }
     if (lexer->lookahead == '\n' || lexer->lookahead == ';') {
       return scan_terminator(lexer, valid_symbols[SLASH]);
@@ -239,7 +261,9 @@ bool tree_sitter_nextflow_external_scanner_scan(void *payload, TSLexer *lexer,
   }
 
   if (valid_symbols[SLASHY_STRING] && !valid_symbols[SLASH]) {
-    while (is_inline_space(lexer->lookahead) || lexer->lookahead == '\n') {
+    // Whitespace, newlines and line continuations, so `x = \` + newline +
+    // `/abc/` is still a slashy string.
+    while (skip_inline_space(lexer) && lexer->lookahead == '\n') {
       lexer->advance(lexer, true);
     }
     if (lexer->lookahead == '/') {
