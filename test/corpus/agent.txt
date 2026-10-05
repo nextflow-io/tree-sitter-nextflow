@@ -1,0 +1,390 @@
+==================
+Agent definition
+==================
+
+agent SUMMARIZE {
+  model 'claude'
+
+  input:
+  text: String
+
+  output:
+  summary: String
+
+  prompt:
+  "Summarize: ${text}"
+}
+
+---
+
+(source_file
+  (agent_definition
+    (identifier)
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content)))))
+    (input_section
+      (process_input
+        (identifier)
+        (type
+          (identifier))))
+    (output_section
+      (process_output
+        (identifier)
+        (type
+          (identifier))))
+    (prompt_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))))))
+
+==================
+Agent directives
+==================
+
+agent qc {
+    label 'reasoning'
+    label 'fast'
+    model 'openai/gpt-5-mini'
+    instruction '''\
+        You are a genome-assembly QC assistant.
+        '''.stripIndent()
+    goal 'Report whether the assembly meets N50 >= 500 bp.'
+    maxIterations 20
+    tools 'nf:module_run:SAMTOOLS_*', 'fs:*', 'shell:bash'
+    skills 'sequence-report', 'github.com/org/repo@abc123'
+    cache false
+
+    input:
+    sample: Sample
+
+    output:
+    report: String
+
+    prompt:
+    "Assess ${sample.id}"
+}
+
+---
+
+(source_file
+  (agent_definition
+    (identifier)
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content)))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content)))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content)))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (call_expression
+            (member_expression
+              (string
+                (escape_sequence)
+                (string_content))
+              (identifier))
+            (argument_list)))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content)))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (integer_literal))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content))
+          (string
+            (string_content))
+          (string
+            (string_content)))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (string
+            (string_content))
+          (string
+            (string_content)))))
+    (expression_statement
+      (command_expression
+        (identifier)
+        (argument_list
+          (boolean_literal))))
+    (input_section
+      (process_input
+        (identifier)
+        (type
+          (identifier))))
+    (output_section
+      (process_output
+        (identifier)
+        (type
+          (identifier))))
+    (prompt_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (member_expression
+              (identifier)
+              (identifier))))))))
+
+==================
+Agent with no tools
+==================
+
+agent eval_agent {
+    tools()
+
+    input:
+    q: String
+
+    output:
+    a: String
+
+    prompt:
+    "${q}"
+}
+
+---
+
+(source_file
+  (agent_definition
+    (identifier)
+    (expression_statement
+      (call_expression
+        (identifier)
+        (argument_list)))
+    (input_section
+      (process_input
+        (identifier)
+        (type
+          (identifier))))
+    (output_section
+      (process_output
+        (identifier)
+        (type
+          (identifier))))
+    (prompt_section
+      (expression_statement
+        (string
+          (interpolation
+            (identifier)))))))
+
+==================
+Prompt on the label line
+==================
+
+agent inspector {
+    input:
+    contigs: Path
+
+    output:
+    answer: String
+
+    // the model receives "contigs.fa"
+    prompt: "Inspect ${contigs} and report the longest sequence."
+}
+
+---
+
+(source_file
+  (agent_definition
+    (identifier)
+    (input_section
+      (process_input
+        (identifier)
+        (type
+          (identifier))))
+    (output_section
+      (process_output
+        (identifier)
+        (type
+          (identifier)))
+      (line_comment))
+    (prompt_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content))))))
+
+==================
+Prompt with statements before the prompt string
+==================
+
+agent summarizer {
+    input:
+    report: List<Finding>
+
+    output:
+    summary: String
+
+    prompt:
+    def findings = report.collect { v -> "- ${v.summary}" }.join('\n')
+    """
+    Summarize these findings:
+    ${findings}
+    """
+}
+
+---
+
+(source_file
+  (agent_definition
+    (identifier)
+    (input_section
+      (process_input
+        (identifier)
+        (type
+          (identifier)
+          (type_arguments
+            (type
+              (identifier))))))
+    (output_section
+      (process_output
+        (identifier)
+        (type
+          (identifier))))
+    (prompt_section
+      (variable_declaration
+        (identifier)
+        (call_expression
+          (member_expression
+            (call_expression
+              (member_expression
+                (identifier)
+                (identifier))
+              (closure
+                (parameters
+                  (parameter
+                    (identifier)))
+                (expression_statement
+                  (string
+                    (string_content)
+                    (interpolation
+                      (member_expression
+                        (identifier)
+                        (identifier)))))))
+            (identifier))
+          (argument_list
+            (string
+              (escape_sequence)))))
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier)))))))
+
+==================
+Agent path outputs
+==================
+
+agent reporter {
+    input:
+    findings: String
+
+    output:
+    report: Path = file('report.md')
+    notes: Set<Path> = files('*.txt')
+
+    prompt:
+    "Summarize ${findings} and write the result to report.md"
+}
+
+---
+
+(source_file
+  (agent_definition
+    (identifier)
+    (input_section
+      (process_input
+        (identifier)
+        (type
+          (identifier))))
+    (output_section
+      (process_output
+        (identifier)
+        (type
+          (identifier))
+        (call_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content)))))
+      (process_output
+        (identifier)
+        (type
+          (identifier)
+          (type_arguments
+            (type
+              (identifier))))
+        (call_expression
+          (identifier)
+          (argument_list
+            (string
+              (string_content))))))
+    (prompt_section
+      (expression_statement
+        (string
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content))))))
+
+==================
+Agent and prompt as names
+==================
+
+def prompt = 'Summarize'
+agent = prompt
+agent.run(prompt: prompt)
+
+---
+
+(source_file
+  (variable_declaration
+    (identifier)
+    (string
+      (string_content)))
+  (assignment
+    (identifier)
+    (identifier))
+  (expression_statement
+    (call_expression
+      (member_expression
+        (identifier)
+        (identifier))
+      (argument_list
+        (named_argument
+          (identifier)
+          (identifier))))))

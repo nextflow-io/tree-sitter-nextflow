@@ -1090,3 +1090,59 @@ process P {
       (expression_statement
         (string
           (string_content))))))
+
+==================
+Backslash line continuation
+==================
+
+splitLetters \
+  | flatten \
+  | view
+foo \
+  bar
+x = 1 \
+  + 2
+
+---
+
+(source_file
+  (expression_statement
+    (binary_expression
+      (binary_expression
+        (identifier)
+        (identifier))
+      (identifier)))
+  (expression_statement
+    (command_expression
+      (identifier)
+      (argument_list
+        (identifier))))
+  (assignment
+    (identifier)
+    (binary_expression
+      (integer_literal)
+      (integer_literal))))
+
+==================
+Blank line after a backslash continuation ends the statement
+==================
+
+x = 1 \
+
+y = 2
+foo \
+; bar
+
+---
+
+(source_file
+  (assignment
+    (identifier)
+    (integer_literal))
+  (assignment
+    (identifier)
+    (integer_literal))
+  (expression_statement
+    (identifier))
+  (expression_statement
+    (identifier)))

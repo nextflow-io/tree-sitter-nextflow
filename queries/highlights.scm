@@ -125,6 +125,14 @@
       (call_expression function: (identifier) @keyword.directive)
     ]))
 
+;; Agent directives: model 'openai/gpt-5-mini', tools 'fs:*', tools()
+(agent_definition
+  (expression_statement
+    [
+      (command_expression function: (identifier) @keyword.directive)
+      (call_expression function: (identifier) @keyword.directive)
+    ]))
+
 ;; Legacy input/output qualifiers: val x, path "*.bam", tuple val(meta), path(x)
 (input_section
   (expression_statement

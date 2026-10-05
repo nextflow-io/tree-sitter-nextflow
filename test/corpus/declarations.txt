@@ -40,6 +40,28 @@ include {
       (string_content))))
 
 ==================
+Include a pipeline
+==================
+
+include {
+    params as RnaseqParams ;
+    workflow as RNASEQ
+} from './pipelines/rnaseq.nf'
+
+---
+
+(source_file
+  (include_declaration
+    (include_item
+      (identifier)
+      (identifier))
+    (include_item
+      (identifier)
+      (identifier))
+    (string
+      (string_content))))
+
+==================
 Import
 ==================
 
@@ -209,6 +231,60 @@ output {
                 (string_content)))))))))
 
 ==================
+Output path as a map of publish targets
+==================
+
+output {
+    samples {
+        path { sample -> [
+            (sample.fastq_1): "fastq/${sample.id}/",
+            (sample.fastq_2): "fastq/${sample.id}/"
+        ] }
+    }
+}
+
+---
+
+(source_file
+  (output_definition
+    (output_declaration
+      (identifier)
+      (block
+        (expression_statement
+          (call_expression
+            (identifier)
+            (closure
+              (parameters
+                (parameter
+                  (identifier)))
+              (expression_statement
+                (map
+                  (map_entry
+                    (parenthesized_expression
+                      (member_expression
+                        (identifier)
+                        (identifier)))
+                    (string
+                      (string_content)
+                      (interpolation
+                        (member_expression
+                          (identifier)
+                          (identifier)))
+                      (string_content)))
+                  (map_entry
+                    (parenthesized_expression
+                      (member_expression
+                        (identifier)
+                        (identifier)))
+                    (string
+                      (string_content)
+                      (interpolation
+                        (member_expression
+                          (identifier)
+                          (identifier)))
+                      (string_content))))))))))))
+
+==================
 Function with typed parameters and return type
 ==================
 
@@ -290,51 +366,6 @@ def Map<String,Integer> counts() {
     (block
       (expression_statement
         (map)))))
-
-==================
-Agent
-==================
-
-agent SUMMARIZE {
-  model 'claude'
-
-  input:
-  text: String
-
-  output:
-  summary: String
-
-  prompt:
-  "Summarize: ${text}"
-}
-
----
-
-(source_file
-  (agent_definition
-    (identifier)
-    (expression_statement
-      (command_expression
-        (identifier)
-        (argument_list
-          (string
-            (string_content)))))
-    (input_section
-      (process_input
-        (identifier)
-        (type
-          (identifier))))
-    (output_section
-      (process_output
-        (identifier)
-        (type
-          (identifier))))
-    (prompt_section
-      (expression_statement
-        (string
-          (string_content)
-          (interpolation
-            (identifier)))))))
 
 ==================
 Shebang declaration
