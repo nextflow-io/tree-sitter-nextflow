@@ -20,6 +20,8 @@ Run `npm ci` once, then always invoke the CLI as `npx tree-sitter`. It runs the 
 3. Add or update corpus tests in `test/corpus/<area>.txt`. `npx tree-sitter test -u` rewrites expectations to the current output (it refuses trees with ERROR or MISSING); review that diff as carefully as the grammar diff.
 4. Done when `npm test` passes and the commit contains `grammar.js`, the regenerated `src/`, and the tests together. CI regenerates the parser and fails if the committed `src/` differs.
 
+When `main` moves, a grammar PR conflicts in `src/` and usually `CHANGELOG.md`. Never resolve `src/` by hand. The **Resolve conflicts** workflow merges `main` into PRs from this repository whose only conflicts are in those files: it regenerates `src/`, combines the `## [Unreleased]` entries, runs `npm test`, and pushes a merge commit. Locally, `scripts/merge-main.sh` does the same. A conflict in `grammar.js` or anywhere else needs a person.
+
 For changes that could affect real-world parsing, also check that nf-core/modules still parses fully: run the **Parse rate** workflow (it also runs on every push to `main`), or `scripts/parse-rate.py` locally (usage in its docstring). A quicker check is `npx tree-sitter parse --paths <file-list> -q -s`.
 
 ## Grammar design
