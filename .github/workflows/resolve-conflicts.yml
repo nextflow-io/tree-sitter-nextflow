@@ -1,0 +1,100 @@
+name: Resolve conflicts
+
+# Every grammar PR conflicts in src/parser.c (and usually CHANGELOG.md) once
+# another one lands. When main changes those files, this merges main into
+# each open PR from this repository that now conflicts only in them:
+# scripts/merge-main.sh regenerates src/, combines the CHANGELOG entries, runs
+# `npm test`, and commits a merge. Conflicts anywhere else are left alone.
+#
+# A push made with the default GITHUB_TOKEN does not trigger workflows, so
+# after pushing, this dispatches CI on the branch. Set the
+# RESOLVE_CONFLICTS_TOKEN secret (a token with contents: write) to push as
+# that identity instead; the push then runs the usual pull_request checks.
+#
+# There is no pull_request trigger: GitHub does not run pull_request
+# workflows on a PR with merge conflicts. Run it by hand for one branch, e.g.
+# a PR opened from an old main.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - grammar.js
+      - src/**
+      - CHANGELOG.md
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: PR branch to merge main into (default every open PR)
+        required: false
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: resolve-conflicts
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RESOLVE_CONFLICTS_TOKEN || github.token }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install tree-sitter CLI
+        run: npm ci
+
+      - name: Merge main into conflicting PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BRANCH: ${{ inputs.branch }}
+          DISPATCH_CI: ${{ secrets.RESOLVE_CONFLICTS_TOKEN == '' }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          # Run this commit's copy of the scripts: a PR branch may predate them.
+          cp scripts/merge-main.sh scripts/resolve-changelog.py "$RUNNER_TEMP/"
+
+          if [[ -n "$PR_BRANCH" ]]; then
+            branches=$PR_BRANCH
+          else
+            # The default token cannot push to a fork, so skip those.
+            branches=$(gh pr list --base main --state open --limit 100 \
+              --json headRefName,isCrossRepository \
+              --jq '.[] | select(.isCrossRepository | not) | .headRefName')
+          fi
+
+          for branch in $branches; do
+            echo "::group::$branch"
+            git checkout --quiet -B "$branch" "origin/$branch"
+            status=0
+            "$RUNNER_TEMP/merge-main.sh" --if-conflicted origin/main || status=$?
+            case $status in
+              0)
+                if git push origin "HEAD:$branch"; then
+                  if [[ "$DISPATCH_CI" == true ]]; then
+                    gh workflow run ci.yml --ref "$branch"
+                    gh workflow run ast-grep-distribution.yml --ref "$branch"
+                  fi
+                  echo "- \`$branch\`: merged main and regenerated \`src/\`" >> "$GITHUB_STEP_SUMMARY"
+                else
+                  echo "::warning::$branch: push failed (the branch moved, or main changed .github/workflows/)"
+                fi
+                ;;
+              2) echo "- \`$branch\`: conflicts need a person" >> "$GITHUB_STEP_SUMMARY" ;;
+              3) ;;
+              *) echo "::warning::$branch: tests fail after merging main; branch left unchanged" ;;
+            esac
+            git reset --quiet --hard
+            echo "::endgroup::"
+          done
