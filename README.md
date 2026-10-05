@@ -16,6 +16,9 @@ git clone https://github.com/nextflow-io/tree-sitter-nextflow.git
 - **Rust:** add a path or git dependency on this repo in `Cargo.toml`.
 - **C:** `make` builds the shared library.
 
+See [editor and tool integrations](docs/integrations/README.md) for the query files
+and the requirements for Bash highlighting inside process scripts.
+
 ## ast-grep
 
 The repo includes an [ast-grep](https://ast-grep.github.io/) setup for searching, linting, and outlining Nextflow code by syntax tree:
