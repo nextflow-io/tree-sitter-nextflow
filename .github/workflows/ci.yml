@@ -35,6 +35,9 @@ jobs:
       - name: Test grammar and queries
         run: npm test
 
+      - name: Test changelog conflict resolution
+        run: python3 -m unittest discover -s test -p 'test_*.py'
+
       - name: Build C library
         run: make
 

@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - A backslash at the end of a line continues the statement (`ch \` then `| view` on the next line), as in the Nextflow lexer. It used to be a parse error.
+- A command whose last argument is a section keyword, at the end of a line, parses as a command in input, output, take and emit sections (`val shell`, `val output`, `path script`, `foo emit`). It used to end the section at the command name and start a broken section at the keyword (nextflow-io/nextflow `tests/eval-out.nf`).
 - A division after a name at the start of a statement (`dir / "sample.bam"`) no longer lexes as a slashy string running to the next `/` in the file. Slashy strings are now lexed by the scanner and, as in Nextflow's lexer, only start where a division cannot, so `println /abc/` is a division too.
 
 ## [0.4.0] - 2026-09-23

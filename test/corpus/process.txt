@@ -1102,3 +1102,125 @@ process P {
           (argument_list
             (string
               (string_content))))))))
+
+==================
+Legacy input with a section keyword argument
+==================
+
+process P {
+  input:
+  val shell
+  output:
+  val x
+  script:
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (output_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Legacy input named output followed by script
+==================
+
+process P {
+  input:
+  val output
+  script:
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (script_section
+      (expression_statement
+        (string
+          (string_content))))))
+
+==================
+Legacy inputs with keyword arguments at the end of the body
+==================
+
+process P {
+  input:
+  val script
+  val exec
+  val stub
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (input_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier))))
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))))
+
+==================
+Legacy output with a section keyword argument
+==================
+
+process P {
+  output:
+  path script
+  stub:
+  "x"
+}
+
+---
+
+(source_file
+  (process_definition
+    (identifier)
+    (output_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (stub_section
+      (expression_statement
+        (string
+          (string_content))))))

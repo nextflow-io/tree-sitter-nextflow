@@ -821,3 +821,36 @@ x = a | map { it } | combine(b) | view
           (argument_list
             (identifier))))
       (identifier))))
+
+==================
+Take and emit statements with section keyword arguments
+==================
+
+workflow {
+  take:
+  foo emit
+  emit:
+  bar main
+  main:
+  x
+}
+
+---
+
+(source_file
+  (workflow_definition
+    (take_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (emit_section
+      (expression_statement
+        (command_expression
+          (identifier)
+          (argument_list
+            (identifier)))))
+    (main_section
+      (expression_statement
+        (identifier)))))
