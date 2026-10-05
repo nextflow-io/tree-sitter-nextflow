@@ -970,7 +970,7 @@
     },
     "input_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -1100,7 +1100,7 @@
       }
     },
     "process_input": {
-      "type": "PREC",
+      "type": "PREC_DYNAMIC",
       "value": 1,
       "content": {
         "type": "SEQ",
@@ -1263,7 +1263,7 @@
     },
     "stage_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -1342,7 +1342,7 @@
     },
     "output_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -1438,7 +1438,7 @@
       }
     },
     "process_output": {
-      "type": "PREC",
+      "type": "PREC_DYNAMIC",
       "value": 1,
       "content": {
         "type": "SEQ",
@@ -1506,7 +1506,7 @@
     },
     "topic_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -1585,7 +1585,7 @@
     },
     "when_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -1634,7 +1634,7 @@
     },
     "script_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -1726,7 +1726,7 @@
     },
     "stub_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -1917,7 +1917,7 @@
     },
     "prompt_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -2128,7 +2128,7 @@
     },
     "take_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -2224,7 +2224,7 @@
       }
     },
     "workflow_take": {
-      "type": "PREC",
+      "type": "PREC_DYNAMIC",
       "value": 1,
       "content": {
         "type": "SEQ",
@@ -2267,7 +2267,7 @@
     },
     "main_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -2346,7 +2346,7 @@
     },
     "emit_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -2442,7 +2442,7 @@
       }
     },
     "workflow_emit": {
-      "type": "PREC",
+      "type": "PREC_DYNAMIC",
       "value": 1,
       "content": {
         "type": "SEQ",
@@ -2510,7 +2510,7 @@
     },
     "publish_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -2617,7 +2617,7 @@
     },
     "on_complete_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -2696,7 +2696,7 @@
     },
     "on_error_section": {
       "type": "PREC_DYNAMIC",
-      "value": 1,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -6453,6 +6453,46 @@
     ],
     [
       "on_error_section"
+    ],
+    [
+      "_expression",
+      "process_input"
+    ],
+    [
+      "_expression",
+      "process_output"
+    ],
+    [
+      "_expression",
+      "workflow_take"
+    ],
+    [
+      "_expression",
+      "workflow_emit"
+    ],
+    [
+      "process_input",
+      "command_expression",
+      "_expression",
+      "_type_name"
+    ],
+    [
+      "process_output",
+      "command_expression",
+      "_expression",
+      "_type_name"
+    ],
+    [
+      "workflow_take",
+      "command_expression",
+      "_expression",
+      "_type_name"
+    ],
+    [
+      "workflow_emit",
+      "command_expression",
+      "_expression",
+      "_type_name"
     ]
   ],
   "precedences": [],
