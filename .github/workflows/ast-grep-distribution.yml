@@ -1,0 +1,173 @@
+name: ast-grep distribution
+
+# Builds the tree-sitter parser shared libraries that ast-grep loads as the
+# `nextflow` custom language, verifies each is a usable parser, and smoke-tests
+# the shipped sgconfig + outline rules end-to-end. On a v* tag, attaches the
+# libraries to that tag's GitHub release, where scripts/install-ast-grep.sh
+# downloads them from.
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths:
+      - grammar.js
+      - src/**
+      - sgconfig.yml
+      - rules/**
+      - outline/**
+      - scripts/install-ast-grep.sh
+      - .github/workflows/ast-grep-distribution.yml
+  pull_request:
+    paths:
+      - grammar.js
+      - src/**
+      - sgconfig.yml
+      - rules/**
+      - outline/**
+      - scripts/install-ast-grep.sh
+      - .github/workflows/ast-grep-distribution.yml
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & verify (${{ matrix.triple }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            triple: aarch64-apple-darwin
+            libdir: lib/macos-arm64
+            libname: libnextflow.dylib
+            asset: libnextflow-macos-arm64.dylib
+          - os: macos-15-intel
+            triple: x86_64-apple-darwin
+            libdir: lib/macos-x64
+            libname: libnextflow.dylib
+            asset: libnextflow-macos-x64.dylib
+          - os: ubuntu-latest
+            triple: x86_64-unknown-linux-gnu
+            libdir: lib/linux-x64
+            libname: libnextflow.so
+            asset: libnextflow-linux-x64.so
+          - os: ubuntu-24.04-arm
+            triple: aarch64-unknown-linux-gnu
+            libdir: lib/linux-arm64
+            libname: libnextflow.so
+            asset: libnextflow-linux-arm64.so
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # ratchet:actions/checkout@v7
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # ratchet:actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install tree-sitter CLI
+        run: npm ci
+
+      - name: Generate parser
+        run: npx tree-sitter generate
+
+      - name: Build parser library
+        run: npx tree-sitter build --output "${{ matrix.libname }}"
+
+      - name: Verify parser symbol
+        run: |
+          lib="${{ matrix.libname }}"
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            symbols=$(nm -gU "$lib")
+          else
+            symbols=$(nm -D "$lib")
+          fi
+          if echo "$symbols" | grep -q tree_sitter_nextflow; then
+            echo "✓ tree_sitter_nextflow exported by $lib"
+          else
+            echo "✗ tree_sitter_nextflow not found in $lib" >&2
+            exit 1
+          fi
+
+      - name: Stage library at distribution path
+        run: |
+          mkdir -p "${{ matrix.libdir }}"
+          cp "${{ matrix.libname }}" "${{ matrix.libdir }}/${{ matrix.libname }}"
+
+      - name: Install ast-grep
+        run: npm install -g @ast-grep/cli@^0.44.0
+
+      - name: Smoke-test outline rules against freshly built parser
+        run: |
+          cat > /tmp/smoke.nf <<'NF'
+          include { FASTQC; MULTIQC as QC } from './modules/qc'
+
+          def helper() {
+            1
+          }
+
+          process ALIGN {
+            script:
+            """echo hi"""
+          }
+
+          agent SUMMARIZE {
+            prompt:
+            "Summarize"
+          }
+
+          workflow RNASEQ {
+            x = 1
+          }
+
+          workflow {
+            y = 2
+          }
+          NF
+          out=$(ast-grep outline --lang nextflow \
+            --outline-rules outline/nextflow.yml \
+            --no-default-outline-rules --items all --json=compact /tmp/smoke.nf)
+          echo "$out"
+          for sym in FASTQC MULTIQC helper ALIGN SUMMARIZE RNASEQ main; do
+            echo "$out" | grep -q "\"name\":\"$sym\"" || { echo "✗ outline missing $sym" >&2; exit 1; }
+          done
+          echo "✓ outline extracted all expected symbols"
+
+      - name: Smoke-test the curl installer against the latest release
+        run: |
+          mkdir -p /tmp/install && cd /tmp/install
+          bash < "$GITHUB_WORKSPACE/scripts/install-ast-grep.sh"
+          printf 'workflow {\n  Channel.from(1)\n}\n' > t.nf
+          ast-grep scan t.nf | grep -q deprecated-channel-from
+          echo "✓ installer set up a working scan"
+
+      - name: Name release asset
+        run: cp "${{ matrix.libdir }}/${{ matrix.libname }}" "${{ matrix.asset }}"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # ratchet:actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+          if-no-files-found: error
+
+  release:
+    name: Attach libraries to release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # ratchet:actions/download-artifact@v8
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Create release and upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 \
+            || gh release create "$TAG" --verify-tag --generate-notes
+          gh release upload "$TAG" assets/* --clobber

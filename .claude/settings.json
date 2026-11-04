@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:tree-sitter.github.io)",
+      "WebFetch(domain:ast-grep.github.io)",
+      "WebFetch(domain:nextflow.io)",
+      "Bash(npx tree-sitter:*)",
+      "Bash(npm test)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

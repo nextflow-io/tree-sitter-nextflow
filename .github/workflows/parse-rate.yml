@@ -1,0 +1,43 @@
+# Parses every .nf file in nf-core/modules and fails if any file has an
+# ERROR node. Runs on every push to main; run it by hand to try another ref.
+
+name: Parse rate
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      modules_ref:
+        description: nf-core/modules commit or branch to parse (defaults to the pinned commit)
+
+jobs:
+  parse-rate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # ratchet:actions/checkout@v7
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # ratchet:actions/checkout@v7
+        with:
+          repository: nf-core/modules
+          ref: ${{ inputs.modules_ref || 'cc89790b9b42878b874dd38cdba1ab2a75a89424' }}
+          path: nf-core-modules
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # ratchet:actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # ratchet:actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - run: npm ci
+
+      - run: npx tree-sitter build --output libnextflow.so
+
+      - run: pip install ast-grep-py
+
+      - name: Parse nf-core/modules
+        env:
+          NEXTFLOW_TS_LIB: libnextflow.so
+        run: python scripts/parse-rate.py nf-core-modules/modules nf-core-modules/subworkflows

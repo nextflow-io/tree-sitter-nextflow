@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # ratchet:actions/checkout@v7
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # ratchet:actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # ratchet:actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install tree-sitter CLI
+        run: npm ci
+
+      - name: Check generated parser is up to date
+        run: |
+          npx tree-sitter generate
+          git diff --exit-code src/ || {
+            echo "::error::src/ is stale. Run 'npx tree-sitter generate' and commit the result."
+            exit 1
+          }
+
+      - name: Test grammar and queries
+        run: npm test
+
+      - name: Test changelog conflict resolution
+        run: python3 -m unittest discover -s test -p 'test_*.py'
+
+      - name: Build C library
+        run: make
+
+      - name: Test Rust binding
+        run: cargo test
+
+      - name: Test Python binding
+        run: |
+          pip install ".[core]" pytest
+          pytest bindings/python/tests

@@ -1,0 +1,41 @@
+{
+  "grammars": [
+    {
+      "name": "nextflow",
+      "camelcase": "Nextflow",
+      "scope": "source.nextflow",
+      "file-types": [
+        "nf",
+        "config"
+      ],
+      "injection-regex": "^nextflow$",
+      "highlights": "queries/highlights.scm",
+      "injections": "queries/injections.scm",
+      "tags": "queries/tags.scm"
+    }
+  ],
+  "metadata": {
+    "version": "0.4.0",
+    "license": "MIT",
+    "description": "Nextflow grammar for tree-sitter",
+    "authors": [
+      {
+        "name": "Edmund Miller",
+        "email": "edmund@nf-co.re",
+        "url": "https://edmundmiller.dev/"
+      },
+      {
+        "name": "Ben Sherman",
+        "email": "bentshermann@gmail.com"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/nextflow-io/tree-sitter-nextflow"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "rust": true,
+    "python": true
+  }
+}
