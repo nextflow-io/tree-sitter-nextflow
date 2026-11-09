@@ -33,3 +33,35 @@ When `grammar.js`, `queries/` or `test/` changes, the hooks regenerate and build
 3. Update `CHANGELOG.md`, commit, then tag and push `vX.Y.Z`.
 
 The tag push builds the ast-grep parser libraries and attaches them to the GitHub release.
+It also builds and tests Python wheels and a source distribution, then publishes them to PyPI.
+The tag must match the version in `pyproject.toml`. Pull requests test Python packages
+without publishing. A manual **Python distribution** run builds and tests only.
+
+### Configure PyPI publishing
+
+Before the first tag with Python publishing enabled, a PyPI project owner must configure
+a Trusted Publisher for `tree-sitter-nextflow` with these values:
+
+- GitHub owner: `nextflow-io`
+- Repository: `tree-sitter-nextflow`
+- Workflow filename: `pypi-release.yml`
+- Environment: `pypi`
+
+If the project does not exist, register a pending publisher with those values in your
+PyPI account's publishing settings. No API token is required.
+A GitHub repository administrator must configure the `pypi` environment and any required reviewers
+before pushing a release tag. Approve the publishing job if the environment requires it.
+
+To publish the current version when its tag predates this workflow, create a new release version
+with the steps above. Do not move an existing release tag.
+
+### Test Python packages locally
+
+```bash
+python -m build
+python -m venv /tmp/nextflow-wheel-test
+/tmp/nextflow-wheel-test/bin/python -m pip install dist/*.whl 'tree-sitter~=0.25'
+(cd /tmp && /tmp/nextflow-wheel-test/bin/python -m unittest discover -s "$OLDPWD/bindings/python/tests" -v)
+```
+
+Repeat in a fresh environment with `dist/*.tar.gz` instead of the wheel to test the source distribution.

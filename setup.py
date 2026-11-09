@@ -22,8 +22,6 @@ class BuildExt(build_ext):
             ext.extra_compile_args = ["-std=c11", "-fvisibility=hidden"]
         else:
             ext.extra_compile_args = ["/std:c11", "/utf-8"]
-        if path.exists("src/scanner.c"):
-            ext.sources.append("src/scanner.c")
         if ext.py_limited_api:
             ext.define_macros.append(("Py_LIMITED_API", "0x030A0000"))
         super().build_extension(ext)
@@ -58,6 +56,7 @@ setup(
             sources=[
                 "bindings/python/tree_sitter_nextflow/binding.c",
                 "src/parser.c",
+                "src/scanner.c",
             ],
             # TREE_SITTER_HIDE_SYMBOLS deliberately NOT defined: keeping
             # tree_sitter_nextflow() in the dynamic export table lets the

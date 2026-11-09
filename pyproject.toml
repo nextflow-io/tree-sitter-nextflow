@@ -26,3 +26,9 @@ Homepage = "https://github.com/nextflow-io/tree-sitter-nextflow"
 
 [project.optional-dependencies]
 core = ["tree-sitter~=0.25"]
+
+[tool.cibuildwheel]
+build = "cp310-*"
+build-frontend = "build"
+test-requires = ["tree-sitter~=0.25"]
+test-command = "python -m unittest discover -s {project}/bindings/python/tests -v"

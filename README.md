@@ -6,7 +6,28 @@ Nextflow grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter). 
 
 ## Installation
 
-The Rust, Python, and C bindings are built from source:
+Install the Python binding and tree-sitter runtime from PyPI after the first release:
+
+```bash
+pip install "tree-sitter-nextflow[core]"
+```
+
+Use the grammar in Python tools:
+
+```python
+from tree_sitter import Language, Parser
+import tree_sitter_nextflow
+
+parser = Parser(Language(tree_sitter_nextflow.language()))
+tree = parser.parse(b'workflow {\n  println "Hello"\n}\n')
+assert not tree.root_node.has_error
+```
+
+The parser produces a syntax tree for your lint rules. It does not run Nextflow's semantic checks.
+Python 3.10 or later is required. Releases provide wheels for Linux and macOS on x86-64 and ARM64,
+plus a source distribution for platforms with a C compiler.
+
+To build the Python, Rust, or C binding from source:
 
 ```bash
 git clone https://github.com/nextflow-io/tree-sitter-nextflow.git
