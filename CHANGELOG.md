@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-13
+
 ### Added
 
 - Python distribution builds on pull requests and PyPI Trusted Publishing on version tags, with Linux and macOS wheels for Python 3.10 and later.
@@ -110,7 +112,8 @@ First public release. The grammar parses the Nextflow strict syntax (the v2 pars
 - Bumped `tree-sitter-cli` to `^0.26.10` (#23).
 - Restructured the repository layout (#15).
 
-[Unreleased]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nextflow-io/tree-sitter-nextflow/compare/v0.1.0...v0.2.0
